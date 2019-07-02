@@ -1,9 +1,9 @@
-package RevertCleaner
+package DumpCleaner
 
 import (
 	"../DataStructure"
-	"sort"
 	"../Utils"
+	"sort"
 )
 
 // This function build an array of revisions' sha1 field. We will need this function for individuating reverts

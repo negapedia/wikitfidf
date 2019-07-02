@@ -1,4 +1,4 @@
-package RevertCleaner
+package DumpCleaner
 
 import (
 	"reflect"

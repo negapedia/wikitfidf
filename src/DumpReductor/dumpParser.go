@@ -1,16 +1,15 @@
-package main
+package DumpReductor
 
 import (
-	"./DataStructure"
-	"./RevertCleaner"
+	"../DataStructure"
+	"../DumpCleaner"
 	"encoding/xml"
 	"flag"
 	"fmt"
-	"os"
 	"os/exec"
 )
 
-func ParseDump(dumpFile string) {
+func ParseDump(dumpFile string, startDate string, endDate string) {
 	flag.Parse()
 
 	cmd := exec.Command("7z", "x", dumpFile, "-so")
@@ -38,8 +37,12 @@ func ParseDump(dumpFile string) {
 					ignored++
 					continue
 				}
-				//WritePage(p)
-				RevertCleaner.RevertBuilder(&p) // to make a pure parser, replace this line with Utils.WritePage("../out/", &p)
+
+				if startDate != "" || endDate != ""{
+					DumpCleaner.DataDumpCleaner(&p, startDate, endDate)
+				}
+
+				DumpCleaner.RevertBuilder(&p) // to make a pure parser, replace this line with Utils.WritePage("../out/", &p)
 				total++
 			}
 		}
@@ -47,8 +50,4 @@ func ParseDump(dumpFile string) {
 
 	fmt.Printf("Total pages: %d \n", total)
 	fmt.Printf("Total ignored pages: %d \n", ignored)
-}
-
-func main() {
-	ParseDump(os.Args[1])
 }

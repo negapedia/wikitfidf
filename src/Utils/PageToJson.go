@@ -1,10 +1,10 @@
 package Utils
 
 import (
+	"../DataStructure"
 	"bufio"
 	"encoding/json"
 	"os"
-	"../DataStructure"
 )
 
 func WritePage(resultPath string, page *DataStructure.Page) {
