@@ -2,11 +2,11 @@ package Utils
 
 import (
 	"fmt"
+	"github.com/dustin/go-humanize"
 	"io"
 	"net/http"
 	"os"
 	"strings"
-	"github.com/dustin/go-humanize"
 )
 
 // WriteCounter counts the number of bytes written to it. It implements to the io.Writer

@@ -72,7 +72,7 @@ func nonRevertRemover(page *DataStructure.Page){
 }
 
 
-func RevertBuilder(page *DataStructure.Page) {
+func RevertBuilder(page *DataStructure.Page, resultDir string) {
 	repetedSha1 := getAllOccurencePosition(sha1ArrayBuilder(page))
 
 	if len(repetedSha1) > 0 {
@@ -87,6 +87,6 @@ func RevertBuilder(page *DataStructure.Page) {
 
 		nonRevertRemover(page)
 
-		Utils.WritePage("../out/", page)
+		Utils.WritePage(resultDir, page)
 	}
 }

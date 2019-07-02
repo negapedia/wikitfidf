@@ -9,7 +9,7 @@ import (
 	"os/exec"
 )
 
-func ParseDump(dumpFile string, startDate string, endDate string) {
+func ParseDump(dumpFile string, resultDir string, startDate string, endDate string) {
 	flag.Parse()
 
 	cmd := exec.Command("7z", "x", dumpFile, "-so")
@@ -42,7 +42,7 @@ func ParseDump(dumpFile string, startDate string, endDate string) {
 					DumpCleaner.DataDumpCleaner(&p, startDate, endDate)
 				}
 
-				DumpCleaner.RevertBuilder(&p) // to make a pure parser, replace this line with Utils.WritePage("../out/", &p)
+				DumpCleaner.RevertBuilder(&p, resultDir) // to make a pure parser, replace this line with Utils.WritePage("../out/", &p)
 				total++
 			}
 		}
