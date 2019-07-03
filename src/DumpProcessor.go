@@ -17,19 +17,23 @@ type WikiDump struct {
 	resultDir string
 }
 
-func NewWikiDump(lang string, date string, downloadDir string, resultDir string) *WikiDump {
-	p:= new(WikiDump)
+func NewWikiDump(lang string, date string, resultDir string) *WikiDump {
+	p := new(WikiDump)
 	p.lang = lang
 	p.date = date
-	p.downloadDir = downloadDir
 	p.resultDir = resultDir+lang+"_"+date+"/"
+
+	if _, err := os.Stat(resultDir); os.IsNotExist(err) {
+		_ = os.Mkdir(resultDir, os.ModePerm)
+	}
+
 	return p
 }
 
 func main(){
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	wd := NewWikiDump(os.Args[1], os.Args[2], "../Tmp/", "../Result/")
+	wd := NewWikiDump(os.Args[1], os.Args[2], "../Result/")
 
 	linkToDownload := Utils.DumpLinkGetter(wd.lang, wd.date)
 
