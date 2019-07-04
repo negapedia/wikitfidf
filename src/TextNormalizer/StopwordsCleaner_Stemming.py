@@ -92,7 +92,7 @@ def _stopwords_cleaner_stemming(filename: str, lang: str):
     :param lang:
     :return:
     """
-    print(filename)
+
     with open(filename, "r") as f:
         dump_dict = json.load(f)
 
@@ -104,6 +104,9 @@ def _stopwords_cleaner_stemming(filename: str, lang: str):
         reverts["Text"] = _stopwords_cleaner(reverts["Text"], lang)
 
         reverts["Text"], reverse_stemming_dict = _stemming(reverts["Text"], reverse_stemming_dict)
+        if reverts["Text"] is None:
+            os.remove(filename)
+            return
 
     page_id = dump_dict["PageID"]
     result_dir = filename[:-(len(page_id)+5)]
@@ -112,7 +115,7 @@ def _stopwords_cleaner_stemming(filename: str, lang: str):
     with open(result_dir+"S"+page_id+".json", "w") as f:
         json.dump(dump_dict, f, ensure_ascii=False)
 
-    with open(result_dir+"Stem/StemRev_"+page_id+".json", "w") as f:
+    with open(result_dir[:-1]+"Stem/StemRev_"+page_id+".json", "w") as f:
         json.dump(reverse_stemming_dict, f, ensure_ascii=False)
 
 

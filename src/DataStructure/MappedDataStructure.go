@@ -6,6 +6,6 @@ type PageContainer struct {
 
 type PageElement struct {
 	PageId string
-	Title string
-	Word map[string]int
+	Title  string
+	Word   map[string]uint64
 }

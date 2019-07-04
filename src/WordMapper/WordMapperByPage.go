@@ -1,16 +1,16 @@
 package WordMapper
 
-
 import (
 	"../DataStructure"
 	"../Utils"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 )
 
 func getMappedPage(page *DataStructure.StemmedPageJson) DataStructure.PageElement {
-	var mappedText = make(map[string]int)
+	var mappedText = make(map[string]uint64)
 
 	for _, rev := range page.Revision {
 		for _, word := range rev.Text {
@@ -24,12 +24,12 @@ func getMappedPage(page *DataStructure.StemmedPageJson) DataStructure.PageElemen
 	return DataStructure.PageElement{PageId: page.PageID, Title: page.Title, Word: mappedText}
 }
 
-
 func WordMapperByPage(resultDir string) {
 	fileList := Utils.FilesInDir(resultDir, ".json", "WS")
+	nFile := len(fileList)
 
-	for _, file := range fileList {
-		println(file)
+	for i, file := range fileList {
+		fmt.Printf("\rOn %d/%d", i, nFile)
 
 		jsonFile, err := os.Open(file)
 		// if we os.Open returns an error then handle it
@@ -41,9 +41,8 @@ func WordMapperByPage(resultDir string) {
 		// read our opened xmlFile as a byte array.
 		byteValue, _ := ioutil.ReadAll(jsonFile)
 
-		jsonFile.Close()
+		_ = jsonFile.Close()
 
-		// we initialize our Users array
 		var page DataStructure.StemmedPageJson
 
 		// we unmarshal our byteArray which contains our
@@ -52,7 +51,7 @@ func WordMapperByPage(resultDir string) {
 
 		mappedPage := getMappedPage(&page)
 		_ = os.Remove(file)
-		if len(mappedPage.Word) > 0{
+		if len(mappedPage.Word) > 0 {
 			Utils.WriteMappedPage(resultDir, &mappedPage)
 		}
 	}
