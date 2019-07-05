@@ -39,11 +39,11 @@ func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
 	nFile := len(linkToDownload)
 
 	for i, link := range linkToDownload {
-		fmt.Printf("\rOn %d/%d \n%v", i, nFile, link.Name)
-		//Utils.DownloadFile(wd.resultDir+link.Name, link.Link) TODO remove comment
+		fmt.Printf("\rOn %d/%d \n%v", i+1, nFile, link.Name)
+		Utils.DownloadFile(wd.resultDir+link.Name, link.Link) //TODO remove comment
 
 		println("Parse and reduction start")
-		DumpReductor.ParseDump("../103KB_en.7z", wd.resultDir, "", "") //(wd.resultDir+link.Name, wd.resultDir,"", "") //startDate and endDate must be in the same format of dump timestamp! ("../113KB_test.7z", wd.resultDir, "", "")
+		DumpReductor.ParseDump("../6_9MB_en.7z", wd.resultDir, "", "") //(wd.resultDir+link.Name, wd.resultDir,"", "") //startDate and endDate must be in the same format of dump timestamp! ("../113KB_test.7z", wd.resultDir, "", "")
 		println("Parse and reduction end")
 
 		println("WikiMarkup cleaning start")
@@ -79,4 +79,11 @@ func main() {
 	WordMapper.GlobalWordMapper(wd.resultDir)
 	println("Processing GlobalWordMap file start")
 
+	println("Processing GlobalStem file start")
+	WordMapper.StemRevAggregator(wd.resultDir)
+	println("Processing GlobalStem file end")
+
+	println("Processing GlobalPage file start")
+	WordMapper.PageMapAggregator(wd.resultDir)
+	println("Processing GlobalPage file end")
 }

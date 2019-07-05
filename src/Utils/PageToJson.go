@@ -47,5 +47,18 @@ func WriteGlobalWord(resultPath string, gloabalWord *map[string]uint64) {
 			_ = writer.Flush()
 		}
 	}
+}
 
+func WriteGlobalStem(resultPath string, gloabaStem *map[string]string) {
+	outFile, err := os.Create(resultPath + "GlobalStem.json")
+	if err == nil {
+		writer := bufio.NewWriter(outFile)
+		defer outFile.Close()
+
+		var dictPage, err = json.Marshal(gloabaStem)
+		if err == nil {
+			_, _ = writer.Write(dictPage)
+			_ = writer.Flush()
+		}
+	}
 }

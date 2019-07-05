@@ -18,7 +18,7 @@ func GlobalWordMapper(resultDir string) {
 	totalWord = 0
 
 	for i, file := range fileList {
-		fmt.Printf("\rOn %d/%d", i, nFile)
+		fmt.Printf("\rOn %d/%d", i+1, nFile)
 
 		jsonFile, err := os.Open(file)
 		// if we os.Open returns an error then handle it

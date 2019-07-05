@@ -1,7 +1,6 @@
 package Utils
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -35,9 +34,5 @@ func FilesInDir(dir string, extension string, partialName string) []string {
 	if err != nil {
 		panic(err)
 	}
-	for _, file := range files {
-		fmt.Println(file)
-	}
-
 	return files
 }
