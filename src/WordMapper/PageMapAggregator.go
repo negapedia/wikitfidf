@@ -15,11 +15,11 @@ type PageData struct {
 	Words *map[string]uint64
 }
 
-func PageMapAggregator(resultDir string) {
+func PageMapAggregator(resultDir string) { // TODO aggiungere conteggio pagine nel .json
 	fileList := Utils.FilesInDir(resultDir, ".json", "M")
 	nFile := len(fileList)
 
-	outFile, _ := os.Create(resultDir+"GlobalPage.json")
+	outFile, _ := os.Create(resultDir + "GlobalPage.json")
 	encWriter := bufio.NewWriter(outFile)
 
 	for i, file := range fileList {
@@ -42,8 +42,7 @@ func PageMapAggregator(resultDir string) {
 		pageToWrite := make(map[string]PageData)
 		pageToWrite[Page.PageId] = PageData{Title: Page.Title, Words: &Page.Word}
 
-
-		if i == 0{
+		if i == 0 {
 			marshalledPage, _ := json.Marshal(pageToWrite)
 			pageAsString := string(marshalledPage)
 			pageAsString = pageAsString[:len(pageAsString)-1] + ",\n"

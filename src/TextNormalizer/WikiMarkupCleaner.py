@@ -27,14 +27,8 @@ def _fix_text(dict_text):
         for e in external_links: text.remove(e, recursive=False)
 
     fixed_text = text.strip_code()
-    fixed_text = fixed_text.replace("[", "")
-    fixed_text = fixed_text.replace("]", "")
     fixed_text = fixed_text.replace("REDIRECT", "")
     fixed_text = fixed_text.replace("redirect", "")
-    fixed_text = fixed_text.replace(".", "")
-    fixed_text = fixed_text.replace(",", "")
-    fixed_text = fixed_text.replace(";", "")
-    fixed_text = fixed_text.replace("'", " ")
 
     symbols_to_remove = string.punctuation
     symbols_to_remove += "’"

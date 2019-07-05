@@ -2,12 +2,12 @@ package main
 
 import (
 	"./DumpReductor"
+	"./TextNormalizer"
 	"./Utils"
 	"./WordMapper"
 	"fmt"
+	"github.com/pkg/profile"
 	"os"
-	"os/exec"
-	"runtime"
 )
 
 type WikiDump struct {
@@ -43,19 +43,15 @@ func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
 		Utils.DownloadFile(wd.resultDir+link.Name, link.Link) //TODO remove comment
 
 		println("Parse and reduction start")
-		DumpReductor.ParseDump("../6_9MB_en.7z", wd.resultDir, "", "") //(wd.resultDir+link.Name, wd.resultDir,"", "") //startDate and endDate must be in the same format of dump timestamp! ("../113KB_test.7z", wd.resultDir, "", "")
+		DumpReductor.ParseDump(wd.resultDir+link.Name, wd.resultDir, "", "") //("../6_9MB_en.7z", wd.resultDir, "", "") startDate and endDate must be in the same format of dump timestamp! ("../113KB_test.7z", wd.resultDir, "", "")
 		println("Parse and reduction end")
 
 		println("WikiMarkup cleaning start")
-		wikiMarkupRemoval := exec.Command("python3", "./TextNormalizer/WikiMarkupCleaner.py", wd.resultDir)
-		_ = wikiMarkupRemoval.Start()
-		_ = wikiMarkupRemoval.Wait()
+		TextNormalizer.CallCleanMarkup(wd.resultDir)
 		println("WikiMarkup cleaning end")
 
 		println("Stopwords cleaning and stemming start")
-		stopwordsCleanerStemming := exec.Command("python3", "./TextNormalizer/StopwordsCleaner_Stemming.py", wd.resultDir, wd.lang)
-		_ = stopwordsCleanerStemming.Start()
-		_ = stopwordsCleanerStemming.Wait()
+		TextNormalizer.CallStopwStemm(wd.resultDir, wd.lang)
 		println("Stopwords cleaning and stemming end")
 
 		println("Word mapping by page start")
@@ -67,7 +63,7 @@ func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
 }
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
+	defer profile.Start().Stop()
 
 	wd := NewWikiDump(os.Args[1], os.Args[2], "../Result/")
 
