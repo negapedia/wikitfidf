@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import json, sys, os, glob
+import json, sys, os, glob, cProfile
 from multiprocessing import Pool, cpu_count
 from nltk import word_tokenize
 from nltk.corpus import stopwords
@@ -67,6 +67,13 @@ def _stopwords_cleaner(revert_text, lang):
             revert_text = list(filter(word.__ne__, revert_text))
     return revert_text
 
+def _fix_word_length(rev_text):
+    new_text = rev_text
+    for word in rev_text.split():
+        if len(word) > 100:
+            new_text = new_text.replace(word, "")
+
+    return new_text
 
 def _stemming(revert_text, stemmer_reverse_dict):
     ps = PorterStemmer()
@@ -100,6 +107,7 @@ def _stopwords_cleaner_stemming(filename: str, lang: str):
     for reverts in dump_dict["Revision"]:
         if reverts["Text"] is None:
             continue
+        reverts["Text"] = _fix_word_length(reverts["Text"])
         reverts["Text"] = word_tokenize(reverts["Text"])
         reverts["Text"] = _stopwords_cleaner(reverts["Text"], lang)
 
@@ -139,5 +147,10 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
 
 
 if __name__ == "__main__":
+    pr = cProfile.Profile()
+    pr.enable()
     #  concurrent_stopwords_cleaner_stemmer("../../Result/it_20190601/", "it")
     concurrent_stopwords_cleaner_stemmer(sys.argv[1], sys.argv[2])
+    pr.disable()
+    pr.dump_stats("StopWStemProfile.txt")
+

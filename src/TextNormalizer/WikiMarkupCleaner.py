@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import string, json, sys, glob, os
+import string, json, sys, glob, os, cProfile
 import mwparserfromhell as mwparser  # clone and install from: `https://github.com/earwig/mwparserfromhell/` or `pip3 install mwparserfromhell`
 from multiprocessing import Pool, cpu_count
 
@@ -80,6 +80,10 @@ def concurrent_wiki_markup_cleaner(result_dir: str):
 
 
 if __name__ == "__main__":
+    pr = cProfile.Profile()
+    pr.enable()
     #dict_text_correction("../../Result/it_20190601/")
     concurrent_wiki_markup_cleaner(sys.argv[1])
+    pr.disable()
+    pr.dump_stats("WikiMarkProfile.txt")
 
