@@ -13,8 +13,8 @@ func GlobalWordMapper(resultDir string) {
 	fileList := Utils.FilesInDir(resultDir, ".json", "M")
 	nFile := len(fileList)
 
-	globalWord := make(map[string]uint64)
-	var totalWord uint64
+	globalWord := make(map[string]map[string]float64)
+	var totalWord float64
 	totalWord = 0
 
 	for i, file := range fileList {
@@ -35,15 +35,19 @@ func GlobalWordMapper(resultDir string) {
 
 		for word, freq := range page.Word {
 			if _, ok := globalWord[word]; ok {
-				globalWord[word] += freq
+				globalWord[word]["abs"] += float64(freq)
+				globalWord[word]["in"] += 1
 			} else {
-				globalWord[word] = freq
+				globalWord[word] = make(map[string]float64)
+				globalWord[word]["abs"] = float64(freq)
+				globalWord[word]["in"] = 1
 			}
-			totalWord += freq
+			totalWord += float64(freq)
 		}
 	}
 
-	globalWord["@Total Word"] = totalWord
+	globalWord["@Total Word"] = make(map[string]float64)
+	globalWord["@Total Word"]["tot"] = totalWord
 
 	Utils.WriteGlobalWord(resultDir, &globalWord)
 }

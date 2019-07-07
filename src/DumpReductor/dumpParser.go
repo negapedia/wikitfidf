@@ -9,7 +9,7 @@ import (
 	"os/exec"
 )
 
-func ParseDump(dumpFile string, resultDir string, startDate string, endDate string) {
+func ParseDump(dumpFile string, resultDir string, startDate string, endDate string, specialPageList *[]string) {
 	flag.Parse()
 
 	cmd := exec.Command("7z", "x", dumpFile, "-so")
@@ -37,6 +37,22 @@ func ParseDump(dumpFile string, resultDir string, startDate string, endDate stri
 					ignored++
 					continue
 				}
+
+				if *specialPageList != nil {	// if specialPageList exist, then check if the current page is to keep o to skip
+					toIgnore := func(pageID string) bool {
+						for _, e := range *specialPageList {
+							if pageID == e{
+								return false
+							}
+						}
+						return true
+					}(p.PageID)
+
+					if toIgnore {
+						continue
+					}
+				}
+
 
 				if startDate != "" || endDate != ""{
 					DumpCleaner.DataDumpCleaner(&p, startDate, endDate)

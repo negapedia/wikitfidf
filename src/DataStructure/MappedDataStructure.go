@@ -7,5 +7,6 @@ type PageContainer struct {
 type PageElement struct {
 	PageId string
 	Title  string
-	Word   map[string]uint64
+	Word   map[string]float64
 }
+

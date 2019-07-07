@@ -10,9 +10,14 @@ import (
 	"os"
 )
 
-type PageData struct {
-	Title string
-	Words *map[string]uint64
+func getTotalWordInPage(page *DataStructure.PageElement) float64 {
+	var tot float64
+	tot = 0
+	for _, wordFreq := range page.Word {
+		tot += wordFreq
+	}
+
+	return tot
 }
 
 func PageMapAggregator(resultDir string) { // TODO aggiungere conteggio pagine nel .json
@@ -39,8 +44,8 @@ func PageMapAggregator(resultDir string) { // TODO aggiungere conteggio pagine n
 
 		_ = json.Unmarshal(byteValue, &Page)
 
-		pageToWrite := make(map[string]PageData)
-		pageToWrite[Page.PageId] = PageData{Title: Page.Title, Words: &Page.Word}
+		pageToWrite := make(map[string]DataStructure.AggregatedPage)
+		pageToWrite[Page.PageId] = DataStructure.AggregatedPage{Title: Page.Title, Tot: getTotalWordInPage(&Page), Words: &Page.Word}
 
 		if i == 0 {
 			marshalledPage, _ := json.Marshal(pageToWrite)

@@ -10,7 +10,7 @@ import (
 )
 
 func getMappedPage(page *DataStructure.StemmedPageJson) DataStructure.PageElement {
-	var mappedText = make(map[string]uint64)
+	var mappedText = make(map[string]float64)
 
 	for _, rev := range page.Revision {
 		for _, word := range rev.Text {

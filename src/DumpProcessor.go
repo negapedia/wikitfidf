@@ -2,12 +2,14 @@ package main
 
 import (
 	"./DumpReductor"
-	"./TextNormalizer"
 	"./Utils"
 	"./WordMapper"
+	"flag"
 	"fmt"
 	"github.com/pkg/profile"
 	"os"
+	"os/exec"
+	"strings"
 )
 
 type WikiDump struct {
@@ -16,13 +18,15 @@ type WikiDump struct {
 
 	downloadDir string
 	resultDir   string
+	specialPageList *[]string
 }
 
-func NewWikiDump(lang string, date string, resultDir string) *WikiDump {
+func NewWikiDump(lang string, date string, resultDir string, specialPageList *[]string) *WikiDump {
 	p := new(WikiDump)
 	p.lang = lang
 	p.date = date
 	p.resultDir = resultDir + lang + "_" + date + "/"
+	p.specialPageList = specialPageList
 
 	//_ = os.MkdirAll(p.resultDir, os.ModeDir)
 	if _, err := os.Stat(p.resultDir + "Stem"); os.IsNotExist(err) {
@@ -40,18 +44,20 @@ func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
 
 	for i, link := range linkToDownload {
 		fmt.Printf("\rOn %d/%d \n%v", i+1, nFile, link.Name)
-		Utils.DownloadFile(wd.resultDir+link.Name, link.Link) //TODO remove comment
+		//Utils.DownloadFile(wd.resultDir+link.Name, link.Link) //TODO remove comment
 
 		println("Parse and reduction start")
-		DumpReductor.ParseDump(wd.resultDir+link.Name, wd.resultDir, "", "") //("../6_9MB_en.7z", wd.resultDir, "", "") startDate and endDate must be in the same format of dump timestamp! ("../113KB_test.7z", wd.resultDir, "", "")
+		DumpReductor.ParseDump("../113KB_test.7z", wd.resultDir, "", "", wd.specialPageList) //(wd.resultDir+link.Name, wd.resultDir, "", "") //startDate and endDate must be in the same format of dump timestamp! ("../113KB_test.7z", wd.resultDir, "", "")
 		println("Parse and reduction end")
 
 		println("WikiMarkup cleaning start")
-		TextNormalizer.CallCleanMarkup(wd.resultDir)
+		wikiMarkupClean := exec.Command("python3", "./TextNormalizer/WikiMarkupCleaner.py", wd.resultDir)
+		_ = wikiMarkupClean.Run()
 		println("WikiMarkup cleaning end")
 
 		println("Stopwords cleaning and stemming start")
-		TextNormalizer.CallStopwStemm(wd.resultDir, wd.lang)
+		stopwordsCleanerStemming := exec.Command("python3","./TextNormalizer/StopwordsCleaner_Stemming.py", wd.resultDir, wd.lang)
+		_ = stopwordsCleanerStemming.Run()
 		println("Stopwords cleaning and stemming end")
 
 		println("Word mapping by page start")
@@ -65,7 +71,23 @@ func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
 func main() {
 	defer profile.Start().Stop()
 
-	wd := NewWikiDump(os.Args[1], os.Args[2], "../Result/")
+	langFlag := flag.String("l", "", "Dump language")
+	dateFlag := flag.String("d", "", "Dump date")
+	specialPageListFlag := flag.String("specialList", "", "Special page list, page not in this list will be ignored. Input PageID like: id1-id2-...")
+	flag.Parse()
+
+	println(*langFlag)
+	println(*dateFlag)
+	println(*specialPageListFlag)
+	specialPageList := func(specialPageListFlag string) []string {
+		if specialPageListFlag == ""{
+			return nil
+		} else {
+			return strings.Split(specialPageListFlag, "-")
+		}
+	}(*specialPageListFlag)
+
+	wd := NewWikiDump(*langFlag, *dateFlag, "../Result/", &specialPageList)
 
 	linkToDownload := Utils.DumpLinkGetter(wd.lang, wd.date)
 
@@ -82,4 +104,8 @@ func main() {
 	println("Processing GlobalPage file start")
 	WordMapper.PageMapAggregator(wd.resultDir)
 	println("Processing GlobalPage file end")
+
+	println("Processing TFIDF file start")
+	TFIDF.ComputeTFIDF(wd.resultDir)
+	println("Processing TFIDF file end")
 }
