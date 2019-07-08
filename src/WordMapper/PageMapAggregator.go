@@ -20,7 +20,7 @@ func getTotalWordInPage(page *DataStructure.PageElement) float64 {
 	return tot
 }
 
-func PageMapAggregator(resultDir string) { // TODO aggiungere conteggio pagine nel .json
+func PageMapAggregator(resultDir string) {
 	fileList := Utils.FilesInDir(resultDir, ".json", "M")
 	nFile := len(fileList)
 
@@ -45,7 +45,7 @@ func PageMapAggregator(resultDir string) { // TODO aggiungere conteggio pagine n
 		_ = json.Unmarshal(byteValue, &Page)
 
 		pageToWrite := make(map[string]DataStructure.AggregatedPage)
-		pageToWrite[Page.PageId] = DataStructure.AggregatedPage{Title: Page.Title, Tot: getTotalWordInPage(&Page), Words: &Page.Word}
+		pageToWrite[Page.PageId] = DataStructure.AggregatedPage{Title: Page.Title, Tot: getTotalWordInPage(&Page), Words: Page.Word}
 
 		if i == 0 {
 			marshalledPage, _ := json.Marshal(pageToWrite)
@@ -53,19 +53,18 @@ func PageMapAggregator(resultDir string) { // TODO aggiungere conteggio pagine n
 			pageAsString = pageAsString[:len(pageAsString)-1] + ",\n"
 			encWriter.Write([]byte(pageAsString))
 
-		} else if i != nFile-1 && i > 0 {
+		} else if /*i != nFile-1 && */i > 0 {
 			marshalledPage, _ := json.Marshal(pageToWrite)
 			pageAsString := string(marshalledPage)
 			pageAsString = pageAsString[1:len(pageAsString)-1] + ",\n"
 			encWriter.Write([]byte(pageAsString))
 
-		} else if i == nFile-1 {
-			marshalledPage, _ := json.Marshal(pageToWrite)
-			pageAsString := string(marshalledPage)
-			pageAsString = pageAsString[1:]
-			encWriter.Write([]byte(pageAsString))
 		}
 
 		_ = encWriter.Flush()
 	}
+
+	encWriter.Write([]byte("}"))
+	_ = encWriter.Flush()
+	outFile.Close()
 }

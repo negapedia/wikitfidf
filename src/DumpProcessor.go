@@ -2,6 +2,7 @@ package main
 
 import (
 	"./DumpReductor"
+	"./TFIDF"
 	"./Utils"
 	"./WordMapper"
 	"flag"
