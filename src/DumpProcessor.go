@@ -48,11 +48,12 @@ func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
 		//Utils.DownloadFile(wd.resultDir+link.Name, link.Link) //TODO remove comment
 
 		println("Parse and reduction start")
-		DumpReductor.ParseDump("../113KB_test.7z", wd.resultDir, "", "", wd.specialPageList) //(wd.resultDir+link.Name, wd.resultDir, "", "") //startDate and endDate must be in the same format of dump timestamp! ("../113KB_test.7z", wd.resultDir, "", "")
+		DumpReductor.ParseDump("../6MB_test.7z", wd.resultDir, "", "", wd.specialPageList) //(wd.resultDir+link.Name, wd.resultDir, "", "") //startDate and endDate must be in the same format of dump timestamp! ("../113KB_test.7z", wd.resultDir, "", "")
 		println("Parse and reduction end")
 
 		println("WikiMarkup cleaning start")
-		wikiMarkupClean := exec.Command("python3", "./TextNormalizer/WikiMarkupCleaner.py", wd.resultDir)
+		//wikiMarkupClean := exec.Command("python3", "./TextNormalizer/WikiMarkupCleaner.py", wd.resultDir)
+		wikiMarkupClean := exec.Command("java","-jar", "./TextNormalizer/WikipediaMarkupCleaner.jar", wd.resultDir)
 		_ = wikiMarkupClean.Run()
 		println("WikiMarkup cleaning end")
 
