@@ -12,7 +12,7 @@
 *.out
 
 
-*.7z
+[1-9]*.7z
 out/*
 .DS_Store
 .idea/*
