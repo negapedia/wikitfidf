@@ -146,7 +146,7 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
     with Pool(cpu_count()) as executor:
         executor.map(_stopwords_cleaner_stemming, file_to_clean)
 
-
+'''
 if __name__ == "__main__":
     #pr = cProfile.Profile()
     #pr.enable()
@@ -154,3 +154,4 @@ if __name__ == "__main__":
     concurrent_stopwords_cleaner_stemmer(sys.argv[1], sys.argv[2])
     #pr.disable()
     #pr.dump_stats("StopWStemProfile.txt")
+'''

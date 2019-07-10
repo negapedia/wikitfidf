@@ -8,6 +8,7 @@ RUN apt-get install -y software-properties-common
 RUN apt install default-jdk -y
 RUN apt install python3-pip -y
 RUN pip3 install nltk
+RUN pip3 install cython
 
 RUN apt-get install -y --no-install-recommends p7zip-full
 
@@ -17,6 +18,8 @@ RUN 7z x $GOPATH/src/badwords_data.7z -o/root/badwords_data
 
 RUN go get github.com/dustin/go-humanize
 RUN go get github.com/PuerkitoBio/goquery
+
+RUN cd $GOPATH/src/TextNormalizer/ && python3 compile.py build_ext --inplace
 
 WORKDIR $GOPATH/src
 
