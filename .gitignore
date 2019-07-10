@@ -19,3 +19,5 @@ out/*
 venv/*
 Result/*
 *.txt
+*.pyc
+*.c
