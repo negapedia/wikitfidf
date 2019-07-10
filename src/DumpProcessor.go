@@ -51,11 +51,10 @@ func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
 		Utils.DownloadFile(wd.resultDir+link.Name, link.Link) //TODO remove comment
 
 		println("\nParse and reduction start")
-		DumpReductor.ParseDump(wd.resultDir+link.Name, wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)//("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)//  //startDate and endDate must be in the same format of dump timestamp!
+		DumpReductor.ParseDump(wd.resultDir+link.Name, wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
 		println("Parse and reduction end")
 
 		println("WikiMarkup cleaning start")
-		//wikiMarkupClean := exec.Command("python3", "./TextNormalizer/WikiMarkupCleaner.py", wd.resultDir)
 		wikiMarkupClean := exec.Command("java","-jar", "./TextNormalizer/WikipediaMarkupCleaner.jar", wd.resultDir)
 		_ = wikiMarkupClean.Run()
 		println("WikiMarkup cleaning end")
@@ -115,4 +114,9 @@ func main() {
 	println("Processing TFIDF file start")
 	TFIDF.ComputeTFIDF(wd.resultDir)
 	println("Processing TFIDF file end")
+
+	println("Performing Destemming start")
+	deStemming := exec.Command("python3","./DeStemmer/runDeStemming.py", wd.resultDir)
+	_ = deStemming.Run()
+	println("Performing Destemming file end")
 }

@@ -20,6 +20,7 @@ RUN go get github.com/dustin/go-humanize
 RUN go get github.com/PuerkitoBio/goquery
 
 RUN cd $GOPATH/src/TextNormalizer/ && python3 compile.py build_ext --inplace
+RUN cd $GOPATH/src/DeStemmer/ && python3 compile.py build_ext --inplace
 
 WORKDIR $GOPATH/src
 

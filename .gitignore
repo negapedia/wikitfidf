@@ -21,3 +21,5 @@ Result/*
 *.txt
 *.pyc
 *.c
+*.o
+DumpProcessor
