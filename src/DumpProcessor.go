@@ -7,7 +7,6 @@ import (
 	"./WordMapper"
 	"flag"
 	"fmt"
-	"github.com/pkg/profile"
 	"os"
 	"os/exec"
 	"strings"
@@ -20,16 +19,20 @@ type WikiDump struct {
 	downloadDir string
 	resultDir   string
 	specialPageList *[]string
+	startDate string
+	endDate string
 }
 
-func NewWikiDump(lang string, date string, resultDir string, specialPageList *[]string) *WikiDump {
+func NewWikiDump(lang string, date string, resultDir string, specialPageList *[]string,
+	startDate string, endDate string) *WikiDump {
 	p := new(WikiDump)
 	p.lang = lang
 	p.date = date
 	p.resultDir = resultDir + lang + "_" + date + "/"
 	p.specialPageList = specialPageList
+	p.startDate = startDate
+	p.endDate = endDate
 
-	//_ = os.MkdirAll(p.resultDir, os.ModeDir)
 	if _, err := os.Stat(p.resultDir + "Stem"); os.IsNotExist(err) {
 		err = os.MkdirAll(p.resultDir+"Stem", 0755)
 		if err != nil {
@@ -45,10 +48,10 @@ func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
 
 	for i, link := range linkToDownload {
 		fmt.Printf("\rOn %d/%d \n%v", i+1, nFile, link.Name)
-		//Utils.DownloadFile(wd.resultDir+link.Name, link.Link) //TODO remove comment
+		Utils.DownloadFile(wd.resultDir+link.Name, link.Link) //TODO remove comment
 
 		println("Parse and reduction start")
-		DumpReductor.ParseDump("../6MB_test.7z", wd.resultDir, "", "", wd.specialPageList) //(wd.resultDir+link.Name, wd.resultDir, "", "") //startDate and endDate must be in the same format of dump timestamp! ("../113KB_test.7z", wd.resultDir, "", "")
+		DumpReductor.ParseDump("../6MB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)//(wd.resultDir+link.Name, wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)//("../6MB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList) //(wd.resultDir+link.Name, wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList) //startDate and endDate must be in the same format of dump timestamp! ("../113KB_test.7z", wd.resultDir, "", "")
 		println("Parse and reduction end")
 
 		println("WikiMarkup cleaning start")
@@ -71,10 +74,12 @@ func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
 }
 
 func main() {
-	defer profile.Start().Stop()
+	//defer profile.Start().Stop()	//"github.com/pkg/profile"
 
 	langFlag := flag.String("l", "", "Dump language")
 	dateFlag := flag.String("d", "", "Dump date")
+	startDateFlag := flag.String("s", "", "Revision starting date")
+	endDateFlag := flag.String("e", "", "Revision ending date")
 	specialPageListFlag := flag.String("specialList", "", "Special page list, page not in this list will be ignored. Input PageID like: id1-id2-...")
 	flag.Parse()
 
@@ -89,7 +94,7 @@ func main() {
 		}
 	}(*specialPageListFlag)
 
-	wd := NewWikiDump(*langFlag, *dateFlag, "../Result/", &specialPageList)
+	wd := NewWikiDump(*langFlag, *dateFlag, "../Result/", &specialPageList, *startDateFlag, *endDateFlag)
 
 	linkToDownload := Utils.DumpLinkGetter(wd.lang, wd.date)
 

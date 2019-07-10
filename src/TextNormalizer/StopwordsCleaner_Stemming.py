@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import json, sys, os, glob, cProfile
+import json, sys, os, glob #, cProfile
 from multiprocessing import Pool, cpu_count
 from nltk import word_tokenize
 from nltk.corpus import stopwords
@@ -54,7 +54,8 @@ def _lang_mapper(lang):
         "sk": "slovak",
         "th": "thai",
         "uk": "ukrainian",
-        "ur": "urdu"
+        "ur": "urdu",
+        "simple": "english"
     }
     return available_lang[lang]
 
@@ -147,10 +148,9 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
 
 
 if __name__ == "__main__":
-    pr = cProfile.Profile()
-    pr.enable()
+    #pr = cProfile.Profile()
+    #pr.enable()
     #  concurrent_stopwords_cleaner_stemmer("../../Result/it_20190601/", "it")
     concurrent_stopwords_cleaner_stemmer(sys.argv[1], sys.argv[2])
-    pr.disable()
-    pr.dump_stats("StopWStemProfile.txt")
-
+    #pr.disable()
+    #pr.dump_stats("StopWStemProfile.txt")

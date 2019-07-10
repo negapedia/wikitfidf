@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"flag"
 	"fmt"
+	"os"
 	"os/exec"
 )
 
@@ -64,6 +65,7 @@ func ParseDump(dumpFile string, resultDir string, startDate string, endDate stri
 		}
 	}
 
+	os.Remove(dumpFile)
 	fmt.Printf("Total pages: %d \n", total)
 	fmt.Printf("Total ignored pages: %d \n", ignored)
 }

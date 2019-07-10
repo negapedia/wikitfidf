@@ -10,8 +10,7 @@ type DumpLink struct {
 	Name string
 }
 
-func linkGetter(url string) []*DumpLink {
-
+func linkGetter(url string, lang string) []*DumpLink {
 	doc, err := goquery.NewDocument(url)
 
 	if err != nil {
@@ -24,7 +23,7 @@ func linkGetter(url string) []*DumpLink {
 		Link, _ := s.Attr("href")
 
 		if strings.Contains(Link, "pages-meta-history") && strings.Contains(Link, ".7z") {
-			l := DumpLink{"https://dumps.wikimedia.org" + Link, Link[17:]}
+			l := DumpLink{"https://dumps.wikimedia.org" + Link, Link[15+len(lang):]}
 			links = append(links, &l)
 		}
 	})
@@ -33,5 +32,5 @@ func linkGetter(url string) []*DumpLink {
 }
 
 func DumpLinkGetter(lang string, date string) []*DumpLink {
-	return linkGetter("https://dumps.wikimedia.org/" + lang + "wiki/" + date)
+	return linkGetter("https://dumps.wikimedia.org/" + lang + "wiki/" + date, lang)
 }
