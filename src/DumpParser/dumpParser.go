@@ -1,10 +1,9 @@
-package DumpReductor
+package DumpParser
 
 import (
 	"../DataStructure"
 	"../DumpCleaner"
 	"encoding/xml"
-	"flag"
 	"fmt"
 	"os"
 	"os/exec"
@@ -18,7 +17,6 @@ func ParseDump(dumpFile string, resultDir string, startDate string, endDate stri
 	decoder := xml.NewDecoder(out)
 	total := 0
 	ignored := 0
-	var inElement string
 	for {
 		// Read tokens from the XML document in a stream.
 		t, _ := decoder.Token()
