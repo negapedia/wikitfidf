@@ -30,8 +30,7 @@ func ParseDump(dumpFile string, resultDir string, startDate string, endDate stri
 		// Inspect the type of the token just read.
 		switch se := t.(type) {
 		case xml.StartElement:
-			inElement = se.Name.Local
-			if inElement == "page" {
+			if se.Name.Local == "page" {
 				var p DataStructure.Page
 				_ = decoder.DecodeElement(&p, &se)
 				if p.Ns != "0" {
