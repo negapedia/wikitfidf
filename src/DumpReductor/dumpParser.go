@@ -11,8 +11,6 @@ import (
 )
 
 func ParseDump(dumpFile string, resultDir string, startDate string, endDate string, specialPageList *[]string) {
-	flag.Parse()
-
 	cmd := exec.Command("7z", "x", dumpFile, "-so")
 	out, _ := cmd.StdoutPipe()
 	_ = cmd.Start()
