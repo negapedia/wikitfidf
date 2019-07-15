@@ -1,12 +1,11 @@
 package main
 
 import (
-	"./DumpParser"
 	"./TFIDF"
 	"./WordMapper"
+	"./DumpParser"
 	"./Utils"
 	"flag"
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -44,14 +43,8 @@ func NewWikiDump(lang string, date string, resultDir string, specialPageList *[]
 }
 
 func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
-	nFile := len(linkToDownload)
-
-	for i, link := range linkToDownload {
-		fmt.Printf("\rOn %d/%d \n%v", i+1, nFile, link.Name)
-		Utils.DownloadFile(wd.resultDir+link.Name, link.Link) //TODO remove comment
-
 		println("\nParse and reduction start")
-		DumpParser.ParseDump(wd.resultDir+link.Name, wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
+		DumpParser.ReduceDump(wd.resultDir, wd.lang, wd.startDate, wd.endDate, wd.specialPageList) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
 		println("Parse and reduction end")
 
 		println("WikiMarkup cleaning start")
@@ -67,7 +60,6 @@ func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
 		println("Word mapping by page start")
 		WordMapper.WordMapperByPage(wd.resultDir)
 		println("Word mapping by page end")
-	}
 }
 
 func main() {

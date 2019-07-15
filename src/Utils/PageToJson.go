@@ -4,11 +4,12 @@ import (
 	"../DataStructure"
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"os"
 )
 
 func WritePage(resultPath string, page *DataStructure.Page) {
-	outFile, err := os.Create(resultPath + page.PageID + ".json")
+	outFile, err := os.Create(resultPath + fmt.Sprint(page.PageID) + ".json")
 	if err == nil {
 		writer := bufio.NewWriter(outFile)
 		defer outFile.Close()
