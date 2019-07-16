@@ -27,4 +27,4 @@ RUN cd $GOPATH/src/DeStemmer/ && python3 compile.py build_ext --inplace
 WORKDIR $GOPATH/src
 
 RUN go build DumpProcessor.go
-ENTRYPOINT ["./DumpProcessor", "-l", "simple"]
+ENTRYPOINT ["./DumpProcessor", "-l", "simple", "-N", "15"]

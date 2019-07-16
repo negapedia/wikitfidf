@@ -1,14 +1,14 @@
 package main
 
 import (
+	"./DumpReducer"
 	"./TFIDF"
 	"./WordMapper"
-	"./DumpParser"
-	"./Utils"
 	"flag"
 	"os"
 	"os/exec"
-	"strings"
+	"strconv"
+	"time"
 )
 
 type WikiDump struct {
@@ -17,20 +17,28 @@ type WikiDump struct {
 
 	downloadDir string
 	resultDir   string
-	specialPageList *[]string
-	startDate string
-	endDate string
+	specialPageList *[]uint32
+	startDate time.Time
+	endDate time.Time
+	nRevert int
 }
 
-func NewWikiDump(lang string, date string, resultDir string, specialPageList *[]string,
-	startDate string, endDate string) *WikiDump {
+func NewWikiDump(lang string, resultDir string, specialPageList *[]uint32,
+	startDate time.Time, endDate time.Time, nRevert int) *WikiDump {
 	p := new(WikiDump)
 	p.lang = lang
-	p.date = date
-	p.resultDir = resultDir + lang + "_" + date + "/"
+	if startDate.IsZero() && endDate.IsZero(){
+		p.date = time.Now().Month().String()+strconv.Itoa(time.Now().Year())
+	} else if startDate.IsZero() && !endDate.IsZero(){
+		p.date = startDate.String()+"-"+time.Now().Month().String()+strconv.Itoa(time.Now().Year())
+	} else {
+		p.date = time.Now().Month().String()+strconv.Itoa(time.Now().Year())+"-"+endDate.String()
+	}
+	p.resultDir = resultDir + lang + "_" + p.date + "/"
 	p.specialPageList = specialPageList
 	p.startDate = startDate
 	p.endDate = endDate
+	p.nRevert = nRevert
 
 	if _, err := os.Stat(p.resultDir + "Stem"); os.IsNotExist(err) {
 		err = os.MkdirAll(p.resultDir+"Stem", 0755)
@@ -42,9 +50,9 @@ func NewWikiDump(lang string, date string, resultDir string, specialPageList *[]
 	return p
 }
 
-func process(wd *WikiDump, linkToDownload []*Utils.DumpLink) {
+func process(wd *WikiDump) {
 		println("\nParse and reduction start")
-		DumpParser.ReduceDump(wd.resultDir, wd.lang, wd.startDate, wd.endDate, wd.specialPageList) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
+		DumpReducer.ReduceDump(wd.resultDir, wd.lang, wd.startDate, wd.endDate, wd.specialPageList,  wd.nRevert) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
 		println("Parse and reduction end")
 
 		println("WikiMarkup cleaning start")
@@ -66,28 +74,17 @@ func main() {
 	//defer profile.Start().Stop()	//"github.com/pkg/profile"
 
 	langFlag := flag.String("l", "", "Dump language")
-	dateFlag := flag.String("d", "", "Dump date")
-	startDateFlag := flag.String("s", "", "Revision starting date")
-	endDateFlag := flag.String("e", "", "Revision ending date")
-	specialPageListFlag := flag.String("specialList", "", "Special page list, page not in this list will be ignored. Input PageID like: id1-id2-...")
+	//dateFlag := flag.String("d", "", "Dump date")
+	startDateFlag, _ := time.Parse("2019-07-01T16:00:00", *flag.String("s", "", "Revision starting date"))
+	endDateFlag, _:= time.Parse("2019-07-01T16:00:00", *flag.String("e", "", "Revision ending date"))
+	//specialPageListFlag := flag.String("specialList", "", "Special page list, page not in this list will be ignored. Input PageID like: id1-id2-...")
+
+	nRevert := flag.Int("N", 0, "Number of revert to consider")
 	flag.Parse()
 
-	println(*langFlag)
-	println(*dateFlag)
-	println(*specialPageListFlag)
-	specialPageList := func(specialPageListFlag string) []string {
-		if specialPageListFlag == ""{
-			return nil
-		} else {
-			return strings.Split(specialPageListFlag, "-")
-		}
-	}(*specialPageListFlag)
+	wd := NewWikiDump(*langFlag, "../Result/", nil, startDateFlag, endDateFlag, *nRevert)
 
-	wd := NewWikiDump(*langFlag, *dateFlag, "../Result/", &specialPageList, *startDateFlag, *endDateFlag)
-
-	linkToDownload := Utils.DumpLinkGetter(wd.lang, wd.date)
-
-	process(wd, linkToDownload)
+	process(wd)
 
 	println("Processing GlobalWordMap file start")
 	WordMapper.GlobalWordMapper(wd.resultDir)
