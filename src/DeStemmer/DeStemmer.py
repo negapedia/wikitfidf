@@ -41,34 +41,36 @@ def GlobalPageDeStem(result_dir):
     with open(result_dir+"GlobalStem.json", "r") as rev_stem_file:
         reverse_stemming_dict = json.load(rev_stem_file)
 
-    global_dict_file = open(result_dir+"GlobalPageTFIDF.json", "r")
-    global_dict_file_iter = iter(global_dict_file.readline, "")
+    if len(reverse_stemming_dict) > 0:
 
-    destemmed_global_dict_file = open(result_dir + "DESTEM_GlobalPageTFIDF.json", "w")
-    destemmed_global_dict_file.write("{")
+        global_dict_file = open(result_dir+"GlobalPageTFIDF.json", "r")
+        global_dict_file_iter = iter(global_dict_file.readline, "")
 
-    for line in global_dict_file_iter:
-        if len(line) > 1:
-            line = line[:-2] + "}"
-        if line[0] != "{":
-            line = "{" + line
-        if line == "}":
-            break
-        page_dict = json.loads(line)
-        for page in page_dict:
-            global_dict_new = {page: {"Title": page_dict[page]["Title"], "Tot": page_dict[page]["Tot"], "Words": {}}}
-            for word in page_dict[page]["Words"]:
-                if word in reverse_stemming_dict.keys():
-                    global_dict_new[page]["Words"][reverse_stemming_dict[word]] = page_dict[page]["Words"][word]
-                else:
-                    global_dict_new[page]["Words"][word] = page_dict[page]["Words"][word]
-            write_json(global_dict_new, destemmed_global_dict_file)
+        destemmed_global_dict_file = open(result_dir + "DESTEM_GlobalPageTFIDF.json", "w")
+        destemmed_global_dict_file.write("{")
 
-    global_dict_file.close()
-    destemmed_global_dict_file.write("}")
-    destemmed_global_dict_file.close()
-    os.remove(result_dir+"GlobalPageTFIDF.json")
-    os.rename(result_dir+"DESTEM_GlobalPageTFIDF.json", result_dir+"GlobalPageTFIDF.json")
+        for line in global_dict_file_iter:
+            if len(line) > 1:
+                line = line[:-2] + "}"
+            if line[0] != "{":
+                line = "{" + line
+            if line == "}":
+                break
+            page_dict = json.loads(line)
+            for page in page_dict:
+                global_dict_new = {page: {"Title": page_dict[page]["Title"], "Tot": page_dict[page]["Tot"], "Words": {}}}
+                for word in page_dict[page]["Words"]:
+                    if word in reverse_stemming_dict.keys():
+                        global_dict_new[page]["Words"][reverse_stemming_dict[word]] = page_dict[page]["Words"][word]
+                    else:
+                        global_dict_new[page]["Words"][word] = page_dict[page]["Words"][word]
+                write_json(global_dict_new, destemmed_global_dict_file)
+
+        global_dict_file.close()
+        destemmed_global_dict_file.write("}")
+        destemmed_global_dict_file.close()
+        os.remove(result_dir+"GlobalPageTFIDF.json")
+        os.rename(result_dir+"DESTEM_GlobalPageTFIDF.json", result_dir+"GlobalPageTFIDF.json")
 
 
 def GlobalWordDeStem(result_dir):

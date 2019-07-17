@@ -21,11 +21,11 @@ func getMappedPage(page *DataStructure.StemmedPageJson) DataStructure.PageElemen
 			}
 		}
 	}
-	return DataStructure.PageElement{PageId: page.PageID, Title: page.Title, Word: mappedText}
+	return DataStructure.PageElement{PageId: page.PageID, Word: mappedText}
 }
 
 func WordMapperByPage(resultDir string) {
-	fileList := Utils.FilesInDir(resultDir, ".json", "WS")
+	fileList := Utils.FilesInDir(resultDir, ".json", "S")
 	nFile := len(fileList)
 
 	for i, file := range fileList {

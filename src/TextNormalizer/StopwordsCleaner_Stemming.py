@@ -55,7 +55,8 @@ def _lang_mapper(lang):
         "th": "thai",
         "uk": "ukrainian",
         "ur": "urdu",
-        "simple": "english"
+        "simple": "english",
+        "vec": "italian"        # TODO remove
     }
     return available_lang[lang]
 
@@ -92,7 +93,7 @@ def _stemming(revert_text, stemmer_reverse_dict):
     return text, stemmer_reverse_dict
 
 
-def _stopwords_cleaner_stemming(filename: str, lang: str):
+def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     """
     The method, given the reduced dump and the dump language,
     tokenize the text, clean it from the stopwords and execute the stemming of the dump text
@@ -118,13 +119,12 @@ def _stopwords_cleaner_stemming(filename: str, lang: str):
             return
 
     page_id = dump_dict["PageID"]
-    result_dir = filename[:-(len(page_id)+5)]
 
     os.remove(filename)
-    with open(result_dir+"S"+page_id+".json", "w") as f:
+    with open(result_dir+"S"+str(page_id)+".json", "w") as f:
         json.dump(dump_dict, f, ensure_ascii=False)
 
-    with open(result_dir[:-1]+"Stem/StemRev_"+page_id+".json", "w") as f:
+    with open(result_dir+"Stem/StemRev_"+str(page_id)+".json", "w") as f:
         json.dump(reverse_stemming_dict, f, ensure_ascii=False)
 
 
@@ -139,14 +139,14 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
 
     executor = Pool(cpu_count())
     for filename in file_to_clean:
-        executor.apply_async(_stopwords_cleaner_stemming, args=(filename, lang))
+        executor.apply_async(_stopwords_cleaner_stemming, args=(result_dir, filename, lang))
     executor.close()
     executor.join()
 
-    with Pool(cpu_count()) as executor:
-        executor.map(_stopwords_cleaner_stemming, file_to_clean)
+    #with Pool(cpu_count()) as executor:
+    #    executor.map(_stopwords_cleaner_stemming, file_to_clean)
 
-'''
+
 if __name__ == "__main__":
     #pr = cProfile.Profile()
     #pr.enable()
@@ -154,4 +154,3 @@ if __name__ == "__main__":
     concurrent_stopwords_cleaner_stemmer(sys.argv[1], sys.argv[2])
     #pr.disable()
     #pr.dump_stats("StopWStemProfile.txt")
-'''

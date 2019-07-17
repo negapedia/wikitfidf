@@ -4,10 +4,8 @@ package DumpReducer
 import (
 	"../DataStructure"
 	"bufio"
-	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ebonetti/wikidump"
 	"github.com/negapedia/wikibrief"
 	"os"
 	"time"
@@ -33,20 +31,7 @@ func keepLastNRevert(page *DataStructure.Page, nRev int){
 }
 
 
-func ReduceDump(resultDir string, lang string, startDate time.Time, endDate time.Time, specialPageList *[]uint32, nRevision int) {
-	dump, err := wikidump.Latest(resultDir, lang, "metahistory7zdump")
-	if err != nil {
-		panic(err)
-	}
-
-	it := dump.Open("metahistory7zdump")
-	reader,err := it(context.Background())
-	if err!=nil {
-		panic(err)
-	}
-
-	channel := make(chan wikibrief.EvolvingPage)
-
+func DumpReducer(channel chan wikibrief.EvolvingPage, resultDir string, lang string, startDate time.Time, endDate time.Time, specialPageList *[]uint32, nRevision int) {
 	go func() {
 		for page := range channel{
 			go func(p wikibrief.EvolvingPage) {
@@ -103,6 +88,8 @@ func ReduceDump(resultDir string, lang string, startDate time.Time, endDate time
 						if err == nil {
 							_, _ = writer.Write(dictPage)
 							_ = writer.Flush()
+						} else {
+							panic(err)
 						}
 					}
 				}
@@ -110,8 +97,4 @@ func ReduceDump(resultDir string, lang string, startDate time.Time, endDate time
 		}
 	}()
 
-	err = wikibrief.Transform(context.Background(), reader, func(uint32) bool { return true }, channel)
-	if err!=nil {
-		panic(err)
-	}
 }

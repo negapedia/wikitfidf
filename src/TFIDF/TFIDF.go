@@ -76,7 +76,7 @@ func ComputeTFIDF(resultDir string) {
 				newPageWords[word]["abs"] = wordFreq
 				newPageWords[word]["tfidf"] = tfidf
 			}
-			newPage[i] = DataStructure.TfidfAggregatedPage{Title:page[i].Title, Tot:page[i].Tot, Words: &newPageWords}
+			newPage[i] = DataStructure.TfidfAggregatedPage{Tot:page[i].Tot, Words: &newPageWords}
 		}
 
 

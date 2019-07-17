@@ -23,7 +23,7 @@ func WritePage(resultPath string, page *DataStructure.Page) {
 }
 
 func WriteMappedPage(resultPath string, page *DataStructure.PageElement) {
-	outFile, err := os.Create(resultPath + "M" + page.PageId + ".json")
+	outFile, err := os.Create(resultPath + "M" + fmt.Sprint(page.PageId) + ".json")
 	if err == nil {
 		writer := bufio.NewWriter(outFile)
 		defer outFile.Close()

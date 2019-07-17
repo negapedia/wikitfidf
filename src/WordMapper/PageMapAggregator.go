@@ -44,8 +44,8 @@ func PageMapAggregator(resultDir string) {
 
 		_ = json.Unmarshal(byteValue, &Page)
 
-		pageToWrite := make(map[string]DataStructure.AggregatedPage)
-		pageToWrite[Page.PageId] = DataStructure.AggregatedPage{Title: Page.Title, Tot: getTotalWordInPage(&Page), Words: Page.Word}
+		pageToWrite := make(map[uint32]DataStructure.AggregatedPage)
+		pageToWrite[Page.PageId] = DataStructure.AggregatedPage{Tot: getTotalWordInPage(&Page), Words: Page.Word}
 
 		if i == 0 {
 			marshalledPage, _ := json.Marshal(pageToWrite)
