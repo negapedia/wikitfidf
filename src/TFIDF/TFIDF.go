@@ -1,16 +1,17 @@
 package tfidf
 
 import (
-	"../datastructure"
 	"bufio"
 	"encoding/json"
 	"io/ioutil"
 	"math"
 	"os"
+
+	"../datastructure"
 )
 
 func getGlobalWord(resultDir string) map[string]map[string]float64 {
-	jsonFile, err := os.Open(resultDir+"GlobalWord.json")
+	jsonFile, err := os.Open(resultDir + "GlobalWord.json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		panic(err)
@@ -29,6 +30,7 @@ func getGlobalWord(resultDir string) map[string]map[string]float64 {
 	return globalWord
 }
 
+// ComputeTFIDF, given the result dir, compute the TFIDF
 func ComputeTFIDF(resultDir string) {
 	globalWord := getGlobalWord(resultDir)
 
@@ -37,7 +39,7 @@ func ComputeTFIDF(resultDir string) {
 	outFile, _ := os.Create(resultDir + "GlobalPageTFIDF.json")
 	encWriter := bufio.NewWriter(outFile)
 
-	globalPage, err := os.Open(resultDir+"GlobalPage.json")
+	globalPage, err := os.Open(resultDir + "GlobalPage.json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		panic(err)
@@ -50,17 +52,17 @@ func ComputeTFIDF(resultDir string) {
 		if err != nil {
 			break
 		}
-		if line == "}"{
+		if line == "}" {
 			break
 		}
 
 		var page map[string]datastructure.AggregatedPage
 
-		if line[:1] != "{"{
-			line = "{"+line
+		if line[:1] != "{" {
+			line = "{" + line
 		}
 
-		line = line[:len(line)-2]+"}"
+		line = line[:len(line)-2] + "}"
 		err = json.Unmarshal([]byte(line), &page)
 
 		newPageWords := make(map[string]map[string]float64)
@@ -79,14 +81,13 @@ func ComputeTFIDF(resultDir string) {
 			newPage[i] = datastructure.TfidfAggregatedPage{Tot: page[i].Tot, Words: &newPageWords}
 		}
 
-
 		if i == 0 {
 			marshalledPage, _ := json.Marshal(newPage)
 			pageAsString := string(marshalledPage)
 			pageAsString = pageAsString[:len(pageAsString)-1] + ",\n"
 			_, _ = encWriter.Write([]byte(pageAsString))
 
-		} else if  i > 0 {
+		} else if i > 0 {
 			marshalledPage, _ := json.Marshal(newPage)
 			pageAsString := string(marshalledPage)
 			pageAsString = pageAsString[1:len(pageAsString)-1] + ",\n"

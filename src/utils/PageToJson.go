@@ -1,11 +1,12 @@
 package utils
 
 import (
-	"../datastructure"
 	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"../datastructure"
 )
 
 // The function write a json containing the mapped page with term frequency

@@ -1,23 +1,24 @@
 package dumpreducer
+
 //package main
 
 import (
-	"../datastructure"
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/negapedia/wikibrief"
 	"os"
 	"time"
+
+	"../datastructure"
+	"github.com/negapedia/wikibrief"
 )
 
-
-func keepLastNRevert(page *datastructure.Page, nRev int){
-	if len(page.Revision)  > nRev {
+func keepLastNRevert(page *datastructure.Page, nRev int) {
+	if len(page.Revision) > nRev {
 		startRemovedIndex := -1
-		for i := len(page.Revision)-1; i>=0; i-- { //the last is the more recent
+		for i := len(page.Revision) - 1; i >= 0; i-- { //the last is the more recent
 			nRev--
-			if nRev == 0{
+			if nRev == 0 {
 				startRemovedIndex = i
 			} else if nRev < 0 {
 				page.Revision[i] = datastructure.Revision{} // clean revision
@@ -30,18 +31,18 @@ func keepLastNRevert(page *datastructure.Page, nRev int){
 	}
 }
 
-
+// DumpReducer reduce the page information applying filters to it, like revert time frame, revert number and special page list
 func DumpReducer(channel chan wikibrief.EvolvingPage, resultDir string, lang string, startDate time.Time, endDate time.Time, specialPageList *[]uint32, nRevision int) {
 	go func() {
-		for page := range channel{
+		for page := range channel {
 			go func(p wikibrief.EvolvingPage) {
 				var revArray []datastructure.Revision
 				for rev := range p.Revisions {
 					if rev.IsRevert > 0 {
-						if !startDate.IsZero() || !endDate.IsZero() {	// if data filter is setted
+						if !startDate.IsZero() || !endDate.IsZero() { // if data filter is setted
 							timestamp := rev.Timestamp
 							if !startDate.IsZero() && !endDate.IsZero() {
-								if timestamp.Sub(startDate) >= 0 &&  timestamp.Sub(endDate) <= 0 {
+								if timestamp.Sub(startDate) >= 0 && timestamp.Sub(endDate) <= 0 {
 									revArray = append(revArray, datastructure.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
 								}
 							} else if startDate.IsZero() && !endDate.IsZero() {
@@ -53,29 +54,29 @@ func DumpReducer(channel chan wikibrief.EvolvingPage, resultDir string, lang str
 									revArray = append(revArray, datastructure.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
 								}
 							}
-						} else if specialPageList != nil {	// if page list is setted
+						} else if specialPageList != nil { // if page list is setted
 							inList := func() bool {
-								for _, pageID := range *specialPageList{
-									if pageID == page.PageID{
+								for _, pageID := range *specialPageList {
+									if pageID == page.PageID {
 										return true
 									}
 								}
 								return false
 							}
-							if inList(){
+							if inList() {
 								revArray = append(revArray, datastructure.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
 							}
 
-						} else {	// otherwise
+						} else { // otherwise
 							revArray = append(revArray, datastructure.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
 						}
 					}
 				}
 				if len(revArray) > 0 {
 					fmt.Println(page.PageID)
-					pageToWrite := datastructure.Page{PageID: p.PageID, Revision:revArray}
+					pageToWrite := datastructure.Page{PageID: p.PageID, Revision: revArray}
 
-					if nRevision != 0 {	// if reverts limit is set
+					if nRevision != 0 { // if reverts limit is set
 						keepLastNRevert(&pageToWrite, nRevision)
 					}
 

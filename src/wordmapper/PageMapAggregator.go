@@ -1,13 +1,14 @@
 package wordmapper
 
 import (
-	"../datastructure"
-	"../utils"
 	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"../datastructure"
+	"../utils"
 )
 
 func getTotalWordInPage(page *datastructure.PageElement) float64 {
@@ -20,7 +21,7 @@ func getTotalWordInPage(page *datastructure.PageElement) float64 {
 	return tot
 }
 
-// The function, given the result dir, aggregate all the page files into a global file
+// PageMapAggregator, given the result dir, aggregate all the page files into a global file
 func PageMapAggregator(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, ".json", "M")
 	nFile := len(fileList)
@@ -54,7 +55,7 @@ func PageMapAggregator(resultDir string) {
 			pageAsString = pageAsString[:len(pageAsString)-1] + ",\n"
 			encWriter.Write([]byte(pageAsString))
 
-		} else if /*i != nFile-1 && */i > 0 {
+		} else if /*i != nFile-1 && */ i > 0 {
 			marshalledPage, _ := json.Marshal(pageToWrite)
 			pageAsString := string(marshalledPage)
 			pageAsString = pageAsString[1:len(pageAsString)-1] + ",\n"

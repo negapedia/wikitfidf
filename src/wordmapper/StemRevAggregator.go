@@ -1,14 +1,15 @@
 package wordmapper
 
 import (
-	"../utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
+
+	"../utils"
 )
 
-// The function given the result directory, will aggregate all Stem files into a single global file
+// StemRevAggregator, given the result directory, will aggregate all Stem files into a single global file
 func StemRevAggregator(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, ".json", "StemRev_")
 	nFile := len(fileList)
@@ -46,7 +47,7 @@ func StemRevAggregator(resultDir string) {
 
 		for StemWord, RealWord := range StemDict {
 			if _, ok := globalStemRev[StemWord]; ok {
-				if len(RealWord) <  len(globalStemRev[StemWord]) {
+				if len(RealWord) < len(globalStemRev[StemWord]) {
 					globalStemRev[StemWord] = RealWord
 				}
 			} else {
