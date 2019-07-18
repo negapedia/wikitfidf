@@ -3,11 +3,11 @@ from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
 ext_modules = [
-    Extension("StemStopwClean",  ["deStemmer.py"])
+    Extension("StemStopwClean",  ["destemmer.py"])
     #   ... all your modules that need be compiled ...
 ]
 setup(
-    name = 'deStemmer',
+    name = 'destemmer',
     cmdclass = {'build_ext': build_ext},
     ext_modules = ext_modules
 )

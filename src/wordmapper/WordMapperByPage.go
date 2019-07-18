@@ -1,7 +1,7 @@
-package wordMapper
+package wordmapper
 
 import (
-	"../dataStructure"
+	"../datastructure"
 	"../utils"
 	"encoding/json"
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-func getMappedPage(page *dataStructure.StemmedPageJson) dataStructure.PageElement {
+func getMappedPage(page *datastructure.StemmedPageJson) datastructure.PageElement {
 	var mappedText = make(map[string]float64)
 
 	for _, rev := range page.Revision {
@@ -21,9 +21,10 @@ func getMappedPage(page *dataStructure.StemmedPageJson) dataStructure.PageElemen
 			}
 		}
 	}
-	return dataStructure.PageElement{PageId: page.PageID, Word: mappedText}
+	return datastructure.PageElement{PageId: page.PageID, Word: mappedText}
 }
 
+// The function, given the result dir, generate a global file containing all the processed pages
 func WordMapperByPage(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, ".json", "S")
 	nFile := len(fileList)
@@ -43,7 +44,7 @@ func WordMapperByPage(resultDir string) {
 
 		_ = jsonFile.Close()
 
-		var page dataStructure.StemmedPageJson
+		var page datastructure.StemmedPageJson
 
 		// we unmarshal our byteArray which contains our
 		// jsonFile's content into 'users' which we defined above

@@ -1,4 +1,4 @@
-package dataStructure
+package datastructure
 
 type AggregatedPage struct {
 	PageID uint32

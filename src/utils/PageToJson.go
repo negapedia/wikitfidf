@@ -1,28 +1,15 @@
 package utils
 
 import (
-	"../dataStructure"
+	"../datastructure"
 	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
 )
 
-func WritePage(resultPath string, page *dataStructure.Page) {
-	outFile, err := os.Create(resultPath + fmt.Sprint(page.PageID) + ".json")
-	if err == nil {
-		writer := bufio.NewWriter(outFile)
-		defer outFile.Close()
-
-		var dictPage, err = json.Marshal(page)
-		if err == nil {
-			_, _ = writer.Write(dictPage)
-			_ = writer.Flush()
-		}
-	}
-}
-
-func WriteMappedPage(resultPath string, page *dataStructure.PageElement) {
+// The function write a json containing the mapped page with term frequency
+func WriteMappedPage(resultPath string, page *datastructure.PageElement) {
 	outFile, err := os.Create(resultPath + "M" + fmt.Sprint(page.PageId) + ".json")
 	if err == nil {
 		writer := bufio.NewWriter(outFile)
@@ -36,6 +23,7 @@ func WriteMappedPage(resultPath string, page *dataStructure.PageElement) {
 	}
 }
 
+// The function write a json of global word map
 func WriteGlobalWord(resultPath string, gloabalWord *map[string]map[string]float64) {
 	outFile, err := os.Create(resultPath + "GlobalWord.json")
 	if err == nil {
@@ -50,6 +38,7 @@ func WriteGlobalWord(resultPath string, gloabalWord *map[string]map[string]float
 	}
 }
 
+// The function write a json of global stemming dictionary
 func WriteGlobalStem(resultPath string, gloabaStem *map[string]string) {
 	outFile, err := os.Create(resultPath + "GlobalStem.json")
 	if err == nil {

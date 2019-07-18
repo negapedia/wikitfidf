@@ -1,7 +1,7 @@
 package tfidf
 
 import (
-	"../dataStructure"
+	"../datastructure"
 	"bufio"
 	"encoding/json"
 	"io/ioutil"
@@ -54,7 +54,7 @@ func ComputeTFIDF(resultDir string) {
 			break
 		}
 
-		var page map[string]dataStructure.AggregatedPage
+		var page map[string]datastructure.AggregatedPage
 
 		if line[:1] != "{"{
 			line = "{"+line
@@ -64,7 +64,7 @@ func ComputeTFIDF(resultDir string) {
 		err = json.Unmarshal([]byte(line), &page)
 
 		newPageWords := make(map[string]map[string]float64)
-		var newPage = make(map[string]dataStructure.TfidfAggregatedPage)
+		var newPage = make(map[string]datastructure.TfidfAggregatedPage)
 		for i := range page {
 			for word, wordFreq := range page[i].Words {
 				tf := wordFreq / page[i].Tot
@@ -76,7 +76,7 @@ func ComputeTFIDF(resultDir string) {
 				newPageWords[word]["abs"] = wordFreq
 				newPageWords[word]["tfidf"] = tfidf
 			}
-			newPage[i] = dataStructure.TfidfAggregatedPage{Tot: page[i].Tot, Words: &newPageWords}
+			newPage[i] = datastructure.TfidfAggregatedPage{Tot: page[i].Tot, Words: &newPageWords}
 		}
 
 

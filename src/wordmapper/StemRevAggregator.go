@@ -1,4 +1,4 @@
-package wordMapper
+package wordmapper
 
 import (
 	"../utils"

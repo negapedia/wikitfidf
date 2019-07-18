@@ -1,7 +1,7 @@
-package wordMapper
+package wordmapper
 
 import (
-	"../dataStructure"
+	"../datastructure"
 	"../utils"
 	"bufio"
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func getTotalWordInPage(page *dataStructure.PageElement) float64 {
+func getTotalWordInPage(page *datastructure.PageElement) float64 {
 	var tot float64
 	tot = 0
 	for _, wordFreq := range page.Word {
@@ -20,6 +20,7 @@ func getTotalWordInPage(page *dataStructure.PageElement) float64 {
 	return tot
 }
 
+// The function, given the result dir, aggregate all the page files into a global file
 func PageMapAggregator(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, ".json", "M")
 	nFile := len(fileList)
@@ -40,12 +41,12 @@ func PageMapAggregator(resultDir string) {
 		_ = jsonFile.Close()
 		_ = os.Remove(file)
 
-		var Page dataStructure.PageElement
+		var Page datastructure.PageElement
 
 		_ = json.Unmarshal(byteValue, &Page)
 
-		pageToWrite := make(map[uint32]dataStructure.AggregatedPage)
-		pageToWrite[Page.PageId] = dataStructure.AggregatedPage{Tot: getTotalWordInPage(&Page), Words: Page.Word}
+		pageToWrite := make(map[uint32]datastructure.AggregatedPage)
+		pageToWrite[Page.PageId] = datastructure.AggregatedPage{Tot: getTotalWordInPage(&Page), Words: Page.Word}
 
 		if i == 0 {
 			marshalledPage, _ := json.Marshal(pageToWrite)

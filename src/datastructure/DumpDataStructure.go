@@ -1,4 +1,4 @@
-package dataStructure
+package datastructure
 
 import "time"
 

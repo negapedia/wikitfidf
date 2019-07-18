@@ -1,7 +1,7 @@
-package wordMapper
+package wordmapper
 
 import (
-	"../dataStructure"
+	"../datastructure"
 	"../utils"
 	"encoding/json"
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"os"
 )
 
+// The function, given the result dir, generate the file containing the global report about word frequency
 func GlobalWordMapper(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, ".json", "M")
 	nFile := len(fileList)
@@ -31,7 +32,7 @@ func GlobalWordMapper(resultDir string) {
 		byteValue, _ := ioutil.ReadAll(jsonFile)
 		_ = jsonFile.Close()
 
-		var page dataStructure.PageElement
+		var page datastructure.PageElement
 
 		_ = json.Unmarshal(byteValue, &page)
 

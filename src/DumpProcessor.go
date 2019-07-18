@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./DumpReducer"
-	"./wordMapper"
+	"./dumpreducer"
+	"./wordmapper"
 	"./tfidf"
 	"context"
 	"github.com/ebonetti/wikidump"
@@ -118,7 +118,7 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, s
 // Preprocess, given a wikibrief.EvolvingPage channel reduce the amount of information in pages and save them
 func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel chan wikibrief.EvolvingPage) {
 		println("\nParse and reduction start")
-		DumpReducer.DumpReducer(channel, wd.resultDir, wd.lang, wd.startDate, wd.endDate, wd.specialPageList,  wd.nRevert) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
+		dumpreducer.DumpReducer(channel, wd.resultDir, wd.lang, wd.startDate, wd.endDate, wd.specialPageList,  wd.nRevert) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
 		println("Parse and reduction end")
 }
 
@@ -126,30 +126,30 @@ func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel chan wikibrief.EvolvingPa
 // will be performed tokenization, stopwords cleaning and stemming, files aggregation and then files de-stemming
 func (wd *WikiDumpConflitcAnalyzer) Process() {
 	println("WikiMarkup cleaning start")
-	wikiMarkupClean := exec.Command("java","-jar", "./textNormalizer/WikipediaMarkupCleaner.jar", wd.resultDir)
+	wikiMarkupClean := exec.Command("java","-jar", "./textnormalizer/WikipediaMarkupCleaner.jar", wd.resultDir)
 	_ = wikiMarkupClean.Run()
 
 	println("WikiMarkup cleaning end")
 
 	println("Stopwords cleaning and stemming start")
-	stopwordsCleanerStemming := exec.Command("python3","./textNormalizer/runStopwClean.py", wd.resultDir, wd.lang)
+	stopwordsCleanerStemming := exec.Command("python3","./textnormalizer/runStopwClean.py", wd.resultDir, wd.lang)
 	_ = stopwordsCleanerStemming.Run()
 	println("Stopwords cleaning and stemming end")
 
 	println("Word mapping by page start")
-	wordMapper.WordMapperByPage(wd.resultDir)
+	wordmapper.WordMapperByPage(wd.resultDir)
 	println("Word mapping by page end")
 
 	println("Processing GlobalWordMap file start")
-	wordMapper.GlobalWordMapper(wd.resultDir)
+	wordmapper.GlobalWordMapper(wd.resultDir)
 	println("Processing GlobalWordMap file start")
 
 	println("Processing GlobalStem file start")
-	wordMapper.StemRevAggregator(wd.resultDir)
+	wordmapper.StemRevAggregator(wd.resultDir)
 	println("Processing GlobalStem file end")
 
 	println("Processing GlobalPage file start")
-	wordMapper.PageMapAggregator(wd.resultDir)
+	wordmapper.PageMapAggregator(wd.resultDir)
 	println("Processing GlobalPage file end")
 
 	if wd.specialPageList == nil {
@@ -159,7 +159,7 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 	}
 
 	println("Performing Destemming start")
-	deStemming := exec.Command("python3","./deStemmer/runDeStemming.py", wd.resultDir)
+	deStemming := exec.Command("python3","./destemmer/runDeStemming.py", wd.resultDir)
 	_ = deStemming.Run()
 	println("Performing Destemming file end")
 }
