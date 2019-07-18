@@ -10,7 +10,7 @@ import (
 	"../utils"
 )
 
-// GlobalWordMapper, given the result dir, generate the file containing the global report about word frequency
+// GlobalWordMapper given the result dir, generate the file containing the global report about word frequency
 func GlobalWordMapper(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, ".json", "M")
 	nFile := len(fileList)

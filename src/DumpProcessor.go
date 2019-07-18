@@ -114,7 +114,7 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, s
 	}
 }
 
-// Preprocess, given a wikibrief.EvolvingPage channel reduce the amount of information in pages and save them
+// Preprocess given a wikibrief.EvolvingPage channel reduce the amount of information in pages and save them
 func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel chan wikibrief.EvolvingPage) {
 	println("\nParse and reduction start")
 	dumpreducer.DumpReducer(channel, wd.resultDir, wd.lang, wd.startDate, wd.endDate, wd.specialPageList, wd.nRevert) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!

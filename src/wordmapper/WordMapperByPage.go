@@ -25,7 +25,7 @@ func getMappedPage(page *datastructure.StemmedPageJson) datastructure.PageElemen
 	return datastructure.PageElement{PageId: page.PageID, Word: mappedText}
 }
 
-// WordMapperByPage, given the result dir, generate a global file containing all the processed pages
+// WordMapperByPage given the result dir, generate a global file containing all the processed pages
 func WordMapperByPage(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, ".json", "S")
 	nFile := len(fileList)
