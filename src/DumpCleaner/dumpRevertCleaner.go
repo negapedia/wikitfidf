@@ -1,13 +1,13 @@
 package DumpCleaner
 
 import (
-	"../DataStructure"
-	"../Utils"
+	"../dataStructure"
+	"../utils"
 	"sort"
 )
 
 // This function build an array of revisions' sha1 field. We will need this function for individuating reverts
-func sha1ArrayBuilder(page *DataStructure.Page) []string {
+func sha1ArrayBuilder(page *dataStructure.Page) []string {
 
 	var sha1Array []string
 
@@ -59,8 +59,8 @@ func getRevertsPosition(array []int) []int{
 }
 
 
-func nonRevertRemover(page *DataStructure.Page){
-	var newRev []DataStructure.Revision
+func nonRevertRemover(page *dataStructure.Page){
+	var newRev []dataStructure.Revision
 
 	for _, rev := range page.Revision {
 		if rev.Reverted == true{
@@ -72,7 +72,7 @@ func nonRevertRemover(page *DataStructure.Page){
 }
 
 
-func RevertBuilder(page *DataStructure.Page, resultDir string) {
+func RevertBuilder(page *dataStructure.Page, resultDir string) {
 	repetedSha1 := getAllOccurencePosition(sha1ArrayBuilder(page))
 
 	if len(repetedSha1) > 0 {
@@ -87,6 +87,6 @@ func RevertBuilder(page *DataStructure.Page, resultDir string) {
 
 		nonRevertRemover(page)
 
-		Utils.WritePage(resultDir, page)
+		utils.WritePage(resultDir, page)
 	}
 }

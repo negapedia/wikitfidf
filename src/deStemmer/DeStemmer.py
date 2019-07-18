@@ -43,7 +43,10 @@ def GlobalPageDeStem(result_dir):
 
     if len(reverse_stemming_dict) > 0:
 
-        global_dict_file = open(result_dir+"GlobalPageTFIDF.json", "r")
+        try:
+            global_dict_file = open(result_dir+"GlobalPageTFIDF.json", "r")
+        except OSError:
+            global_dict_file = open(result_dir+"GlobalPage.json", "r")
         global_dict_file_iter = iter(global_dict_file.readline, "")
 
         destemmed_global_dict_file = open(result_dir + "DESTEM_GlobalPageTFIDF.json", "w")
@@ -58,7 +61,7 @@ def GlobalPageDeStem(result_dir):
                 break
             page_dict = json.loads(line)
             for page in page_dict:
-                global_dict_new = {page: {"Title": page_dict[page]["Title"], "Tot": page_dict[page]["Tot"], "Words": {}}}
+                global_dict_new = {page: {"Tot": page_dict[page]["Tot"], "Words": {}}}
                 for word in page_dict[page]["Words"]:
                     if word in reverse_stemming_dict.keys():
                         global_dict_new[page]["Words"][reverse_stemming_dict[word]] = page_dict[page]["Words"][word]

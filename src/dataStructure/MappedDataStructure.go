@@ -1,4 +1,4 @@
-package DataStructure
+package dataStructure
 
 type PageContainer struct {
 	PageList []PageElement

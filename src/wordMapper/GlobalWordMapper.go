@@ -1,8 +1,8 @@
-package WordMapper
+package wordMapper
 
 import (
-	"../DataStructure"
-	"../Utils"
+	"../dataStructure"
+	"../utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,7 +10,7 @@ import (
 )
 
 func GlobalWordMapper(resultDir string) {
-	fileList := Utils.FilesInDir(resultDir, ".json", "M")
+	fileList := utils.FilesInDir(resultDir, ".json", "M")
 	nFile := len(fileList)
 
 	globalWord := make(map[string]map[string]float64)
@@ -31,7 +31,7 @@ func GlobalWordMapper(resultDir string) {
 		byteValue, _ := ioutil.ReadAll(jsonFile)
 		_ = jsonFile.Close()
 
-		var page DataStructure.PageElement
+		var page dataStructure.PageElement
 
 		_ = json.Unmarshal(byteValue, &page)
 
@@ -55,5 +55,5 @@ func GlobalWordMapper(resultDir string) {
 	globalWord["@Total Page"] = make(map[string]float64)
 	globalWord["@Total Page"]["tot"] = totalPage
 
-	Utils.WriteGlobalWord(resultDir, &globalWord)
+	utils.WriteGlobalWord(resultDir, &globalWord)
 }

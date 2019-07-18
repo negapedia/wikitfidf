@@ -1,4 +1,4 @@
-package DataStructure
+package dataStructure
 
 type StemmedPageJson struct {
 	PageID uint32 `json:"PageID"`

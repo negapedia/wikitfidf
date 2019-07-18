@@ -1,15 +1,16 @@
-package WordMapper
+package wordMapper
 
 import (
-	"../Utils"
+	"../utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 )
 
+// The function given the result directory, will aggregate all Stem files into a single global file
 func StemRevAggregator(resultDir string) {
-	fileList := Utils.FilesInDir(resultDir, ".json", "StemRev_")
+	fileList := utils.FilesInDir(resultDir, ".json", "StemRev_")
 	nFile := len(fileList)
 
 	globalStemRev := make(map[string]string)
@@ -23,13 +24,25 @@ func StemRevAggregator(resultDir string) {
 			panic(err)
 		}
 
-		byteValue, _ := ioutil.ReadAll(jsonFile)
-		_ = jsonFile.Close()
-		_ = os.Remove(file)
+		byteValue, err := ioutil.ReadAll(jsonFile)
+		if err != nil {
+			panic(err)
+		}
+		err = jsonFile.Close()
+		if err != nil {
+			panic(err)
+		}
+		err = os.Remove(file)
+		if err != nil {
+			panic(err)
+		}
 
 		var StemDict map[string]string
 
-		_ = json.Unmarshal(byteValue, &StemDict)
+		err = json.Unmarshal(byteValue, &StemDict)
+		if err != nil {
+			panic(err)
+		}
 
 		for StemWord, RealWord := range StemDict {
 			if _, ok := globalStemRev[StemWord]; ok {
@@ -42,5 +55,5 @@ func StemRevAggregator(resultDir string) {
 		}
 	}
 
-	Utils.WriteGlobalStem(resultDir, &globalStemRev)
+	utils.WriteGlobalStem(resultDir, &globalStemRev)
 }

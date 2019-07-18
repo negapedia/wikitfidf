@@ -1,14 +1,14 @@
-package Utils
+package utils
 
 import (
-	"../DataStructure"
+	"../dataStructure"
 	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
 )
 
-func WritePage(resultPath string, page *DataStructure.Page) {
+func WritePage(resultPath string, page *dataStructure.Page) {
 	outFile, err := os.Create(resultPath + fmt.Sprint(page.PageID) + ".json")
 	if err == nil {
 		writer := bufio.NewWriter(outFile)
@@ -22,7 +22,7 @@ func WritePage(resultPath string, page *DataStructure.Page) {
 	}
 }
 
-func WriteMappedPage(resultPath string, page *DataStructure.PageElement) {
+func WriteMappedPage(resultPath string, page *dataStructure.PageElement) {
 	outFile, err := os.Create(resultPath + "M" + fmt.Sprint(page.PageId) + ".json")
 	if err == nil {
 		writer := bufio.NewWriter(outFile)
