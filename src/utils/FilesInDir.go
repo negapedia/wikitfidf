@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// The function return a list of string of the files in a directory filtered by extension and partial name
+// FilesInDir return a list of string of the files in a directory filtered by extension and partial name
 func FilesInDir(dir string, extension string, partialName string) []string {
 	var files []string
 

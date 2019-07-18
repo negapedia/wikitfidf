@@ -9,7 +9,7 @@ import (
 	"../utils"
 )
 
-// StemRevAggregator, given the result directory, will aggregate all Stem files into a single global file
+// StemRevAggregator given the result directory, will aggregate all Stem files into a single global file
 func StemRevAggregator(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, ".json", "StemRev_")
 	nFile := len(fileList)

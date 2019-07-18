@@ -9,7 +9,7 @@ import (
 	"../datastructure"
 )
 
-// The function write a json containing the mapped page with term frequency
+// WriteMappedPage write a json containing the mapped page with term frequency
 func WriteMappedPage(resultPath string, page *datastructure.PageElement) {
 	outFile, err := os.Create(resultPath + "M" + fmt.Sprint(page.PageId) + ".json")
 	if err == nil {
@@ -24,7 +24,7 @@ func WriteMappedPage(resultPath string, page *datastructure.PageElement) {
 	}
 }
 
-// The function write a json of global word map
+// WriteGlobalWord write a json of global word map
 func WriteGlobalWord(resultPath string, gloabalWord *map[string]map[string]float64) {
 	outFile, err := os.Create(resultPath + "GlobalWord.json")
 	if err == nil {
@@ -39,7 +39,7 @@ func WriteGlobalWord(resultPath string, gloabalWord *map[string]map[string]float
 	}
 }
 
-// The function write a json of global stemming dictionary
+// WriteGlobalStem write a json of global stemming dictionary
 func WriteGlobalStem(resultPath string, gloabaStem *map[string]string) {
 	outFile, err := os.Create(resultPath + "GlobalStem.json")
 	if err == nil {

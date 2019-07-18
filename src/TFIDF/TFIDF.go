@@ -30,7 +30,7 @@ func getGlobalWord(resultDir string) map[string]map[string]float64 {
 	return globalWord
 }
 
-// ComputeTFIDF, given the result dir, compute the TFIDF
+// ComputeTFIDF given the result dir, compute the TFIDF for all available pages
 func ComputeTFIDF(resultDir string) {
 	globalWord := getGlobalWord(resultDir)
 
