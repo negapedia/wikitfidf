@@ -64,6 +64,9 @@ func ComputeTFIDF(resultDir string) {
 
 		line = line[:len(line)-2] + "}"
 		err = json.Unmarshal([]byte(line), &page)
+		if err != nil {
+			panic(err)
+		}
 
 		newPageWords := make(map[string]map[string]float64)
 		var newPage = make(map[string]datastructure.TfidfAggregatedPage)
