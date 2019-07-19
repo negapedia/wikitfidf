@@ -1,7 +1,5 @@
 package dumpreducer
 
-//package main
-
 import (
 	"bufio"
 	"encoding/json"
@@ -32,7 +30,7 @@ func keepLastNRevert(page *structures.Page, nRev int) {
 }
 
 // DumpReducer reduce the page information applying filters to it, like revert time frame, revert number and special page list
-func DumpReducer(channel chan wikibrief.EvolvingPage, resultDir string, lang string, startDate time.Time, endDate time.Time, specialPageList *[]uint32, nRevision int) {
+func DumpReducer(channel chan wikibrief.EvolvingPage, resultDir string, startDate time.Time, endDate time.Time, specialPageList *[]uint32, nRevision int) {
 	go func() {
 		for page := range channel {
 			go func(p wikibrief.EvolvingPage) {
