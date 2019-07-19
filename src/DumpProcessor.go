@@ -187,9 +187,14 @@ func main() {
 	channel := make(chan wikibrief.EvolvingPage)
 	wd.Preprocess(channel)
 
-	err = wikibrief.Transform(context.Background(), reader, func(uint32) bool { return true }, channel)
-	if err != nil {
-		panic(err)
+	for ; err == nil; reader, err = it(context.Background()) {
+		go func() {
+			defer reader.Close()
+			err = wikibrief.Transform(context.Background(), reader, func(uint32) bool { return true }, channel)
+			if err != nil {
+				panic(err)
+			}
+		}()
 	}
 
 	wd.Process()
