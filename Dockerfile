@@ -16,13 +16,11 @@ ADD src/ $GOPATH/src/
 RUN 7z x $GOPATH/src/nltk_data.7z -o/root/nltk_data
 RUN 7z x $GOPATH/src/badwords_data.7z -o/root/badwords_data
 
-RUN go get github.com/dustin/go-humanize
-RUN go get github.com/PuerkitoBio/goquery
 RUN go get github.com/ebonetti/wikidump
 RUN go get github.com/negapedia/wikibrief
 
-RUN cd $GOPATH/src/TextNormalizer/ && python3 compile.py build_ext --inplace
-RUN cd $GOPATH/src/DeStemmer/ && python3 compile.py build_ext --inplace
+RUN cd $GOPATH/src/textnormalizer/ && python3 compile.py build_ext --inplace
+RUN cd $GOPATH/src/destemmer/ && python3 compile.py build_ext --inplace
 
 WORKDIR $GOPATH/src
 
