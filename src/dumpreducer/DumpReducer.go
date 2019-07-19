@@ -9,11 +9,11 @@ import (
 	"os"
 	"time"
 
-	"../datastructure"
+	"../structures"
 	"github.com/negapedia/wikibrief"
 )
 
-func keepLastNRevert(page *datastructure.Page, nRev int) {
+func keepLastNRevert(page *structures.Page, nRev int) {
 	if len(page.Revision) > nRev {
 		startRemovedIndex := -1
 		for i := len(page.Revision) - 1; i >= 0; i-- { //the last is the more recent
@@ -21,7 +21,7 @@ func keepLastNRevert(page *datastructure.Page, nRev int) {
 			if nRev == 0 {
 				startRemovedIndex = i
 			} else if nRev < 0 {
-				page.Revision[i] = datastructure.Revision{} // clean revision
+				page.Revision[i] = structures.Revision{} // clean revision
 			}
 		}
 
@@ -36,22 +36,22 @@ func DumpReducer(channel chan wikibrief.EvolvingPage, resultDir string, lang str
 	go func() {
 		for page := range channel {
 			go func(p wikibrief.EvolvingPage) {
-				var revArray []datastructure.Revision
+				var revArray []structures.Revision
 				for rev := range p.Revisions {
 					if rev.IsRevert > 0 {
 						if !startDate.IsZero() || !endDate.IsZero() { // if data filter is setted
 							timestamp := rev.Timestamp
 							if !startDate.IsZero() && !endDate.IsZero() {
 								if timestamp.Sub(startDate) >= 0 && timestamp.Sub(endDate) <= 0 {
-									revArray = append(revArray, datastructure.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+									revArray = append(revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
 								}
 							} else if startDate.IsZero() && !endDate.IsZero() {
 								if timestamp.Sub(endDate) <= 0 {
-									revArray = append(revArray, datastructure.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+									revArray = append(revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
 								}
 							} else if !startDate.IsZero() && endDate.IsZero() {
 								if timestamp.Sub(startDate) >= 0 {
-									revArray = append(revArray, datastructure.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+									revArray = append(revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
 								}
 							}
 						} else if specialPageList != nil { // if page list is setted
@@ -64,17 +64,17 @@ func DumpReducer(channel chan wikibrief.EvolvingPage, resultDir string, lang str
 								return false
 							}
 							if inList() {
-								revArray = append(revArray, datastructure.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+								revArray = append(revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
 							}
 
 						} else { // otherwise
-							revArray = append(revArray, datastructure.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+							revArray = append(revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
 						}
 					}
 				}
 				if len(revArray) > 0 {
 					fmt.Println(page.PageID)
-					pageToWrite := datastructure.Page{PageID: p.PageID, Revision: revArray}
+					pageToWrite := structures.Page{PageID: p.PageID, Revision: revArray}
 
 					if nRevision != 0 { // if reverts limit is set
 						keepLastNRevert(&pageToWrite, nRevision)

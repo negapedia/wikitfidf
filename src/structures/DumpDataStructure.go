@@ -1,4 +1,10 @@
-package datastructure
+/*
+ * Developed by Marco Chilese.
+ * Last modified 7/18/19 5:57 PM
+ *
+ */
+
+package structures
 
 import "time"
 

@@ -1,4 +1,10 @@
-package datastructure
+/*
+ * Developed by Marco Chilese.
+ * Last modified 7/18/19 5:57 PM
+ *
+ */
+
+package structures
 
 // AggregatedPage represent a wikipedia page after the cleaning process and the word mapping process
 type AggregatedPage struct {

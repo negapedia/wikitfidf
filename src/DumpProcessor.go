@@ -7,10 +7,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ebonetti/wikidump"
+
 	"./dumpreducer"
 	"./tfidf"
 	"./wordmapper"
-	"github.com/ebonetti/wikidump"
 	"github.com/negapedia/wikibrief"
 	"github.com/pkg/errors"
 )
@@ -165,7 +166,7 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 
 func main() {
 	wd := new(WikiDumpConflitcAnalyzer)
-	wd.NewWikiDump("vec", "/Users/marcochilese/Desktop/Tesi/NegapediaConflicutalWords/Result/", nil, time.Time{}, time.Time{}, 10)
+	wd.NewWikiDump("it", "/Users/marcochilese/Desktop/Tesi/NegapediaConflicutalWords/Result/", nil, time.Time{}, time.Time{}, 10)
 
 	dump, err := wikidump.Latest(wd.resultDir, wd.lang, "metahistory7zdump")
 	if err != nil {

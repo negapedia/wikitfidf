@@ -7,7 +7,7 @@ import (
 	"math"
 	"os"
 
-	"../datastructure"
+	"../structures"
 )
 
 func getGlobalWord(resultDir string) map[string]map[string]float64 {
@@ -56,7 +56,7 @@ func ComputeTFIDF(resultDir string) {
 			break
 		}
 
-		var page map[string]datastructure.AggregatedPage
+		var page map[string]structures.AggregatedPage
 
 		if line[:1] != "{" {
 			line = "{" + line
@@ -69,7 +69,7 @@ func ComputeTFIDF(resultDir string) {
 		}
 
 		newPageWords := make(map[string]map[string]float64)
-		var newPage = make(map[string]datastructure.TfidfAggregatedPage)
+		var newPage = make(map[string]structures.TfidfAggregatedPage)
 		for i := range page {
 			for word, wordFreq := range page[i].Words {
 				tf := wordFreq / page[i].Tot
@@ -81,7 +81,7 @@ func ComputeTFIDF(resultDir string) {
 				newPageWords[word]["abs"] = wordFreq
 				newPageWords[word]["tfidf"] = tfidf
 			}
-			newPage[i] = datastructure.TfidfAggregatedPage{Tot: page[i].Tot, Words: &newPageWords}
+			newPage[i] = structures.TfidfAggregatedPage{Tot: page[i].Tot, Words: &newPageWords}
 		}
 
 		if i == 0 {

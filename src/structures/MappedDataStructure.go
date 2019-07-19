@@ -1,4 +1,10 @@
-package datastructure
+/*
+ * Developed by Marco Chilese.
+ * Last modified 7/18/19 6:00 PM
+ *
+ */
+
+package structures
 
 // PageContainer represent a list of PageElement, which are page containing complete data about word frequency
 type PageContainer struct {

@@ -11,9 +11,8 @@ import (
 
 // StemRevAggregator given the result directory, will aggregate all Stem files into a single global file
 func StemRevAggregator(resultDir string) {
-	fileList := utils.FilesInDir(resultDir, ".json", "StemRev_")
+	fileList := utils.FilesInDir(resultDir+"Stem/", "StemRev_*")
 	nFile := len(fileList)
-
 	globalStemRev := make(map[string]string)
 
 	for i, file := range fileList {
@@ -56,5 +55,6 @@ func StemRevAggregator(resultDir string) {
 		}
 	}
 
+	println(len(globalStemRev))
 	utils.WriteGlobalStem(resultDir, &globalStemRev)
 }

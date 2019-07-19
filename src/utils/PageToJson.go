@@ -1,3 +1,9 @@
+/*
+ * Developed by Marco Chilese.
+ * Last modified 7/19/19 10:53 AM
+ *
+ */
+
 package utils
 
 import (
@@ -6,11 +12,11 @@ import (
 	"fmt"
 	"os"
 
-	"../datastructure"
+	"../structures"
 )
 
 // WriteMappedPage write a json containing the mapped page with term frequency
-func WriteMappedPage(resultPath string, page *datastructure.PageElement) {
+func WriteMappedPage(resultPath string, page *structures.PageElement) {
 	outFile, err := os.Create(resultPath + "M" + fmt.Sprint(page.PageId) + ".json")
 	if err == nil {
 		writer := bufio.NewWriter(outFile)
