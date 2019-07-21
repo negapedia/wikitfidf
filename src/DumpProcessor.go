@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ebonetti/wikidump"
+	"github.com/ebonetti/ctxutils"
 
 	"./badwords"
 	"./dumpreducer"
@@ -117,7 +117,7 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, s
 }
 
 // Preprocess given a wikibrief.EvolvingPage channel reduce the amount of information in pages and save them
-func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel chan wikibrief.EvolvingPage) {
+func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel <-chan wikibrief.EvolvingPage) {
 	println("\nParse and reduction start")
 	dumpreducer.DumpReducer(channel, wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList, wd.nRevert) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
 	println("Parse and reduction end")
@@ -173,28 +173,12 @@ func main() {
 	wd := new(WikiDumpConflitcAnalyzer)
 	wd.NewWikiDump("it", "/Users/marcochilese/Desktop/Tesi/NegapediaConflicutalWords/Result/", nil, time.Time{}, time.Time{}, 10)
 
-	dump, err := wikidump.Latest(wd.resultDir, wd.lang, "metahistory7zdump")
-	if err != nil {
+	ctx, fail := ctxutils.WithFail(context.Background())
+	pageChannel := wikibrief.New(ctx, fail, wd.resultDir, wd.lang)
+	wd.Preprocess(pageChannel)
+
+	if err := fail(nil); err != nil {
 		panic(err)
-	}
-
-	it := dump.Open("metahistory7zdump")
-	reader, err := it(context.Background())
-	if err != nil {
-		panic(err)
-	}
-
-	channel := make(chan wikibrief.EvolvingPage)
-	wd.Preprocess(channel)
-
-	for ; err == nil; reader, err = it(context.Background()) {
-		go func() {
-			defer reader.Close()
-			err = wikibrief.Transform(context.Background(), reader, func(uint32) bool { return true }, channel)
-			if err != nil {
-				panic(err)
-			}
-		}()
 	}
 
 	wd.Process()

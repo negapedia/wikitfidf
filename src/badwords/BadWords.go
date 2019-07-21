@@ -52,6 +52,7 @@ func badWordsListGetter(lang, path string) map[string]bool {
 	return badwordsList
 }
 
+// BadWords create the badwords report for the given language, if available, and the given result dir
 func BadWords(lang, resultDir string) {
 	if language, isAvailable := availableLanguage(lang); isAvailable {
 		badWordsMap := badWordsListGetter(language, "/root/badwords_data/") // TODO path to /root/badwords_data/

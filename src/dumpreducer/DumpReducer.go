@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"../structures"
@@ -30,12 +31,15 @@ func keepLastNRevert(page *structures.Page, nRev int) {
 }
 
 // DumpReducer reduce the page information applying filters to it, like revert time frame, revert number and special page list
-func DumpReducer(channel chan wikibrief.EvolvingPage, resultDir string, startDate time.Time, endDate time.Time, specialPageList *[]uint32, nRevision int) {
-	go func() {
-		for page := range channel {
-			go func(p wikibrief.EvolvingPage) {
+func DumpReducer(channel <-chan wikibrief.EvolvingPage, resultDir string, startDate time.Time, endDate time.Time, specialPageList *[]uint32, nRevision int) {
+	wg := sync.WaitGroup{}
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for page := range channel {
 				var revArray []structures.Revision
-				for rev := range p.Revisions {
+				for rev := range page.Revisions {
 					if rev.IsRevert > 0 {
 						if !startDate.IsZero() || !endDate.IsZero() { // if data filter is setted
 							timestamp := rev.Timestamp
@@ -72,7 +76,7 @@ func DumpReducer(channel chan wikibrief.EvolvingPage, resultDir string, startDat
 				}
 				if len(revArray) > 0 {
 					fmt.Println(page.PageID)
-					pageToWrite := structures.Page{PageID: p.PageID, Revision: revArray}
+					pageToWrite := structures.Page{PageID: page.PageID, Revision: revArray}
 
 					if nRevision != 0 { // if reverts limit is set
 						keepLastNRevert(&pageToWrite, nRevision)
@@ -92,8 +96,8 @@ func DumpReducer(channel chan wikibrief.EvolvingPage, resultDir string, startDat
 						}
 					}
 				}
-			}(page)
-		}
-	}()
-
+			}
+		}()
+	}
+	wg.Wait()
 }
