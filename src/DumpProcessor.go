@@ -171,7 +171,7 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 
 func main() {
 	wd := new(WikiDumpConflitcAnalyzer)
-	wd.NewWikiDump("it", "/Users/marcochilese/Desktop/Tesi/NegapediaConflicutalWords/Result/", nil, time.Time{}, time.Time{}, 10)
+	wd.NewWikiDump("vec", "/Users/marcochilese/Desktop/Tesi/NegapediaConflicutalWords/Result/", nil, time.Time{}, time.Time{}, 10)
 
 	ctx, fail := ctxutils.WithFail(context.Background())
 	pageChannel := wikibrief.New(ctx, fail, wd.resultDir, wd.lang)

@@ -90,6 +90,7 @@ func BadWords(lang, resultDir string) {
 				panic(err)
 			}
 
+			toIgnore := false
 			newPage := make(map[string]structures.BadWordsReport)
 			for p := range page {
 				badwordInPage := make(map[string]int)
@@ -105,24 +106,32 @@ func BadWords(lang, resultDir string) {
 					}
 				}
 
-				newPage[p] = structures.BadWordsReport{Abs: totalBadW, Rel: float64(totalBadW) / page[p].Tot, BadW: badwordInPage}
-			}
-
-			if i == 0 {
-				marshalledPage, _ := json.Marshal(newPage)
-				pageAsString := string(marshalledPage)
-				pageAsString = pageAsString[:len(pageAsString)-1] + ",\n"
-				_, _ = encWriter.Write([]byte(pageAsString))
-
-			} else if i > 0 {
-				marshalledPage, _ := json.Marshal(newPage)
-				pageAsString := string(marshalledPage)
-				pageAsString = pageAsString[1:len(pageAsString)-1] + ",\n"
-				_, _ = encWriter.Write([]byte(pageAsString))
+				if len(badwordInPage) > 0 {
+					newPage[p] = structures.BadWordsReport{Abs: totalBadW, Rel: float64(totalBadW) / page[p].Tot, BadW: badwordInPage}
+				} else {
+					toIgnore = true
+				}
 
 			}
-			_ = encWriter.Flush()
+
+			if !toIgnore {
+				if i == 0 {
+					marshalledPage, _ := json.Marshal(newPage)
+					pageAsString := string(marshalledPage)
+					pageAsString = pageAsString[:len(pageAsString)-1] + ",\n"
+					_, _ = encWriter.Write([]byte(pageAsString))
+
+				} else if i > 0 {
+					marshalledPage, _ := json.Marshal(newPage)
+					pageAsString := string(marshalledPage)
+					pageAsString = pageAsString[1:len(pageAsString)-1] + ",\n"
+					_, _ = encWriter.Write([]byte(pageAsString))
+
+				}
+				_ = encWriter.Flush()
+			}
 			i++
+
 		}
 
 		_, _ = encWriter.Write([]byte("}"))
