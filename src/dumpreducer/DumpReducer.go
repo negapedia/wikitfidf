@@ -1,14 +1,12 @@
 package dumpreducer
 
 import (
-	"bufio"
-	"encoding/json"
 	"fmt"
-	"os"
 	"sync"
 	"time"
 
 	"../structures"
+	"../utils"
 	"github.com/negapedia/wikibrief"
 )
 
@@ -33,7 +31,7 @@ func keepLastNRevert(page *structures.Page, nRev int) {
 // DumpReducer reduce the page information applying filters to it, like revert time frame, revert number and special page list
 func DumpReducer(channel <-chan wikibrief.EvolvingPage, resultDir string, startDate time.Time, endDate time.Time, specialPageList *[]uint32, nRevision int) {
 	wg := sync.WaitGroup{}
-	for i := 0; i < 20; i++ {
+	for i := 0; i < 200; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
@@ -82,19 +80,7 @@ func DumpReducer(channel <-chan wikibrief.EvolvingPage, resultDir string, startD
 						keepLastNRevert(&pageToWrite, nRevision)
 					}
 
-					outFile, err := os.Create(resultDir + fmt.Sprint(page.PageID) + ".json")
-					if err == nil {
-						writer := bufio.NewWriter(outFile)
-						defer outFile.Close()
-
-						var dictPage, err = json.Marshal(pageToWrite)
-						if err == nil {
-							_, _ = writer.Write(dictPage)
-							_ = writer.Flush()
-						} else {
-							panic(err)
-						}
-					}
+					utils.WriteCleanPage(resultDir, &pageToWrite)
 				}
 			}
 		}()

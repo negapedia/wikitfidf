@@ -37,9 +37,11 @@ func ComputeTFIDF(resultDir string) {
 	totalPage := globalWord["@Total Page"]["tot"]
 
 	outFile, _ := os.Create(resultDir + "GlobalPageTFIDF.json")
+	defer outFile.Close()
 	encWriter := bufio.NewWriter(outFile)
 
 	globalPage, err := os.Open(resultDir + "GlobalPage.json")
+	defer globalPage.Close()
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		panic(err)
@@ -105,5 +107,4 @@ func ComputeTFIDF(resultDir string) {
 	_ = encWriter.Flush()
 
 	_ = os.Remove(resultDir + "GlobalPage.json")
-	_ = globalPage.Close()
 }

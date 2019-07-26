@@ -59,8 +59,10 @@ func BadWords(lang, resultDir string) {
 
 		outFile, _ := os.Create(resultDir + "BadWordsReport.json")
 		encWriter := bufio.NewWriter(outFile)
+		defer outFile.Close()
 
 		globalPage, err := os.Open(resultDir + "GlobalPageTFIDF.json")
+		defer globalPage.Close()
 		// if we os.Open returns an error then handle it
 		if err != nil {
 			panic(err)
@@ -136,7 +138,5 @@ func BadWords(lang, resultDir string) {
 
 		_, _ = encWriter.Write([]byte("}"))
 		_ = encWriter.Flush()
-
-		_ = globalPage.Close()
 	}
 }

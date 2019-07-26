@@ -25,13 +25,11 @@ func StemRevAggregator(resultDir string) {
 		}
 
 		byteValue, err := ioutil.ReadAll(jsonFile)
+		jsonFile.Close()
 		if err != nil {
 			panic(err)
 		}
-		err = jsonFile.Close()
-		if err != nil {
-			panic(err)
-		}
+
 		err = os.Remove(file)
 		if err != nil {
 			panic(err)

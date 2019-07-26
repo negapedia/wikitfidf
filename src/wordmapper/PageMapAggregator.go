@@ -39,7 +39,8 @@ func PageMapAggregator(resultDir string) {
 		}
 
 		byteValue, _ := ioutil.ReadAll(jsonFile)
-		_ = jsonFile.Close()
+		jsonFile.Close()
+
 		_ = os.Remove(file)
 
 		var Page structures.PageElement

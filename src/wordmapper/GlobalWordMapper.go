@@ -31,7 +31,7 @@ func GlobalWordMapper(resultDir string) {
 		}
 
 		byteValue, _ := ioutil.ReadAll(jsonFile)
-		_ = jsonFile.Close()
+		jsonFile.Close()
 
 		var page structures.PageElement
 

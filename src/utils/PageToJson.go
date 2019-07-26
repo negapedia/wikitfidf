@@ -10,10 +10,28 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"../structures"
 )
+
+// WriteCleanPage write a json containing the page after first clean
+func WriteCleanPage(resultDir string, page *structures.Page) {
+	outFile, err := os.Create(resultDir + fmt.Sprint(page.PageID) + ".json")
+	if err != nil {
+		log.Fatalf("%+v", err)
+	}
+	writer := bufio.NewWriter(outFile)
+	defer outFile.Close()
+
+	dictPage, err := json.Marshal(page)
+	if err != nil {
+		log.Fatalf("%+v", err)
+	}
+	_, _ = writer.Write(dictPage)
+	_ = writer.Flush()
+}
 
 // WriteMappedPage write a json containing the mapped page with term frequency
 func WriteMappedPage(resultPath string, page *structures.PageElement) {

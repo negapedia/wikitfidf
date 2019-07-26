@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -31,7 +32,7 @@ type WikiDumpConflitcAnalyzer struct {
 	nRevert         int
 }
 
-func checkAvailableLanguage(lang string) bool {
+func checkAvailableLanguage(lang string) (bool, error) {
 	languages := map[string]string{
 		"en":     "english",
 		"ar":     "arabic",
@@ -80,10 +81,11 @@ func checkAvailableLanguage(lang string) bool {
 		"simple": "english",
 		"vec":    "italian"}
 
+	var noLang error
 	if _, isIn := languages[lang]; !isIn {
-		_ = errors.New(lang + " is not an available language!")
+		noLang = errors.New(lang + " is not an available language!")
 	}
-	return true
+	return true, noLang
 }
 
 // NewWikiDump admits to initialize with parameters a WikiDumpConflitcAnalyzer. Parameters are about
@@ -92,9 +94,12 @@ func checkAvailableLanguage(lang string) bool {
 // only the last "n" revert per page
 func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, specialPageList *[]uint32,
 	startDate time.Time, endDate time.Time, nRevert int) {
-	if checkAvailableLanguage(lang) {
-		wd.lang = lang
+	_, err := checkAvailableLanguage(lang)
+	if err != nil {
+		panic(err)
 	}
+	wd.lang = lang
+
 	if startDate.IsZero() && endDate.IsZero() {
 		wd.date = time.Now().Month().String() + strconv.Itoa(time.Now().Year())
 	} else if startDate.IsZero() && !endDate.IsZero() {
@@ -178,7 +183,7 @@ func main() {
 	wd.Preprocess(pageChannel)
 
 	if err := fail(nil); err != nil {
-		panic(err)
+		log.Fatal("%+v", err)
 	}
 
 	wd.Process()
