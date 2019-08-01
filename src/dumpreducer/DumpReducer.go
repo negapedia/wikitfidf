@@ -1,7 +1,6 @@
 package dumpreducer
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -73,7 +72,7 @@ func DumpReducer(channel <-chan wikibrief.EvolvingPage, resultDir string, startD
 					}
 				}
 				if len(revArray) > 0 {
-					fmt.Println(page.PageID)
+					println(page.PageID)
 					pageToWrite := structures.Page{PageID: page.PageID, Revision: revArray}
 
 					if nRevision != 0 { // if reverts limit is set

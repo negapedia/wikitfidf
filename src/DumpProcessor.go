@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -123,8 +124,10 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, s
 
 // Preprocess given a wikibrief.EvolvingPage channel reduce the amount of information in pages and save them
 func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel <-chan wikibrief.EvolvingPage) {
-	println("\nParse and reduction start")
+	println("Parse and reduction start")
+	start := time.Now()
 	dumpreducer.DumpReducer(channel, wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList, wd.nRevert) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Parse and reduction end")
 }
 
@@ -132,51 +135,68 @@ func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel <-chan wikibrief.Evolving
 // will be performed tokenization, stopwords cleaning and stemming, files aggregation and then files de-stemming
 func (wd *WikiDumpConflitcAnalyzer) Process() {
 	println("WikiMarkup cleaning start")
+	start := time.Now()
 	wikiMarkupClean := exec.Command("java", "-jar", "./textnormalizer/WikipediaMarkupCleaner.jar", wd.resultDir)
 	_ = wikiMarkupClean.Run()
-
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("WikiMarkup cleaning end")
 
 	println("Stopwords cleaning and stemming start")
+	start = time.Now()
 	stopwordsCleanerStemming := exec.Command("python3", "./textnormalizer/runStopwClean.py", wd.resultDir, wd.lang)
 	_ = stopwordsCleanerStemming.Run()
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Stopwords cleaning and stemming end")
 
 	println("Word mapping by page start")
+	start = time.Now()
 	wordmapper.WordMapperByPage(wd.resultDir)
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Word mapping by page end")
 
 	println("Processing GlobalWordMap file start")
+	start = time.Now()
 	wordmapper.GlobalWordMapper(wd.resultDir)
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Processing GlobalWordMap file start")
 
 	println("Processing GlobalStem file start")
+	start = time.Now()
 	wordmapper.StemRevAggregator(wd.resultDir)
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Processing GlobalStem file end")
 
 	println("Processing GlobalPage file start")
+	start = time.Now()
 	wordmapper.PageMapAggregator(wd.resultDir)
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Processing GlobalPage file end")
 
 	if wd.specialPageList == nil {
 		println("Processing TFIDF file start")
+		start = time.Now()
 		tfidf.ComputeTFIDF(wd.resultDir)
+		fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 		println("Processing TFIDF file end")
 	}
 
 	println("Performing Destemming start")
+	start = time.Now()
 	deStemming := exec.Command("python3", "./destemmer/runDeStemming.py", wd.resultDir)
 	_ = deStemming.Run()
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Performing Destemming file end")
 
 	println("Processing Badwords report start")
+	start = time.Now()
 	badwords.BadWords(wd.lang, wd.resultDir)
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Processing Badwords report end")
 }
 
 func main() {
 	wd := new(WikiDumpConflitcAnalyzer)
-	wd.NewWikiDump("vec", "/Users/marcochilese/Desktop/Tesi/NegapediaConflicutalWords/Result/", nil, time.Time{}, time.Time{}, 10)
+	wd.NewWikiDump("vec", "/Result/", nil, time.Time{}, time.Time{}, 10)
 
 	ctx, fail := ctxutils.WithFail(context.Background())
 	pageChannel := wikibrief.New(ctx, fail, wd.resultDir, wd.lang)
