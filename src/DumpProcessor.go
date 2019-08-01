@@ -108,11 +108,16 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, s
 	} else {
 		wd.date = time.Now().Month().String() + strconv.Itoa(time.Now().Year()) + "-" + endDate.String()
 	}
-	wd.resultDir = resultDir + lang + "_" + wd.date + "/"
+	wd.resultDir = resultDir + lang + "_" + wd.date
 	wd.specialPageList = specialPageList
 	wd.startDate = startDate
 	wd.endDate = endDate
 	wd.nRevert = nRevert
+	wd.nRevert = nRevert
+	if nRevert != 0 {
+		wd.resultDir += "_last" + strconv.Itoa(nRevert)
+	}
+	wd.resultDir += "/"
 
 	if _, err := os.Stat(wd.resultDir + "Stem"); os.IsNotExist(err) {
 		err = os.MkdirAll(wd.resultDir+"Stem", 0755)
