@@ -25,12 +25,9 @@ type WikiDumpConflitcAnalyzer struct {
 	lang string
 	date string
 
-	downloadDir     string
-	resultDir       string
-	specialPageList *[]uint32
-	startDate       time.Time
-	endDate         time.Time
-	nRevert         int
+	downloadDir string
+	resultDir   string
+	nRevert     int
 }
 
 func checkAvailableLanguage(lang string) (bool, error) {
@@ -93,25 +90,16 @@ func checkAvailableLanguage(lang string) (bool, error) {
 // required Wikipedia Dump language, result directory, special page list which admits to process only the page in list,
 // start and end date which admits to work only in a specific time frame, number of revert to consider: will be processed
 // only the last "n" revert per page
-func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, specialPageList *[]uint32,
-	startDate time.Time, endDate time.Time, nRevert int) {
+func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, nRevert int) {
 	_, err := checkAvailableLanguage(lang)
 	if err != nil {
 		panic(err)
 	}
 	wd.lang = lang
 
-	if startDate.IsZero() && endDate.IsZero() {
-		wd.date = time.Now().Month().String() + strconv.Itoa(time.Now().Year())
-	} else if startDate.IsZero() && !endDate.IsZero() {
-		wd.date = startDate.String() + "-" + time.Now().Month().String() + strconv.Itoa(time.Now().Year())
-	} else {
-		wd.date = time.Now().Month().String() + strconv.Itoa(time.Now().Year()) + "-" + endDate.String()
-	}
+	wd.date = time.Now().Month().String() + strconv.Itoa(time.Now().Year())
+
 	wd.resultDir = resultDir + lang + "_" + wd.date
-	wd.specialPageList = specialPageList
-	wd.startDate = startDate
-	wd.endDate = endDate
 	wd.nRevert = nRevert
 	wd.nRevert = nRevert
 	if nRevert != 0 {
@@ -131,7 +119,7 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, s
 func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel <-chan wikibrief.EvolvingPage) {
 	println("Parse and reduction start")
 	start := time.Now()
-	dumpreducer.DumpReducer(channel, wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList, wd.nRevert) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
+	dumpreducer.DumpReducer(channel, wd.resultDir, wd.nRevert) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
 	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Parse and reduction end")
 }
@@ -177,13 +165,11 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Processing GlobalPage file end")
 
-	if wd.specialPageList == nil {
-		println("Processing TFIDF file start")
-		start = time.Now()
-		tfidf.ComputeTFIDF(wd.resultDir)
-		fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
-		println("Processing TFIDF file end")
-	}
+	println("Processing TFIDF file start")
+	start = time.Now()
+	tfidf.ComputeTFIDF(wd.resultDir)
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
+	println("Processing TFIDF file end")
 
 	println("Performing Destemming start")
 	start = time.Now()
@@ -201,7 +187,7 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 
 func main() {
 	wd := new(WikiDumpConflitcAnalyzer)
-	wd.NewWikiDump("vec", "/Result/", nil, time.Time{}, time.Time{}, 10)
+	wd.NewWikiDump("vec", "/Result/", 10)
 
 	ctx, fail := ctxutils.WithFail(context.Background())
 	pageChannel := wikibrief.New(ctx, fail, wd.resultDir, wd.lang)
