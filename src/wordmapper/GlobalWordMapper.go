@@ -25,7 +25,6 @@ func GlobalWordMapper(resultDir string) {
 		fmt.Printf("\rOn %d/%d", i+1, nFile)
 
 		jsonFile, err := os.Open(file)
-		// if we os.Open returns an error then handle it
 		if err != nil {
 			panic(err)
 		}

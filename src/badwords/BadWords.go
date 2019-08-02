@@ -63,7 +63,6 @@ func BadWords(lang, resultDir string) {
 
 		globalPage, err := os.Open(resultDir + "GlobalPageTFIDF.json")
 		defer globalPage.Close()
-		// if we os.Open returns an error then handle it
 		if err != nil {
 			panic(err)
 		}
@@ -111,7 +110,7 @@ func BadWords(lang, resultDir string) {
 				if len(badwordInPage) > 0 {
 					newPage[p] = structures.BadWordsReport{Abs: totalBadW, Rel: float64(totalBadW) / page[p].Tot, BadW: badwordInPage}
 				} else {
-					toIgnore = true
+					toIgnore = true // no badwords in this page
 				}
 
 			}
