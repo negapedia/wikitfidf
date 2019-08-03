@@ -9,7 +9,7 @@ import (
 )
 
 func keepLastNRevert(page *structures.Page, nRev int) {
-	if len(page.Revision) > nRev {
+	if len(page.Revision) > nRev { // if page history is longer than limits, otherwise skip
 		startRemovedIndex := -1
 		for i := len(page.Revision) - 1; i >= 0; i-- { //the last is the more recent
 			nRev--
@@ -27,9 +27,8 @@ func keepLastNRevert(page *structures.Page, nRev int) {
 }
 
 func writePage(page *wikibrief.EvolvingPage, revArray *[]structures.Revision, nRevision int, resultDir string) {
-	if len(*revArray) > 0 {
-		println(page.PageID)
-		pageToWrite := structures.Page{PageID: page.PageID, Revision: *revArray}
+	if len(*revArray) > 0 { // if page has revisions
+		pageToWrite := structures.Page{PageID: page.PageID, TopicID: page.TopicID, Revision: *revArray}
 
 		if nRevision != 0 { // if reverts limit is set
 			keepLastNRevert(&pageToWrite, nRevision)

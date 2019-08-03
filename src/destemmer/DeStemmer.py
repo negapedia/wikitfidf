@@ -61,7 +61,7 @@ def GlobalPageDeStem(result_dir):
                 break
             page_dict = json.loads(line)
             for page in page_dict:
-                global_dict_new = {page: {"Tot": page_dict[page]["Tot"], "Words": {}}}
+                global_dict_new = {page: {"TopicID": page_dict[page]["TopicID"], "Tot": page_dict[page]["Tot"], "Words": {}}}
                 for word in page_dict[page]["Words"]:
                     if word in reverse_stemming_dict.keys():
                         global_dict_new[page]["Words"][reverse_stemming_dict[word]] = page_dict[page]["Words"][word]

@@ -9,6 +9,7 @@ package structures
 // StemmedPageJson represent a page written in json after the tokenization, stopwords cleaning and stemming process
 type StemmedPageJson struct {
 	PageID   uint32                `json:"PageID"`
+	TopicID  uint32                `json:"TopicID"`
 	Revision []stemmedRevisionJson `json:"Revision"`
 }
 

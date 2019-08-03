@@ -21,7 +21,7 @@ func getMappedPage(page *structures.StemmedPageJson) structures.PageElement {
 			}
 		}
 	}
-	return structures.PageElement{PageId: page.PageID, Word: mappedText}
+	return structures.PageElement{PageId: page.PageID, TopicID: page.TopicID, Word: mappedText}
 }
 
 // WordMapperByPage given the result dir, generate a global file containing all the processed pages

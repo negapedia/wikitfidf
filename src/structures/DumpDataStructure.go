@@ -11,6 +11,7 @@ import "time"
 // Page represent the information in a wikipedia page
 type Page struct {
 	PageID   uint32
+	TopicID  uint32
 	Revision []Revision
 }
 

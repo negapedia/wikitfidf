@@ -83,7 +83,7 @@ func ComputeTFIDF(resultDir string) {
 				newPageWords[word]["abs"] = wordFreq
 				newPageWords[word]["tfidf"] = tfidf
 			}
-			newPage[i] = structures.TfidfAggregatedPage{Tot: page[i].Tot, Words: &newPageWords}
+			newPage[i] = structures.TfidfAggregatedPage{TopicID: page[i].TopicID, Tot: page[i].Tot, Words: &newPageWords}
 		}
 
 		if i == 0 {
