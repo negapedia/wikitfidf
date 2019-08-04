@@ -14,6 +14,7 @@ import (
 	"./badwords"
 	"./dumpreducer"
 	"./tfidf"
+	"./topicwords"
 	"./wordmapper"
 	"github.com/negapedia/wikibrief"
 	"github.com/pkg/errors"
@@ -186,6 +187,12 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 	_ = topNWordsPageExtractor.Run()
 	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Processing top N words per page end")
+
+	println("Processing topic words start")
+	start = time.Now()
+	topicwords.TopicWords(wd.resultDir)
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
+	println("Processing topic words end")
 
 	println("Processing Badwords report start")
 	start = time.Now()
