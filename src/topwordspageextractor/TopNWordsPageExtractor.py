@@ -30,6 +30,11 @@ def _get_top_n_words_dict(pageDict: dict, n: int):
 
 
 def top_N_Words_Page_Extractor(result_dir: str, n):
+    """
+    top_N_Words_Page_Extractor given the result dir compute the n most important words for each page in GlobalPageTFIDF
+    :param result_dir: result dir path
+    :param n: amount of most important words to calculate
+    """
     globalTopNTFIDF = open(result_dir +"GlobalPageTFIDF_top"+n+".json", "w")
 
     gloabalTFIDF = open(result_dir + "GlobalPageTFIDF.json", "r");
@@ -69,4 +74,3 @@ def top_N_Words_Page_Extractor(result_dir: str, n):
 
 if __name__ == "__main__":
     top_N_Words_Page_Extractor(sys.argv[1], sys.argv[2])
-        #"/Users/marcochilese/Desktop/Tesi/NegapediaConflicutalWords/Result/vec_August2019_last10/", 3)

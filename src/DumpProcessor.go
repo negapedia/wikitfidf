@@ -222,7 +222,11 @@ func (wd *WikiDumpConflitcAnalyzer) CompressResultDir(whereToSave string, remove
 
 func main() {
 	wd := new(WikiDumpConflitcAnalyzer)
-	wd.NewWikiDump("vec", "/Result/", 10, 50)
+
+	nRevert, _ := strconv.Atoi(os.Args[3])
+	nTopWords, _ := strconv.Atoi(os.Args[4])
+
+	wd.NewWikiDump(os.Args[1], os.Args[2], nRevert, nTopWords) //"vec", "/Result/", 10, 50)
 
 	ctx, fail := ctxutils.WithFail(context.Background())
 	pageChannel := wikibrief.New(ctx, fail, wd.resultDir, wd.lang)
