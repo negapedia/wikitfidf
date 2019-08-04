@@ -28,6 +28,7 @@ type WikiDumpConflitcAnalyzer struct {
 	downloadDir string
 	resultDir   string
 	nRevert     int
+	topNWords   int
 }
 
 func checkAvailableLanguage(lang string) (bool, error) {
@@ -90,7 +91,7 @@ func checkAvailableLanguage(lang string) (bool, error) {
 // required Wikipedia Dump language, result directory, special page list which admits to process only the page in list,
 // start and end date which admits to work only in a specific time frame, number of revert to consider: will be processed
 // only the last "n" revert per page
-func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, nRevert int) {
+func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, nRevert, topNWords int) {
 	_, err := checkAvailableLanguage(lang)
 	if err != nil {
 		panic(err)
@@ -101,11 +102,12 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, n
 
 	wd.resultDir = resultDir + lang + "_" + wd.date
 	wd.nRevert = nRevert
-	wd.nRevert = nRevert
 	if nRevert != 0 {
 		wd.resultDir += "_last" + strconv.Itoa(nRevert)
 	}
 	wd.resultDir += "/"
+
+	wd.topNWords = topNWords
 
 	if _, err := os.Stat(wd.resultDir + "Stem"); os.IsNotExist(err) {
 		err = os.MkdirAll(wd.resultDir+"Stem", 0755)
@@ -178,6 +180,13 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Performing Destemming file end")
 
+	println("Processing top N words per page start")
+	start = time.Now()
+	topNWordsPageExtractor := exec.Command("python3", "./topwordspageextractor/runTopNWordsPageExtractor.py", wd.resultDir, strconv.Itoa(wd.topNWords))
+	_ = topNWordsPageExtractor.Run()
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
+	println("Processing top N words per page end")
+
 	println("Processing Badwords report start")
 	start = time.Now()
 	badwords.BadWords(wd.lang, wd.resultDir)
@@ -185,9 +194,28 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 	println("Processing Badwords report end")
 }
 
+func (wd *WikiDumpConflitcAnalyzer) CompressResultDir(whereToSave string, removeResultDir bool) {
+	println("Compressing ResultDir in 7z start")
+	fileName := wd.lang + "_" + wd.date
+	if wd.nRevert != 0 {
+		fileName += "_last" + strconv.Itoa(wd.nRevert)
+	}
+
+	start := time.Now()
+	topNWordsPageExtractor := exec.Command("7z", "a", "-r", whereToSave+fileName, wd.resultDir+"*")
+	_ = topNWordsPageExtractor.Run()
+
+	if removeResultDir {
+		_ = os.RemoveAll(wd.resultDir)
+	}
+
+	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
+	println("Compressing ResultDir in 7z end")
+}
+
 func main() {
 	wd := new(WikiDumpConflitcAnalyzer)
-	wd.NewWikiDump("vec", "/Result/", 10)
+	wd.NewWikiDump("vec", "/Result/", 10, 50)
 
 	ctx, fail := ctxutils.WithFail(context.Background())
 	pageChannel := wikibrief.New(ctx, fail, wd.resultDir, wd.lang)
@@ -198,4 +226,5 @@ func main() {
 	}
 
 	wd.Process()
+	wd.CompressResultDir("/Result/", true)
 }
