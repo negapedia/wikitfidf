@@ -41,7 +41,7 @@ func writePage(page *wikibrief.EvolvingPage, revArray *[]structures.Revision, nR
 // DumpReducer reduce the page information applying filters to it, like revert time frame, revert number and special page list
 func DumpReducer(channel <-chan wikibrief.EvolvingPage, resultDir string, nRevision int) {
 	wg := sync.WaitGroup{}
-	for i := 0; i < 200; i++ {
+	for i := 0; i < 50; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
