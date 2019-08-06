@@ -40,12 +40,12 @@ func GlobalWordMapper(resultDir string) {
 
 		for word, freq := range page.Word {
 			if _, ok := globalWord[word]; ok {
-				globalWord[word]["abs"] += float64(freq)
-				globalWord[word]["in"] += 1
+				globalWord[word]["a"] += float64(freq) // a --> abs, i --> in
+				globalWord[word]["i"] += 1
 			} else {
 				globalWord[word] = make(map[string]float64)
-				globalWord[word]["abs"] = float64(freq)
-				globalWord[word]["in"] = 1
+				globalWord[word]["a"] = float64(freq)
+				globalWord[word]["i"] = 1
 			}
 			totalWord += float64(freq)
 		}

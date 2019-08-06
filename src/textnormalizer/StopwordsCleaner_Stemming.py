@@ -72,7 +72,7 @@ def _stopwords_cleaner(revert_text, lang):
 def _fix_word_length(rev_text):
     new_text = rev_text
     for word in rev_text.split():
-        if len(word) > 100:
+        if len(word) > 20 or len(word) <= 3:
             new_text = new_text.replace(word, "")
 
     return new_text

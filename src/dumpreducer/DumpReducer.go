@@ -2,6 +2,7 @@ package dumpreducer
 
 import (
 	"sync"
+	"time"
 
 	"../structures"
 	"../utils"
@@ -38,8 +39,40 @@ func writePage(page *wikibrief.EvolvingPage, revArray *[]structures.Revision, nR
 	}
 }
 
+func applyTimeFilter(rev *wikibrief.Revision, revArray *[]structures.Revision, startDate time.Time, endDate time.Time) {
+	timestamp := rev.Timestamp
+	if !startDate.IsZero() && !endDate.IsZero() {
+		if timestamp.Sub(startDate) >= 0 && timestamp.Sub(endDate) <= 0 {
+			*revArray = append(*revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+		}
+	} else if startDate.IsZero() && !endDate.IsZero() {
+		if timestamp.Sub(endDate) <= 0 {
+			*revArray = append(*revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+		}
+	} else if !startDate.IsZero() && endDate.IsZero() {
+		if timestamp.Sub(startDate) >= 0 {
+			*revArray = append(*revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+		}
+	}
+}
+
+func applySpecialListFilter(specialPageList *[]uint32, page *wikibrief.EvolvingPage, rev *wikibrief.Revision, revArray *[]structures.Revision) {
+	inList := func() bool {
+		for _, pageID := range *specialPageList {
+			if pageID == page.PageID {
+				return true
+			}
+		}
+		return false
+	}
+	if inList() {
+		*revArray = append(*revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+	}
+}
+
 // DumpReducer reduce the page information applying filters to it, like revert time frame, revert number and special page list
-func DumpReducer(channel <-chan wikibrief.EvolvingPage, resultDir string, nRevision int) {
+func DumpReducer(channel <-chan wikibrief.EvolvingPage, resultDir string, startDate time.Time, endDate time.Time,
+	specialPageList *[]uint32, nRevision int) {
 	wg := sync.WaitGroup{}
 	for i := 0; i < 50; i++ {
 		wg.Add(1)
@@ -49,7 +82,13 @@ func DumpReducer(channel <-chan wikibrief.EvolvingPage, resultDir string, nRevis
 				var revArray []structures.Revision
 				for rev := range page.Revisions {
 					if rev.IsRevert > 0 {
-						revArray = append(revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+						if !startDate.IsZero() || !endDate.IsZero() { // if data filter is setted
+							applyTimeFilter(&rev, &revArray, startDate, endDate)
+						} else if specialPageList != nil { // if page list is setted
+							applySpecialListFilter(specialPageList, &page, &rev, &revArray)
+						} else { // otherwise
+							revArray = append(revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+						}
 					}
 				}
 				writePage(&page, &revArray, nRevision, resultDir)

@@ -122,7 +122,7 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, n
 func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel <-chan wikibrief.EvolvingPage) {
 	println("Parse and reduction start")
 	start := time.Now()
-	dumpreducer.DumpReducer(channel, wd.resultDir, wd.nRevert) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
+	dumpreducer.DumpReducer(channel, wd.resultDir, time.Time{}, time.Time{}, nil, wd.nRevert) //("../103KB_test.7z", wd.resultDir, wd.startDate, wd.endDate, wd.specialPageList)// //startDate and endDate must be in the same format of dump timestamp!
 	fmt.Println("Duration: (s) ", time.Now().Sub(start).Seconds())
 	println("Parse and reduction end")
 }
@@ -226,7 +226,7 @@ func main() {
 	nRevert, _ := strconv.Atoi(os.Args[3])
 	nTopWords, _ := strconv.Atoi(os.Args[4])
 
-	wd.NewWikiDump(os.Args[1], os.Args[2], nRevert, nTopWords) //"vec", "/Result/", 10, 50)
+	wd.NewWikiDump(os.Args[1], os.Args[2], nRevert, nTopWords)
 
 	ctx, fail := ctxutils.WithFail(context.Background())
 	pageChannel := wikibrief.New(ctx, fail, wd.resultDir, wd.lang)

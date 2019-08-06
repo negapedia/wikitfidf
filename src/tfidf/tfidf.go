@@ -75,7 +75,7 @@ func ComputeTFIDF(resultDir string) {
 		for i := range page {
 			for word, wordFreq := range page[i].Words {
 				tf := wordFreq / page[i].Tot
-				appearIn := globalWord[word]["in"]
+				appearIn := globalWord[word]["i"]
 				idf := math.Log10(totalPage / appearIn)
 				tfidf := tf * idf
 
