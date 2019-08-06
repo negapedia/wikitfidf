@@ -15,10 +15,10 @@ func GlobalWordMapper(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, "M[0-9]*")
 	nFile := len(fileList)
 
-	globalWord := make(map[string]map[string]float64)
-	var totalWord float64
+	globalWord := make(map[string]map[string]uint32)
+	var totalWord uint32
 	totalWord = 0
-	var totalPage float64
+	var totalPage uint32
 	totalPage = 0
 
 	for i, file := range fileList {
@@ -40,20 +40,20 @@ func GlobalWordMapper(resultDir string) {
 
 		for word, freq := range page.Word {
 			if _, ok := globalWord[word]; ok {
-				globalWord[word]["a"] += float64(freq) // a --> abs, i --> in
+				globalWord[word]["a"] += uint32(freq) // a --> abs, i --> in
 				globalWord[word]["i"] += 1
 			} else {
-				globalWord[word] = make(map[string]float64)
-				globalWord[word]["a"] = float64(freq)
+				globalWord[word] = make(map[string]uint32)
+				globalWord[word]["a"] = uint32(freq)
 				globalWord[word]["i"] = 1
 			}
-			totalWord += float64(freq)
+			totalWord += uint32(freq)
 		}
 	}
 
-	globalWord["@Total Word"] = make(map[string]float64)
+	globalWord["@Total Word"] = make(map[string]uint32)
 	globalWord["@Total Word"]["tot"] = totalWord
-	globalWord["@Total Page"] = make(map[string]float64)
+	globalWord["@Total Page"] = make(map[string]uint32)
 	globalWord["@Total Page"]["tot"] = totalPage
 
 	utils.WriteGlobalWord(resultDir, &globalWord)

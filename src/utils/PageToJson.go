@@ -49,7 +49,7 @@ func WriteMappedPage(resultPath string, page *structures.PageElement) {
 }
 
 // WriteGlobalWord write a json of global word map
-func WriteGlobalWord(resultPath string, gloabalWord *map[string]map[string]float64) {
+func WriteGlobalWord(resultPath string, gloabalWord *map[string]map[string]uint32) {
 	outFile, err := os.Create(resultPath + "GlobalWord.json")
 	if err == nil {
 		writer := bufio.NewWriter(outFile)

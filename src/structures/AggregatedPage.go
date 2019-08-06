@@ -10,13 +10,13 @@ package structures
 type AggregatedPage struct {
 	PageID  uint32
 	TopicID uint32
-	Tot     float64
-	Words   map[string]float64
+	Tot     uint32
+	Words   map[string]uint32
 }
 
 // TfidfAggregatedPage represent a wikipedia page word data after the cleaning process of TFIDF computation
 type TfidfAggregatedPage struct {
 	TopicID uint32
-	Tot     float64
+	Tot     uint32
 	Words   *map[string]map[string]float64
 }

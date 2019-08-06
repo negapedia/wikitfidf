@@ -11,8 +11,8 @@ import (
 	"../utils"
 )
 
-func getTotalWordInPage(page *structures.PageElement) float64 {
-	var tot float64
+func getTotalWordInPage(page *structures.PageElement) uint32 {
+	var tot uint32
 	tot = 0
 	for _, wordFreq := range page.Word {
 		tot += wordFreq

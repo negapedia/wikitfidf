@@ -74,13 +74,13 @@ func ComputeTFIDF(resultDir string) {
 		var newPage = make(map[string]structures.TfidfAggregatedPage)
 		for i := range page {
 			for word, wordFreq := range page[i].Words {
-				tf := wordFreq / page[i].Tot
+				tf := float64(wordFreq) / float64(page[i].Tot)
 				appearIn := globalWord[word]["i"]
 				idf := math.Log10(totalPage / appearIn)
-				tfidf := tf * idf
+				tfidf := math.Round((tf*idf)*10000) / 10000
 
 				newPageWords[word] = make(map[string]float64)
-				newPageWords[word]["abs"] = wordFreq
+				newPageWords[word]["abs"] = float64(wordFreq)
 				newPageWords[word]["tfidf"] = tfidf
 			}
 			newPage[i] = structures.TfidfAggregatedPage{TopicID: page[i].TopicID, Tot: page[i].Tot, Words: &newPageWords}

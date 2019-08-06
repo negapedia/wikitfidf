@@ -108,7 +108,7 @@ func BadWords(lang, resultDir string) {
 				}
 
 				if len(badwordInPage) > 0 {
-					newPage[p] = structures.BadWordsReport{TopicID: page[p].TopicID, Abs: totalBadW, Rel: float64(totalBadW) / page[p].Tot, BadW: badwordInPage}
+					newPage[p] = structures.BadWordsReport{TopicID: page[p].TopicID, Abs: totalBadW, Rel: float64(totalBadW) / float64(page[p].Tot), BadW: badwordInPage}
 				} else {
 					toIgnore = true // no badwords in this page
 				}

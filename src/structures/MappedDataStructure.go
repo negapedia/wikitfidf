@@ -15,5 +15,5 @@ type PageContainer struct {
 type PageElement struct {
 	PageId  uint32
 	TopicID uint32
-	Word    map[string]float64
+	Word    map[string]uint32
 }
