@@ -1,6 +1,7 @@
 package dumpreducer
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -56,10 +57,10 @@ func applyTimeFilter(rev *wikibrief.Revision, revArray *[]structures.Revision, s
 	}
 }
 
-func applySpecialListFilter(specialPageList *[]uint32, page *wikibrief.EvolvingPage, rev *wikibrief.Revision, revArray *[]structures.Revision) {
+func applySpecialListFilter(specialPageList *[]string, page *wikibrief.EvolvingPage, rev *wikibrief.Revision, revArray *[]structures.Revision) {
 	inList := func() bool {
 		for _, pageID := range *specialPageList {
-			if pageID == page.PageID {
+			if pageID == fmt.Sprint(page.PageID) {
 				return true
 			}
 		}
@@ -72,7 +73,7 @@ func applySpecialListFilter(specialPageList *[]uint32, page *wikibrief.EvolvingP
 
 // DumpReducer reduce the page information applying filters to it, like revert time frame, revert number and special page list
 func DumpReducer(channel <-chan wikibrief.EvolvingPage, resultDir string, startDate time.Time, endDate time.Time,
-	specialPageList *[]uint32, nRevision int) {
+	specialPageList *[]string, nRevision int) {
 	wg := sync.WaitGroup{}
 	for i := 0; i < 50; i++ {
 		wg.Add(1)

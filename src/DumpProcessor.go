@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ebonetti/ctxutils"
@@ -30,6 +32,10 @@ type WikiDumpConflitcAnalyzer struct {
 	resultDir   string
 	nRevert     int
 	topNWords   int
+
+	startDate       time.Time
+	endDate         time.Time
+	specialPageList []string
 }
 
 func checkAvailableLanguage(lang string) (bool, error) {
@@ -92,7 +98,9 @@ func checkAvailableLanguage(lang string) (bool, error) {
 // required Wikipedia Dump language, result directory, special page list which admits to process only the page in list,
 // start and end date which admits to work only in a specific time frame, number of revert to consider: will be processed
 // only the last "n" revert per page
-func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, nRevert, topNWords int) {
+func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string,
+	startDate string, endDate string, specialPageList string, nRevert, topNWords int) {
+
 	_, err := checkAvailableLanguage(lang)
 	if err != nil {
 		panic(err)
@@ -109,6 +117,16 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string, n
 	wd.resultDir += "/"
 
 	wd.topNWords = topNWords
+	wd.startDate, _ = time.Parse(startDate, "2019-01-01T15:00")
+	wd.endDate, _ = time.Parse(endDate, "2019-01-01T15:00")
+
+	wd.specialPageList = func(specialPageList string) []string {
+		if specialPageList == "" {
+			return nil
+		} else {
+			return strings.Split(specialPageList, "-")
+		}
+	}(specialPageList)
 
 	if _, err := os.Stat(wd.resultDir + "Stem"); os.IsNotExist(err) {
 		err = os.MkdirAll(wd.resultDir+"Stem", 0755)
@@ -221,12 +239,18 @@ func (wd *WikiDumpConflitcAnalyzer) CompressResultDir(whereToSave string, remove
 }
 
 func main() {
+	langFlag := flag.String("l", "", "Dump language")
+	dirFlag := flag.String("d", "", "Result dir")
+	startDateFlag := flag.String("s", "", "Revision starting date")
+	endDateFlag := flag.String("e", "", "Revision ending date")
+	specialPageListFlag := flag.String("specialList", "", "Special page list, page not in this list will be ignored. Input PageID like: id1-id2-...")
+	nRevert := flag.Int("r", 0, "Number of revert limit")
+	nTopWords := flag.Int("t", 0, "Number of top words to process")
+	flag.Parse()
+
 	wd := new(WikiDumpConflitcAnalyzer)
 
-	nRevert, _ := strconv.Atoi(os.Args[3])
-	nTopWords, _ := strconv.Atoi(os.Args[4])
-
-	wd.NewWikiDump(os.Args[1], os.Args[2], nRevert, nTopWords)
+	wd.NewWikiDump(*langFlag, *dirFlag, *startDateFlag, *endDateFlag, *specialPageListFlag, *nRevert, *nTopWords)
 
 	ctx, fail := ctxutils.WithFail(context.Background())
 	pageChannel := wikibrief.New(ctx, fail, wd.resultDir, wd.lang)
