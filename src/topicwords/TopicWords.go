@@ -19,22 +19,22 @@ import (
 	"../utils"
 )
 
-type TopicWriter struct {
+type topicWriter struct {
 	Writer *bufio.Writer
 	File   *os.File
 }
 
-func writeWord(topicWriters map[uint32]*TopicWriter, resultDir string, topicID uint32, word string) {
+func writeWord(topicWriters map[uint32]*topicWriter, resultDir string, topicID uint32, word string) {
 	if _, ok := topicWriters[topicID]; !ok {
 		outFile, _ := os.Create(resultDir + "T" + fmt.Sprint(topicID))
-		topicWriters[topicID] = &TopicWriter{Writer: bufio.NewWriter(outFile), File: outFile}
+		topicWriters[topicID] = &topicWriter{Writer: bufio.NewWriter(outFile), File: outFile}
 	}
 
 	_, _ = topicWriters[topicID].Writer.Write([]byte(word + "\n"))
 	_ = topicWriters[topicID].Writer.Flush()
 }
 
-func closeAll(topicWriters map[uint32]*TopicWriter) {
+func closeAll(topicWriters map[uint32]*topicWriter) {
 	for _, writer := range topicWriters {
 		writer.File.Close()
 	}
@@ -49,7 +49,7 @@ func topicWordsWriter(resultDir string) {
 	}
 	globalPageReader := bufio.NewReader(globalPageTFIDF)
 
-	topicWordWriters := make(map[uint32]*TopicWriter)
+	topicWordWriters := make(map[uint32]*topicWriter)
 
 	for {
 		line, err := globalPageReader.ReadString('\n')
