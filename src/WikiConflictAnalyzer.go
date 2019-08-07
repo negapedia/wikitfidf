@@ -136,9 +136,8 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string,
 	wd.SpecialPageList = func(specialPageList string) []string {
 		if specialPageList == "" {
 			return nil
-		} else {
-			return strings.Split(specialPageList, "-")
 		}
+		return strings.Split(specialPageList, "-")
 	}(specialPageList)
 
 	if _, err := os.Stat(wd.ResultDir + "Stem"); os.IsNotExist(err) {

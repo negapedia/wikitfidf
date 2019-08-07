@@ -101,7 +101,7 @@ func BadWords(lang, resultDir string) {
 					if _, isBadword := badWordsMap[word]; isBadword {
 						totalBadW++
 						if _, ok := badwordInPage[word]; ok {
-							badwordInPage[word] += 1
+							badwordInPage[word]++
 						} else {
 							badwordInPage[word] = 1
 						}

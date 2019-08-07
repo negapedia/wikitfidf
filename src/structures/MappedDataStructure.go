@@ -13,7 +13,7 @@ type PageContainer struct {
 
 // PageElement represent a page containing complete data about word frequency
 type PageElement struct {
-	PageId  uint32
+	PageID  uint32
 	TopicID uint32
 	Word    map[string]uint32
 }

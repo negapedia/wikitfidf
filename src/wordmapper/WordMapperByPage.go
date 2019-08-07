@@ -16,13 +16,13 @@ func getMappedPage(page *structures.StemmedPageJson) structures.PageElement {
 	for _, rev := range page.Revision {
 		for _, word := range rev.Text {
 			if _, ok := mappedText[word]; ok {
-				mappedText[word] += 1
+				mappedText[word]++
 			} else {
 				mappedText[word] = 1
 			}
 		}
 	}
-	return structures.PageElement{PageId: page.PageID, TopicID: page.TopicID, Word: mappedText}
+	return structures.PageElement{PageID: page.PageID, TopicID: page.TopicID, Word: mappedText}
 }
 
 // WordMapperByPage given the result dir, generate a global file containing all the processed pages

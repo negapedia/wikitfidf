@@ -10,9 +10,9 @@ package structures
 type StemmedPageJson struct {
 	PageID   uint32                `json:"PageID"`
 	TopicID  uint32                `json:"TopicID"`
-	Revision []stemmedRevisionJson `json:"Revision"`
+	Revision []stemmedRevisionJSON `json:"Revision"`
 }
 
-type stemmedRevisionJson struct {
+type stemmedRevisionJSON struct {
 	Text []string `json:"Text"`
 }

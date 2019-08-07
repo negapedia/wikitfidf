@@ -107,7 +107,7 @@ func mapWordsInFile(file string) *map[string]uint32 {
 	return &wordMap
 }
 
-func getJsonBytes(topicFile string, words *map[string]uint32) *[]byte {
+func getJSONBytes(topicFile string, words *map[string]uint32) *[]byte {
 	topicID := topicFile[len(topicFile)-10:]
 
 	topicMap := make(map[string]*map[string]uint32)
@@ -132,7 +132,7 @@ func topicWordsMapper(resultDir string) {
 
 	for i, topicFile := range topicFiles {
 		topicWords := mapWordsInFile(topicFile)
-		jsonTopicWords := string(*getJsonBytes(topicFile, topicWords))
+		jsonTopicWords := string(*getJSONBytes(topicFile, topicWords))
 
 		if i == 0 {
 			jsonTopicWords = jsonTopicWords[:len(jsonTopicWords)-1] + ",\n"
