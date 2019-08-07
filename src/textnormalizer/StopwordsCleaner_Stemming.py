@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import json, sys, os, glob #, cProfile
+import glob
+import json
+import os
+import sys
 from multiprocessing import Pool, cpu_count
+
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 
 
 def _lang_mapper(lang):
-    # available language for NLTK stopwords list
+    # available language for stopwords list
     available_lang = {
         "en": "english",
         "ar": "arabic",
@@ -56,7 +60,7 @@ def _lang_mapper(lang):
         "uk": "ukrainian",
         "ur": "urdu",
         "simple": "english",
-        "vec": "italian"        # TODO remove
+        "vec": "italian"  # only as test
     }
     return available_lang[lang]
 
@@ -69,6 +73,7 @@ def _stopwords_cleaner(revert_text, lang):
             revert_text = list(filter(word.__ne__, revert_text))
     return revert_text
 
+
 def _fix_word_length(rev_text):
     new_text = rev_text
     for word in rev_text.split():
@@ -76,6 +81,7 @@ def _fix_word_length(rev_text):
             new_text = new_text.replace(word, "")
 
     return new_text
+
 
 def _stemming(revert_text, stemmer_reverse_dict):
     ps = PorterStemmer()
@@ -95,13 +101,11 @@ def _stemming(revert_text, stemmer_reverse_dict):
 
 def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     """
-    The method, given the reduced dump and the dump language,
-    tokenize the text, clean it from the stopwords and execute the stemming of the dump text
-    :param dump_dict:
-    :param lang:
-    :return:
+    _stopwords_cleaner_stemming perform tokenization, stopwords cleaning and stemming on a single file "filname"
+    :param result_dir: path of result folder
+    :param filename: file to preocess
+    :param lang: wikipedia language
     """
-
     with open(filename, "r") as f:
         dump_dict = json.load(f)
 
@@ -122,21 +126,22 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     topic_id = dump_dict["TopicID"]
 
     os.remove(filename)
-    with open(result_dir+"S"+str(topic_id)+"_"+str(page_id)+".json", "w") as f:
+    with open(result_dir + "S" + str(topic_id) + "_" + str(page_id) + ".json", "w") as f:
         json.dump(dump_dict, f, ensure_ascii=False)
 
-    with open(result_dir+"Stem/StemRev_"+str(topic_id)+"_"+str(page_id)+".json", "w") as f:
+    with open(result_dir + "Stem/StemRev_" + str(topic_id) + "_" + str(page_id) + ".json", "w") as f:
         json.dump(reverse_stemming_dict, f, ensure_ascii=False)
 
 
 def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
     """
-    The method given the reduced dump, clean the dump from wikipedia markup calling _fix_text(...)
-    :param dump_dict: reduced dict of the dump
-    :return: the cleaned up dump
+    The method given the result dir, perform in parallel tokenization, stopwords cleaning, stemming
+    :param result_dir: path of result folder
+    :param lang: wiki language
     """
 
-    file_to_clean = sorted(glob.glob(result_dir+"W[1-9]*.json"), key=os.path.getsize)  # from the smallest to the biggest
+    file_to_clean = sorted(glob.glob(result_dir + "W[1-9]*.json"),
+                           key=os.path.getsize)  # from the smallest to the biggest
 
     executor = Pool(cpu_count())
     for filename in file_to_clean:
@@ -144,14 +149,6 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
     executor.close()
     executor.join()
 
-    #with Pool(cpu_count()) as executor:
-    #    executor.map(_stopwords_cleaner_stemming, file_to_clean)
-
 
 if __name__ == "__main__":
-    #pr = cProfile.Profile()
-    #pr.enable()
-    #  concurrent_stopwords_cleaner_stemmer("../../Result/it_20190601/", "it")
     concurrent_stopwords_cleaner_stemmer(sys.argv[1], sys.argv[2])
-    #pr.disable()
-    #pr.dump_stats("StopWStemProfile.txt")

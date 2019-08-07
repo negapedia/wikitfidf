@@ -22,4 +22,4 @@ Result/*
 *.pyc
 *.c
 *.o
-DumpProcessor
+*.json

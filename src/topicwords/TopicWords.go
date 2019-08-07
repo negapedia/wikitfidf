@@ -73,7 +73,7 @@ func topicWordsWriter(resultDir string) {
 			panic(err)
 		}
 		for i := range page {
-			for word, _ := range *page[i].Words {
+			for word := range *page[i].Words {
 				writeWord(topicWordWriters, resultDir, page[i].TopicID, word)
 			}
 		}

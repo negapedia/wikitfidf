@@ -2,6 +2,7 @@ package wordmapper
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -27,8 +28,10 @@ func getMappedPage(page *structures.StemmedPageJson) structures.PageElement {
 // WordMapperByPage given the result dir, generate a global file containing all the processed pages
 func WordMapperByPage(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, "S[0-9]*")
+	nFile := len(fileList)
 
-	for _, file := range fileList {
+	for i, file := range fileList {
+		fmt.Printf("\rOn %d/%d\n", i+1, nFile)
 		jsonFile, err := os.Open(file)
 		if err != nil {
 			panic(err)

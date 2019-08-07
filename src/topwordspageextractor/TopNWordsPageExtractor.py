@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import json,sys
+import json
+import sys
 from collections import Counter
 
-def _top_n_getter(words_dict: dict, n:int):
+
+def _top_n_getter(words_dict: dict, n: int):
     top_n = Counter(words_dict).most_common(n)
     words_dict = {}
     for key, value in top_n:
@@ -29,13 +31,13 @@ def _get_top_n_words_dict(pageDict: dict, n: int):
         return top_n_page
 
 
-def top_N_Words_Page_Extractor(result_dir: str, n):
+def top_n_Words_Page_Extractor(result_dir: str, n):
     """
     top_N_Words_Page_Extractor given the result dir compute the n most important words for each page in GlobalPageTFIDF
     :param result_dir: result dir path
     :param n: amount of most important words to calculate
     """
-    globalTopNTFIDF = open(result_dir +"GlobalPageTFIDF_top"+n+".json", "w")
+    globalTopNTFIDF = open(result_dir + "GlobalPageTFIDF_top" + n + ".json", "w")
 
     gloabalTFIDF = open(result_dir + "GlobalPageTFIDF.json", "r");
     globalTFIDF_it = iter(gloabalTFIDF.readline, "")
@@ -57,11 +59,11 @@ def top_N_Words_Page_Extractor(result_dir: str, n):
 
         if counter == 0:
             page_json = json.dumps(pageDict)
-            page_json = page_json[:len(page_json)-1] + ",\n"
+            page_json = page_json[:len(page_json) - 1] + ",\n"
             globalTopNTFIDF.write(page_json)
         elif counter >= 0:
             page_json = json.dumps(pageDict)
-            page_json = page_json[1:len(page_json)-1] + ",\n"
+            page_json = page_json[1:len(page_json) - 1] + ",\n"
             globalTopNTFIDF.write(page_json)
         globalTopNTFIDF.flush()
         counter += 1
@@ -73,4 +75,4 @@ def top_N_Words_Page_Extractor(result_dir: str, n):
 
 
 if __name__ == "__main__":
-    top_N_Words_Page_Extractor(sys.argv[1], sys.argv[2])
+    top_n_Words_Page_Extractor(sys.argv[1], sys.argv[2])

@@ -1,4 +1,5 @@
-import sys, DeStemmer
+import DeStemmer
+import sys
 
-DeStemmer.GlobalPageDeStem(sys.argv[1])
-DeStemmer.GlobalWordDeStem(sys.argv[1])
+DeStemmer.global_page_destem(sys.argv[1])
+DeStemmer.global_word_destem(sys.argv[1])

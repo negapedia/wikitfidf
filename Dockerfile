@@ -22,5 +22,5 @@ RUN cd $GOPATH/src/destemmer/ && python3 compile.py build_ext --inplace
 
 WORKDIR $GOPATH/src
 
-RUN go build DumpProcessor.go
-ENTRYPOINT ["./DumpProcessor", "-l", "vec", "-d", "/Result/", "-r", "10", "-t", "50"]
+RUN go build WikiConflictAnalyzer.go
+ENTRYPOINT ["./WikiConflictAnalyzer", "-l", "vec", "-d", "/Result/", "-r", "10", "-t", "50"]
