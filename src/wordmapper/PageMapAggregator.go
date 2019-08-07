@@ -26,11 +26,11 @@ func PageMapAggregator(resultDir string) {
 	fileList := utils.FilesInDir(resultDir, "M[0-9]*")
 	nFile := len(fileList)
 
-	outFile, _ := os.Create(resultDir + "GlobalPage.json")
+	outFile, _ := os.Create(resultDir + "GlobalPages.json")
 	encWriter := bufio.NewWriter(outFile)
 
 	for i, file := range fileList {
-		fmt.Printf("\rOn %d/%d\n", i+1, nFile)
+		fmt.Printf("\rOn %d/%d", i+1, nFile)
 
 		jsonFile, err := os.Open(file)
 		// if we os.Open returns an error then handle it
@@ -66,6 +66,7 @@ func PageMapAggregator(resultDir string) {
 
 		_ = encWriter.Flush()
 	}
+	fmt.Println()
 
 	encWriter.Write([]byte("}"))
 	_ = encWriter.Flush()

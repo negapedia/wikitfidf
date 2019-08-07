@@ -50,7 +50,7 @@ func WriteMappedPage(resultPath string, page *structures.PageElement) {
 
 // WriteGlobalWord write a json of global word map
 func WriteGlobalWord(resultPath string, gloabalWord *map[string]map[string]uint32) {
-	outFile, err := os.Create(resultPath + "GlobalWord.json")
+	outFile, err := os.Create(resultPath + "GlobalWords.json")
 	if err == nil {
 		writer := bufio.NewWriter(outFile)
 		defer outFile.Close()

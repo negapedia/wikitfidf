@@ -51,12 +51,12 @@ def global_page_destem(result_dir):
     if len(reverse_stemming_dict) > 0:
 
         try:
-            global_dict_file = open(result_dir + "GlobalPageTFIDF.json", "r")
+            global_dict_file = open(result_dir + "GlobalPagesTFIDF.json", "r")
         except OSError:
-            global_dict_file = open(result_dir + "GlobalPage.json", "r")
+            global_dict_file = open(result_dir + "GlobalPages.json", "r")
         global_dict_file_iter = iter(global_dict_file.readline, "")
 
-        destemmed_global_dict_file = open(result_dir + "DESTEM_GlobalPageTFIDF.json", "w")
+        destemmed_global_dict_file = open(result_dir + "DESTEM_GlobalPagesTFIDF.json", "w")
         destemmed_global_dict_file.write("{")
 
         for line in global_dict_file_iter:
@@ -80,8 +80,8 @@ def global_page_destem(result_dir):
         global_dict_file.close()
         destemmed_global_dict_file.write("}")
         destemmed_global_dict_file.close()
-        os.remove(result_dir + "GlobalPageTFIDF.json")
-        os.rename(result_dir + "DESTEM_GlobalPageTFIDF.json", result_dir + "GlobalPageTFIDF.json")
+        os.remove(result_dir + "GlobalPagesTFIDF.json")
+        os.rename(result_dir + "DESTEM_GlobalPagesTFIDF.json", result_dir + "GlobalPagesTFIDF.json")
 
 
 def global_word_destem(result_dir):
@@ -92,7 +92,7 @@ def global_word_destem(result_dir):
     with open(result_dir + "GlobalStem.json", "r") as rev_stem_file:
         reverse_stemming_dict = json.load(rev_stem_file)
 
-    with open(result_dir + "GlobalWord.json", "r") as global_dict_file:
+    with open(result_dir + "GlobalWords.json", "r") as global_dict_file:
         global_dict = json.load(global_dict_file)
 
     global_dict_new = copy.deepcopy(global_dict)
@@ -103,4 +103,4 @@ def global_word_destem(result_dir):
             global_dict_new[reverse_stemming_dict[word]] = global_dict[word]
             del global_dict_new[word]
 
-    _dict_writer(global_dict_new, "GlobalWord", result_dir)
+    _dict_writer(global_dict_new, "GlobalWords", result_dir)

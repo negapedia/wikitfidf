@@ -22,7 +22,7 @@ func GlobalWordMapper(resultDir string) {
 	totalPage = 0
 
 	for i, file := range fileList {
-		fmt.Printf("\rOn %d/%d\n", i+1, nFile)
+		fmt.Printf("\rOn %d/%d", i+1, nFile)
 
 		jsonFile, err := os.Open(file)
 		if err != nil {
@@ -50,6 +50,7 @@ func GlobalWordMapper(resultDir string) {
 			totalWord += uint32(freq)
 		}
 	}
+	fmt.Println()
 
 	globalWord["@Total Word"] = make(map[string]uint32)
 	globalWord["@Total Word"]["tot"] = totalWord

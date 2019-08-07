@@ -37,9 +37,9 @@ def top_n_Words_Page_Extractor(result_dir: str, n):
     :param result_dir: result dir path
     :param n: amount of most important words to calculate
     """
-    globalTopNTFIDF = open(result_dir + "GlobalPageTFIDF_top" + n + ".json", "w")
+    globalTopNTFIDF = open(result_dir + "GlobalPagesTFIDF_top" + n + ".json", "w")
 
-    gloabalTFIDF = open(result_dir + "GlobalPageTFIDF.json", "r");
+    gloabalTFIDF = open(result_dir + "GlobalPagesTFIDF.json", "r");
     globalTFIDF_it = iter(gloabalTFIDF.readline, "")
 
     n = int(n)

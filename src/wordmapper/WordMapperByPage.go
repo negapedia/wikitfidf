@@ -31,7 +31,7 @@ func WordMapperByPage(resultDir string) {
 	nFile := len(fileList)
 
 	for i, file := range fileList {
-		fmt.Printf("\rOn %d/%d\n", i+1, nFile)
+		fmt.Printf("\rOn %d/%d", i+1, nFile)
 		jsonFile, err := os.Open(file)
 		if err != nil {
 			panic(err)
@@ -50,4 +50,5 @@ func WordMapperByPage(resultDir string) {
 			utils.WriteMappedPage(resultDir, &mappedPage)
 		}
 	}
+	fmt.Println()
 }

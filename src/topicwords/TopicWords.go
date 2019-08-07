@@ -41,7 +41,7 @@ func closeAll(topicWriters map[uint32]*TopicWriter) {
 }
 
 func topicWordsWriter(resultDir string) {
-	globalPageTFIDF, err := os.Open(resultDir + "GlobalPageTFIDF.json")
+	globalPageTFIDF, err := os.Open(resultDir + "GlobalPagesTFIDF.json")
 	defer globalPageTFIDF.Close()
 	// if we os.Open returns an error then handle it
 	if err != nil {
@@ -123,7 +123,7 @@ func getJsonBytes(topicFile string, words *map[string]uint32) *[]byte {
 func topicWordsMapper(resultDir string) {
 	topicFiles := utils.FilesInDir(resultDir, "T*")
 
-	outFile, err := os.Create(resultDir + "GlobalTopicWords.json")
+	outFile, err := os.Create(resultDir + "GlobalTopicsWords.json")
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}

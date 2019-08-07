@@ -11,7 +11,7 @@ import (
 )
 
 func getGlobalWord(resultDir string) map[string]map[string]float64 {
-	jsonFile, err := os.Open(resultDir + "GlobalWord.json")
+	jsonFile, err := os.Open(resultDir + "GlobalWords.json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		panic(err)
@@ -36,11 +36,11 @@ func ComputeTFIDF(resultDir string) {
 
 	totalPage := globalWord["@Total Page"]["tot"]
 
-	outFile, _ := os.Create(resultDir + "GlobalPageTFIDF.json")
+	outFile, _ := os.Create(resultDir + "GlobalPagesTFIDF.json")
 	defer outFile.Close()
 	encWriter := bufio.NewWriter(outFile)
 
-	globalPage, err := os.Open(resultDir + "GlobalPage.json")
+	globalPage, err := os.Open(resultDir + "GlobalPages.json")
 	defer globalPage.Close()
 	// if we os.Open returns an error then handle it
 	if err != nil {
@@ -106,5 +106,5 @@ func ComputeTFIDF(resultDir string) {
 	_, _ = encWriter.Write([]byte("}"))
 	_ = encWriter.Flush()
 
-	_ = os.Remove(resultDir + "GlobalPage.json")
+	_ = os.Remove(resultDir + "GlobalPages.json")
 }

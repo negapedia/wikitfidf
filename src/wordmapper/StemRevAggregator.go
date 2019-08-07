@@ -16,7 +16,7 @@ func StemRevAggregator(resultDir string) {
 	globalStemRev := make(map[string]string)
 
 	for i, file := range fileList {
-		fmt.Printf("\rOn %d/%d\n", i+1, nFile)
+		fmt.Printf("\rOn %d/%d", i+1, nFile)
 
 		jsonFile, err := os.Open(file)
 		// if we os.Open returns an error then handle it
@@ -52,6 +52,7 @@ func StemRevAggregator(resultDir string) {
 			}
 		}
 	}
+	fmt.Println()
 
 	println(len(globalStemRev))
 	utils.WriteGlobalStem(resultDir, &globalStemRev)

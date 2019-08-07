@@ -116,8 +116,10 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string,
 		wd.date += wd.StartDate.String() + "_" + wd.EndDate.String()
 	}
 
-	wd.ResultDir = func(resultDir string) string { // add last directory separator if not exists
-		if resultDir[len(resultDir)-1:] != "/" {
+	wd.ResultDir = func(resultDir string) string { // assign default result dir if not setted, and add last directory separator if not exists
+		if resultDir == "" {
+			resultDir = "/Results/"
+		} else if resultDir[len(resultDir)-1:] != "/" {
 			resultDir += "/"
 		}
 		return resultDir
