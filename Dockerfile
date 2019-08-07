@@ -13,7 +13,7 @@ RUN apt-get install -y --no-install-recommends p7zip-full
 RUN go get github.com/negapedia/wikibrief
 RUN go get github.com/ebonetti/ctxutils
 
-ADD src/ $GOPATH/src/
+ADD / $GOPATH/src/
 RUN 7z x $GOPATH/src/nltk_data.7z -o/root/nltk_data
 RUN 7z x $GOPATH/src/badwords_data.7z -o/root/badwords_data
 
