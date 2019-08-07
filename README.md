@@ -1,5 +1,6 @@
 # Negapedia Conflict Analyzer
 [![Go Report Card](https://goreportcard.com/badge/github.com/MarcoChilese/NegapediaConflictualWords_GO)](https://goreportcard.com/report/github.com/MarcoChilese/NegapediaConflictualWords)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7e72ac26ecc45259dc0426758043996)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MarcoChilese/Wikipedia-Conflict-Analyzer&amp;utm_campaign=Badge_Grade)
 
 Negapedia Conflict Analyzer analyze Wikipedia's dumps and makes statistical analysis on reverts text.<br>
 The data produced in output can be used to clarify the theme of the contrast inside a Wikipedia page.<br>
