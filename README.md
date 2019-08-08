@@ -30,6 +30,15 @@ The data produced in output can be used to clarify the theme of the contrast ins
 - `GlobalTopic.json`: contains all the words in every topic (using [Negapedia](http://en.negapedia.org) topics);
 - `BadWordsReport.json`: contains for every page which has them, a list of badwords associated with their absolute frequency.
 
+#### Minimum and Recommended Requirements
+The minimum requirements which are needed for executing the project in reasonable times are:
+- At least 4 cores-8 threads CPU;
+- At least 16GB of RAM (required);
+- At least 300GB of disk space.
+
+However the recommended requirements are:
+- 32GB of RAM or more (highly recommended).
+
 ## Usage
 #### Building docker image
 ``docker build -t <image_name> .``<br>
