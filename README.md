@@ -1,4 +1,4 @@
-# Negapedia Conflict Analyzer
+# Wikipedia Conflict Analyzer
 [![Go Report Card](https://goreportcard.com/badge/github.com/MarcoChilese/NegapediaConflictualWords_GO)](https://goreportcard.com/report/github.com/MarcoChilese/NegapediaConflictualWords)
 [![GoDoc](https://godoc.org/github.com/MarcoChilese/Wikipedia-Conflict-Analyzer?status.svg)](https://godoc.org/github.com/MarcoChilese/Wikipedia-Conflict-Analyzer)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7e72ac26ecc45259dc0426758043996)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MarcoChilese/Wikipedia-Conflict-Analyzer&amp;utm_campaign=Badge_Grade)
