@@ -15,8 +15,8 @@ import (
 	"os"
 	"strings"
 
-	"../structures"
-	"../utils"
+	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/structures"
+	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/utils"
 )
 
 type topicWriter struct {
