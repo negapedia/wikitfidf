@@ -49,7 +49,6 @@ from the root of repository directory.
 example:<br>
 ``docker run -d -v ~/Documents/Results/:/Results/ my_image ``<br>
 
-
 #### Executions flags
 - `-l`: wiki language;
 - `-d`: container result dir;
@@ -61,3 +60,7 @@ example:<br>
 example:<br>
 ``./WikiConflictAnalyzer -l it -d /Result/ -r 10 -t 50``<br>
 execution flags have to be setted on Dockerfile entrypoint.
+
+#### Installation
+Go packages can be installed by:<br>
+``go get github.com/MarcoChilese/Wikipedia-Conflict-Analyzer``
