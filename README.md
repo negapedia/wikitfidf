@@ -1,4 +1,4 @@
-# Negapedia Conflict Analyzer
+# Wikipedia Conflict Analyzer
 [![Go Report Card](https://goreportcard.com/badge/github.com/MarcoChilese/NegapediaConflictualWords_GO)](https://goreportcard.com/report/github.com/MarcoChilese/NegapediaConflictualWords)
 [![GoDoc](https://godoc.org/github.com/MarcoChilese/Wikipedia-Conflict-Analyzer?status.svg)](https://godoc.org/github.com/MarcoChilese/Wikipedia-Conflict-Analyzer)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7e72ac26ecc45259dc0426758043996)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MarcoChilese/Wikipedia-Conflict-Analyzer&amp;utm_campaign=Badge_Grade)
@@ -29,6 +29,15 @@ The data produced in output can be used to clarify the theme of the contrast ins
 - `GlobalWords.json`: contains all the analyzed wiki's words associated with their absolute frequency;
 - `GlobalTopic.json`: contains all the words in every topic (using [Negapedia](http://en.negapedia.org) topics);
 - `BadWordsReport.json`: contains for every page which has them, a list of badwords associated with their absolute frequency.
+
+#### Minimum and Recommended Requirements
+The minimum requirements which are needed for executing the project in reasonable times are:
+- At least 4 cores-8 threads CPU;
+- At least 16GB of RAM (required);
+- At least 300GB of disk space.
+
+However the recommended requirements are:
+- 32GB of RAM or more (highly recommended).
 
 ## Usage
 #### Building docker image
