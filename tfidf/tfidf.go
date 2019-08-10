@@ -7,7 +7,7 @@ import (
 	"math"
 	"os"
 
-	"../structures"
+	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/structures"
 )
 
 func getGlobalWord(resultDir string) map[string]map[string]float64 {

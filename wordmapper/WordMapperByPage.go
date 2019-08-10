@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"../structures"
-	"../utils"
+	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/structures"
+	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/utils"
 )
 
 func getMappedPage(page *structures.StemmedPageJson) structures.PageElement {

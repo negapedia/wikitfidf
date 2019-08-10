@@ -12,6 +12,7 @@ RUN apt-get install -y --no-install-recommends p7zip-full
 
 RUN go get github.com/negapedia/wikibrief
 RUN go get github.com/ebonetti/ctxutils
+RUN go get github.com/MarcoChilese/Wikipedia-Conflict-Analyzer
 
 ADD / $GOPATH/src/
 RUN 7z x $GOPATH/src/nltk_data.7z -o/root/nltk_data

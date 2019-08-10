@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"../utils"
+	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/utils"
 )
 
 // StemRevAggregator given the result directory, will aggregate all Stem files into a single global file

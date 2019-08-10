@@ -13,7 +13,7 @@ import (
 	"log"
 	"os"
 
-	"../structures"
+	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/structures"
 )
 
 // WriteCleanPage write a json containing the page after first clean

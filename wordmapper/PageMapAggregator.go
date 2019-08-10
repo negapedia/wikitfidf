@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"../structures"
-	"../utils"
+	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/structures"
+	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/utils"
 )
 
 func getTotalWordInPage(page *structures.PageElement) uint32 {
