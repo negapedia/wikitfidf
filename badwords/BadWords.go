@@ -56,13 +56,13 @@ func badWordsListGetter(lang, path string) map[string]bool {
 // BadWords create the badwords report for the given language, if available, and the given result dir
 func BadWords(lang, resultDir string) {
 	if language, isAvailable := availableLanguage(lang); isAvailable {
-		badWordsMap := badWordsListGetter(language, "/root/badwords_data/") // TODO path to /root/badwords_data/
+		badWordsMap := badWordsListGetter(language, "/root/badwords_data/")
 
 		outFile, _ := os.Create(resultDir + "BadWordsReport.json")
 		encWriter := bufio.NewWriter(outFile)
 		defer outFile.Close()
 
-		globalPage, err := os.Open(resultDir + "GlobalPageTFIDF.json")
+		globalPage, err := os.Open(resultDir + "GlobalPagesTFIDF.json")
 		defer globalPage.Close()
 		if err != nil {
 			panic(err)
