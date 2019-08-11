@@ -5,8 +5,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/structures"
-	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/utils"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/structures"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/utils"
 	"github.com/negapedia/wikibrief"
 )
 

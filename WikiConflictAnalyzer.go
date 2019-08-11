@@ -13,11 +13,11 @@ import (
 
 	"github.com/ebonetti/ctxutils"
 
-	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/badwords"
-	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/dumpreducer"
-	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/tfidf"
-	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/topicwords"
-	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/wordmapper"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/badwords"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/dumpreducer"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/tfidf"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/topicwords"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/wordmapper"
 	"github.com/negapedia/wikibrief"
 	"github.com/pkg/errors"
 )

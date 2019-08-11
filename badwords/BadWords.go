@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/MarcoChilese/Wikipedia-Conflict-Analyzer/structures"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/structures"
 )
 
 func availableLanguage(lang string) (string, bool) {
