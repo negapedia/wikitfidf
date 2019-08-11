@@ -32,6 +32,7 @@ func availableLanguage(lang string) (string, bool) {
 		"pl":     "polish",
 		"th":     "thai",
 		"simple": "english",
+		"vec": "italian", // only as test
 	}
 	language, isIn := languages[lang]
 	return language, isIn
