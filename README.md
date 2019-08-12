@@ -56,7 +56,10 @@ example:<br>
 - `-e`: revert ending date to consider;
 - `-specialList`: special page list to consider;
 - `-r`: number of revert to consider;
-- `-t`: number of top words per page to consider;<br>
+- `-t`: number of top words per page to consider;
+- `-delete`: if true, after compressing results directory will be deleted (default: true);
+- `-verbose`: if true, logs are shown (default: true).
+<br>
 example:<br>
 ``./WikiConflictAnalyzer -l it -d /Result/ -r 10 -t 50``<br>
 execution flags have to be setted on Dockerfile entrypoint.
