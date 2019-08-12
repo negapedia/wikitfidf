@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/structures"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/utils"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/utils"
 )
 
 // GlobalWordMapper given the result dir, generate the file containing the global report about word frequency

@@ -13,11 +13,11 @@ import (
 
 	"github.com/ebonetti/ctxutils"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/badwords"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/dumpreducer"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/tfidf"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/topicwords"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/wordmapper"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/badwords"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/dumpreducer"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/tfidf"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/topicwords"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/wordmapper"
 	"github.com/negapedia/wikibrief"
 	"github.com/pkg/errors"
 )
@@ -163,14 +163,14 @@ func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel <-chan wikibrief.Evolving
 func (wd *WikiDumpConflitcAnalyzer) Process() {
 	println("WikiMarkup cleaning start")
 	start := time.Now()
-	wikiMarkupClean := exec.Command("java", "-jar", "./textnormalizer/WikipediaMarkupCleaner.jar", wd.ResultDir)
+	wikiMarkupClean := exec.Command("java", "-jar", "./internals/textnormalizer/WikipediaMarkupCleaner.jar", wd.ResultDir)
 	_ = wikiMarkupClean.Run()
 	fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 	println("WikiMarkup cleaning end")
 
 	println("Stopwords cleaning and stemming start")
 	start = time.Now()
-	stopwordsCleanerStemming := exec.Command("python3", "./textnormalizer/runStopwClean.py", wd.ResultDir, wd.Lang)
+	stopwordsCleanerStemming := exec.Command("python3", "./internals/textnormalizer/runStopwClean.py", wd.ResultDir, wd.Lang)
 	_ = stopwordsCleanerStemming.Run()
 	fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 	println("Stopwords cleaning and stemming end")
@@ -207,14 +207,14 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 
 	println("Performing Destemming start")
 	start = time.Now()
-	deStemming := exec.Command("python3", "./destemmer/runDeStemming.py", wd.ResultDir)
+	deStemming := exec.Command("python3", "./internals/destemmer/runDeStemming.py", wd.ResultDir)
 	_ = deStemming.Run()
 	fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 	println("Performing Destemming file end")
 
 	println("Processing top N words per page start")
 	start = time.Now()
-	topNWordsPageExtractor := exec.Command("python3", "./topwordspageextractor/runTopNWordsPageExtractor.py", wd.ResultDir, strconv.Itoa(wd.NTopWords))
+	topNWordsPageExtractor := exec.Command("python3", "./internals/topwordspageextractor/runTopNWordsPageExtractor.py", wd.ResultDir, strconv.Itoa(wd.NTopWords))
 	_ = topNWordsPageExtractor.Run()
 	fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 	println("Processing top N words per page end")

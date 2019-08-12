@@ -15,8 +15,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/structures"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/utils"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/utils"
 )
 
 type topicWriter struct {

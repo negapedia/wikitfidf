@@ -3,9 +3,10 @@ package badwords
 import (
 	"bufio"
 	"encoding/json"
+	"log"
 	"os"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/structures"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
 )
 
 func availableLanguage(lang string) (string, bool) {
@@ -66,7 +67,7 @@ func BadWords(lang, resultDir string) {
 		globalPage, err := os.Open(resultDir + "GlobalPagesTFIDF.json")
 		defer globalPage.Close()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		globalPageReader := bufio.NewReader(globalPage)
 		i := 0

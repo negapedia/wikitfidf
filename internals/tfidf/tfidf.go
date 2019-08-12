@@ -7,7 +7,7 @@ import (
 	"math"
 	"os"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/structures"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
 )
 
 func getGlobalWord(resultDir string) map[string]map[string]float64 {
