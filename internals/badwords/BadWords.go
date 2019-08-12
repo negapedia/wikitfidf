@@ -42,7 +42,7 @@ func availableLanguage(lang string) (string, bool) {
 func badWordsListGetter(lang, path string) map[string]bool {
 	file, err := os.Open(path + lang)
 	if err != nil {
-		panic(err)
+		log.Fatal("Error happened while trying to open badwords file:", path + lang,".\n Error:", err)
 	}
 	defer file.Close()
 
@@ -67,7 +67,7 @@ func BadWords(lang, resultDir string) {
 		globalPage, err := os.Open(resultDir + "GlobalPagesTFIDF.json")
 		defer globalPage.Close()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("Error happened while trying to open GlobalPagesTFIDF.json file:", resultDir + "GlobalPagesTFIDF.json",".\n Error:", err)
 		}
 		globalPageReader := bufio.NewReader(globalPage)
 		i := 0

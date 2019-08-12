@@ -19,10 +19,10 @@ RUN go get github.com/negapedia/Wikipedia-Conflict-Analyzer
 RUN 7z x $GOPATH/src/nltk_data.7z -o/root/nltk_data
 RUN 7z x $GOPATH/src/badwords_data.7z -o/root/badwords_data
 
-RUN cd $GOPATH/src/textnormalizer/ && python3 compile.py build_ext --inplace
-RUN cd $GOPATH/src/destemmer/ && python3 compile.py build_ext --inplace
+RUN cd $GOPATH/src/internals/textnormalizer/ && python3 compile.py build_ext --inplace
+RUN cd $GOPATH/src/internals/destemmer/ && python3 compile.py build_ext --inplace
 
 WORKDIR $GOPATH/src
 
-RUN go build WikiConflictAnalyzer.go
-ENTRYPOINT ["./WikiConflictAnalyzer", "-l", "vec", "-d", "/Result/", "-r", "10", "-t", "50"]
+RUN cd cmd && go build WikiConflictAnalyzer.go
+ENTRYPOINT ["./cmd/WikiConflictAnalyzer", "-l", "vec", "-d", "/Result/", "-r", "10", "-t", "50"]

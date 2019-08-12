@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
@@ -33,9 +34,8 @@ func PageMapAggregator(resultDir string) {
 		fmt.Printf("\rOn %d/%d", i+1, nFile)
 
 		jsonFile, err := os.Open(file)
-		// if we os.Open returns an error then handle it
 		if err != nil {
-			panic(err)
+			log.Fatal("Error happened while trying to open file:", file, "Error:",err)
 		}
 
 		byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -45,7 +45,10 @@ func PageMapAggregator(resultDir string) {
 
 		var Page structures.PageElement
 
-		_ = json.Unmarshal(byteValue, &Page)
+		err = json.Unmarshal(byteValue, &Page)
+		if err != nil {
+			log.Fatal("Error while unmarshalling json.",err)
+		}
 
 		pageToWrite := make(map[uint32]structures.AggregatedPage)
 		pageToWrite[Page.PageID] = structures.AggregatedPage{TopicID: Page.TopicID, Tot: getTotalWordInPage(&Page), Words: Page.Word}

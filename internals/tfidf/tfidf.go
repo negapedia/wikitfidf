@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"math"
 	"os"
 
@@ -14,7 +15,7 @@ func getGlobalWord(resultDir string) map[string]map[string]float64 {
 	jsonFile, err := os.Open(resultDir + "GlobalWords.json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		panic(err)
+		log.Fatal("Error happened while trying to open GlobalWords.json file:", resultDir + "GlobalWords.json",".\n Error:", err)
 	}
 
 	byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -24,7 +25,7 @@ func getGlobalWord(resultDir string) map[string]map[string]float64 {
 
 	err = json.Unmarshal(byteValue, &globalWord)
 	if err != nil {
-		panic(err)
+		log.Fatal("Error while unmarshalling json.",err)
 	}
 
 	return globalWord
@@ -42,9 +43,8 @@ func ComputeTFIDF(resultDir string) {
 
 	globalPage, err := os.Open(resultDir + "GlobalPages.json")
 	defer globalPage.Close()
-	// if we os.Open returns an error then handle it
 	if err != nil {
-		panic(err)
+		log.Fatal("Error happened while trying to open GlobalPages.json file:", resultDir + "GlobalPages.json",".\n Error:", err)
 	}
 	globalPageReader := bufio.NewReader(globalPage)
 	i := 0
@@ -67,7 +67,7 @@ func ComputeTFIDF(resultDir string) {
 		line = line[:len(line)-2] + "}"
 		err = json.Unmarshal([]byte(line), &page)
 		if err != nil {
-			panic(err)
+			log.Fatal("Error while unmarshalling json.",err)
 		}
 
 		newPageWords := make(map[string]map[string]float64)

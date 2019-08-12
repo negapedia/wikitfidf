@@ -43,9 +43,8 @@ func closeAll(topicWriters map[uint32]*topicWriter) {
 func topicWordsWriter(resultDir string) {
 	globalPageTFIDF, err := os.Open(resultDir + "GlobalPagesTFIDF.json")
 	defer globalPageTFIDF.Close()
-	// if we os.Open returns an error then handle it
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error happened while trying to open GlobalPagesTFIDF.json file:", resultDir + "GlobalPagesTFIDF.json",".\n Error:", err)
 	}
 	globalPageReader := bufio.NewReader(globalPageTFIDF)
 
@@ -70,7 +69,7 @@ func topicWordsWriter(resultDir string) {
 		line = line[:len(line)-2] + "}"
 		err = json.Unmarshal([]byte(line), &page)
 		if err != nil {
-			panic(err)
+			log.Fatal("Error while unmarshalling json.",err)
 		}
 		for i := range page {
 			for word := range *page[i].Words {
@@ -91,7 +90,7 @@ func mapWordsInFile(file string) *map[string]uint32 {
 
 	fileReader, err := ioutil.ReadAll(f)
 	if err != nil {
-		panic(err)
+		log.Fatal("Error while trying to read file.",err)
 	}
 
 	wordMap := make(map[string]uint32)

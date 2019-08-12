@@ -7,6 +7,7 @@
 package utils
 
 import (
+	"log"
 	"path/filepath"
 )
 
@@ -15,7 +16,7 @@ func FilesInDir(dir string, pattern string) []string {
 	files, err := filepath.Glob(dir + pattern)
 
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	return files
 }

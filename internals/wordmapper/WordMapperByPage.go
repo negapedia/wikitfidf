@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
@@ -34,7 +35,7 @@ func WordMapperByPage(resultDir string) {
 		fmt.Printf("\rOn %d/%d", i+1, nFile)
 		jsonFile, err := os.Open(file)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -42,7 +43,10 @@ func WordMapperByPage(resultDir string) {
 
 		var page structures.StemmedPageJson
 
-		_ = json.Unmarshal(byteValue, &page)
+		err = json.Unmarshal(byteValue, &page)
+		if err != nil {
+			log.Fatal("Error while unmarshalling json.",err)
+		}
 
 		mappedPage := getMappedPage(&page)
 		_ = os.Remove(file)

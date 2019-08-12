@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/utils"
@@ -27,12 +28,12 @@ func StemRevAggregator(resultDir string) {
 		byteValue, err := ioutil.ReadAll(jsonFile)
 		jsonFile.Close()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		err = os.Remove(file)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		var StemDict map[string]string

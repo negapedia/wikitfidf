@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
@@ -26,7 +27,7 @@ func GlobalWordMapper(resultDir string) {
 
 		jsonFile, err := os.Open(file)
 		if err != nil {
-			panic(err)
+			log.Fatal("Error happened while trying to open file:", file, "Error:",err)
 		}
 
 		byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -34,7 +35,10 @@ func GlobalWordMapper(resultDir string) {
 
 		var page structures.PageElement
 
-		_ = json.Unmarshal(byteValue, &page)
+		err = json.Unmarshal(byteValue, &page)
+		if err != nil {
+			log.Fatal("Error while unmarshalling json.",err)
+		}
 
 		totalPage++
 
