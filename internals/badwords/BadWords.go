@@ -3,7 +3,7 @@ package badwords
 import (
 	"bufio"
 	"encoding/json"
-	"log"
+	"github.com/pkg/errors"
 	"os"
 
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
@@ -39,10 +39,10 @@ func availableLanguage(lang string) (string, bool) {
 	return language, isIn
 }
 
-func badWordsListGetter(lang, path string) map[string]bool {
+func badWordsListGetter(lang, path string) (map[string]bool, error ){
 	file, err := os.Open(path + lang)
 	if err != nil {
-		log.Fatal("Error happened while trying to open badwords file:", path + lang,".\n Error:", err)
+		return nil, errors.Wrapf(err, "Error happened while trying to open badwords file:"+ path + lang)
 	}
 	defer file.Close()
 
@@ -52,13 +52,16 @@ func badWordsListGetter(lang, path string) map[string]bool {
 		badwordsList[scanner.Text()] = true
 	}
 
-	return badwordsList
+	return badwordsList, nil
 }
 
 // BadWords create the badwords report for the given language, if available, and the given result dir
-func BadWords(lang, resultDir string) {
+func BadWords(lang, resultDir string) error {
 	if language, isAvailable := availableLanguage(lang); isAvailable {
-		badWordsMap := badWordsListGetter(language, "/root/badwords_data/")
+		badWordsMap, err := badWordsListGetter(language, "/root/badwords_data/")
+		if err != nil {
+			return err
+		}
 
 		outFile, _ := os.Create(resultDir + "BadWordsReport.json")
 		encWriter := bufio.NewWriter(outFile)
@@ -67,7 +70,7 @@ func BadWords(lang, resultDir string) {
 		globalPage, err := os.Open(resultDir + "GlobalPagesTFIDF.json")
 		defer globalPage.Close()
 		if err != nil {
-			log.Fatal("Error happened while trying to open GlobalPagesTFIDF.json file:", resultDir + "GlobalPagesTFIDF.json",".\n Error:", err)
+			return errors.Wrapf(err, "Error happened while trying to open GlobalPagesTFIDF.json file:"+resultDir+"GlobalPagesTFIDF.json")
 		}
 		globalPageReader := bufio.NewReader(globalPage)
 		i := 0
@@ -91,7 +94,7 @@ func BadWords(lang, resultDir string) {
 			line = line[:len(line)-2] + "}"
 			err = json.Unmarshal([]byte(line), &page)
 			if err != nil {
-				panic(err)
+				return errors.Wrapf(err, "error while unmarshalling json")
 			}
 
 			toIgnore := false
@@ -141,4 +144,5 @@ func BadWords(lang, resultDir string) {
 		_, _ = encWriter.Write([]byte("}"))
 		_ = encWriter.Flush()
 	}
+	return nil
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"github.com/ebonetti/ctxutils"
-	WDCA "github.com/negapedia/Wikipedia-Conflict-Analyzer/"
+	WDCA "github.com/negapedia/Wikipedia-Conflict-Analyzer"
 	"github.com/negapedia/wikibrief"
 	"log"
 )
@@ -33,6 +33,9 @@ func main() {
 		log.Fatal("%+v", err)
 	}
 
-	wd.Process()
+	err = wd.Process()
+	if err != nil{
+		log.Fatal(err)
+	}
 	wd.CompressResultDir("/Result/")
 }

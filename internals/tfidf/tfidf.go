@@ -3,6 +3,7 @@ package tfidf
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"math"
@@ -11,11 +12,11 @@ import (
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
 )
 
-func getGlobalWord(resultDir string) map[string]map[string]float64 {
+func getGlobalWord(resultDir string) (map[string]map[string]float64, error) {
 	jsonFile, err := os.Open(resultDir + "GlobalWords.json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
-		log.Fatal("Error happened while trying to open GlobalWords.json file:", resultDir + "GlobalWords.json",".\n Error:", err)
+		return nil, errors.Wrapf(err, "Error happened while trying to open GlobalWords.json file:"+resultDir + "GlobalWords.json")
 	}
 
 	byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -28,12 +29,15 @@ func getGlobalWord(resultDir string) map[string]map[string]float64 {
 		log.Fatal("Error while unmarshalling json.",err)
 	}
 
-	return globalWord
+	return globalWord, nil
 }
 
 // ComputeTFIDF given the result dir, compute the TFIDF for all available pages
-func ComputeTFIDF(resultDir string) {
-	globalWord := getGlobalWord(resultDir)
+func ComputeTFIDF(resultDir string) error {
+	globalWord, err := getGlobalWord(resultDir)
+	if err != nil {
+		return err
+	}
 
 	totalPage := globalWord["@Total Page"]["tot"]
 
@@ -44,7 +48,7 @@ func ComputeTFIDF(resultDir string) {
 	globalPage, err := os.Open(resultDir + "GlobalPages.json")
 	defer globalPage.Close()
 	if err != nil {
-		log.Fatal("Error happened while trying to open GlobalPages.json file:", resultDir + "GlobalPages.json",".\n Error:", err)
+		return errors.Wrapf(err, "Error happened while trying to open GlobalPages.json file:"+ resultDir + "GlobalPages.json")
 	}
 	globalPageReader := bufio.NewReader(globalPage)
 	i := 0
@@ -67,7 +71,7 @@ func ComputeTFIDF(resultDir string) {
 		line = line[:len(line)-2] + "}"
 		err = json.Unmarshal([]byte(line), &page)
 		if err != nil {
-			log.Fatal("Error while unmarshalling json.",err)
+			return errors.Wrapf(err, "Error while unmarshalling json.")
 		}
 
 		newPageWords := make(map[string]map[string]float64)
@@ -107,4 +111,5 @@ func ComputeTFIDF(resultDir string) {
 	_ = encWriter.Flush()
 
 	_ = os.Remove(resultDir + "GlobalPages.json")
+	return nil
 }

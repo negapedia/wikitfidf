@@ -3,8 +3,8 @@ package wordmapper
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
@@ -27,7 +27,7 @@ func getMappedPage(page *structures.StemmedPageJson) structures.PageElement {
 }
 
 // WordMapperByPage given the result dir, generate a global file containing all the processed pages
-func WordMapperByPage(resultDir string) {
+func WordMapperByPage(resultDir string) error {
 	fileList := utils.FilesInDir(resultDir, "S[0-9]*")
 	nFile := len(fileList)
 
@@ -35,7 +35,7 @@ func WordMapperByPage(resultDir string) {
 		fmt.Printf("\rOn %d/%d", i+1, nFile)
 		jsonFile, err := os.Open(file)
 		if err != nil {
-			log.Fatal(err)
+			return errors.Wrapf(err, "Error while opening file.")
 		}
 
 		byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -45,7 +45,7 @@ func WordMapperByPage(resultDir string) {
 
 		err = json.Unmarshal(byteValue, &page)
 		if err != nil {
-			log.Fatal("Error while unmarshalling json.",err)
+			return errors.Wrapf(err, "Error while unmarshalling json.")
 		}
 
 		mappedPage := getMappedPage(&page)
@@ -55,4 +55,5 @@ func WordMapperByPage(resultDir string) {
 		}
 	}
 	fmt.Println()
+	return nil
 }

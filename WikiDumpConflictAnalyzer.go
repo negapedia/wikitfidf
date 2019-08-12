@@ -161,7 +161,7 @@ func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel <-chan wikibrief.Evolving
 
 // Process is the main procedure where the data process happen. In this method page will be cleaned by wikitext,
 // will be performed tokenization, stopwords cleaning and stemming, files aggregation and then files de-stemming
-func (wd *WikiDumpConflitcAnalyzer) Process() {
+func (wd *WikiDumpConflitcAnalyzer) Process() error {
 	if wd.VerbouseMode{
 		fmt.Println("WikiMarkup cleaning start")
 	}
@@ -188,7 +188,10 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 		fmt.Println("Word mapping by page start")
 	}
 	start = time.Now()
-	wordmapper.WordMapperByPage(wd.ResultDir)
+	err := wordmapper.WordMapperByPage(wd.ResultDir)
+	if err != nil{
+		return err
+	}
 	if wd.VerbouseMode{
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Word mapping by page end")
@@ -198,7 +201,10 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 		fmt.Println("Processing GlobalWordMap file start")
 	}
 	start = time.Now()
-	wordmapper.GlobalWordMapper(wd.ResultDir)
+	err = wordmapper.GlobalWordMapper(wd.ResultDir)
+	if err != nil{
+		return err
+	}
 	if wd.VerbouseMode{
 		fmt.Println("Processing GlobalWordMap file start")
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
@@ -208,7 +214,10 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 		fmt.Println("Processing GlobalStem file start")
 	}
 	start = time.Now()
-	wordmapper.StemRevAggregator(wd.ResultDir)
+	err = wordmapper.StemRevAggregator(wd.ResultDir)
+	if err != nil{
+		return err
+	}
 	if wd.VerbouseMode{
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing GlobalStem file end")
@@ -218,7 +227,10 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 		fmt.Println("Processing GlobalPage file start")
 	}
 	start = time.Now()
-	wordmapper.PageMapAggregator(wd.ResultDir)
+	err = wordmapper.PageMapAggregator(wd.ResultDir)
+	if err != nil{
+		return err
+	}
 	if wd.VerbouseMode{
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing GlobalPage file end")
@@ -228,7 +240,10 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 		fmt.Println("Processing TFIDF file start")
 	}
 	start = time.Now()
-	tfidf.ComputeTFIDF(wd.ResultDir)
+	err = tfidf.ComputeTFIDF(wd.ResultDir)
+	if err != nil{
+		return err
+	}
 	if wd.VerbouseMode{
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing TFIDF file end")
@@ -260,7 +275,10 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 		fmt.Println("Processing topic words start")
 	}
 	start = time.Now()
-	topicwords.TopicWords(wd.ResultDir)
+	err = topicwords.TopicWords(wd.ResultDir)
+	if err != nil{
+		return err
+	}
 	if wd.VerbouseMode{
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing topic words end")
@@ -270,11 +288,16 @@ func (wd *WikiDumpConflitcAnalyzer) Process() {
 		fmt.Println("Processing Badwords report start")
 	}
 	start = time.Now()
-	badwords.BadWords(wd.Lang, wd.ResultDir)
+	err = badwords.BadWords(wd.Lang, wd.ResultDir)
+	if err != nil{
+		return err
+	}
+
 	if wd.VerbouseMode{
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing Badwords report end")
 	}
+	return nil
 }
 
 func (wd *WikiDumpConflitcAnalyzer) CompressResultDir(whereToSave string) {

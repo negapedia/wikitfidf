@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
@@ -23,7 +23,7 @@ func getTotalWordInPage(page *structures.PageElement) uint32 {
 }
 
 // PageMapAggregator given the result dir, aggregate all the page files into a global file
-func PageMapAggregator(resultDir string) {
+func PageMapAggregator(resultDir string) error {
 	fileList := utils.FilesInDir(resultDir, "M[0-9]*")
 	nFile := len(fileList)
 
@@ -35,7 +35,7 @@ func PageMapAggregator(resultDir string) {
 
 		jsonFile, err := os.Open(file)
 		if err != nil {
-			log.Fatal("Error happened while trying to open file:", file, "Error:",err)
+			return errors.Wrapf(err,"Error happened while trying to open file:"+file)
 		}
 
 		byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -47,7 +47,7 @@ func PageMapAggregator(resultDir string) {
 
 		err = json.Unmarshal(byteValue, &Page)
 		if err != nil {
-			log.Fatal("Error while unmarshalling json.",err)
+			return errors.Wrapf(err,"Error while unmarshalling json.")
 		}
 
 		pageToWrite := make(map[uint32]structures.AggregatedPage)
@@ -74,4 +74,5 @@ func PageMapAggregator(resultDir string) {
 	encWriter.Write([]byte("}"))
 	_ = encWriter.Flush()
 	outFile.Close()
+	return nil
 }

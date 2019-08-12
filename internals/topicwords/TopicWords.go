@@ -10,8 +10,8 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
@@ -40,11 +40,11 @@ func closeAll(topicWriters map[uint32]*topicWriter) {
 	}
 }
 
-func topicWordsWriter(resultDir string) {
+func topicWordsWriter(resultDir string) error {
 	globalPageTFIDF, err := os.Open(resultDir + "GlobalPagesTFIDF.json")
 	defer globalPageTFIDF.Close()
 	if err != nil {
-		log.Fatal("Error happened while trying to open GlobalPagesTFIDF.json file:", resultDir + "GlobalPagesTFIDF.json",".\n Error:", err)
+		return errors.Wrapf(err,"Error happened while trying to open GlobalPagesTFIDF.json file:"+ resultDir + "GlobalPagesTFIDF.json")
 	}
 	globalPageReader := bufio.NewReader(globalPageTFIDF)
 
@@ -69,7 +69,7 @@ func topicWordsWriter(resultDir string) {
 		line = line[:len(line)-2] + "}"
 		err = json.Unmarshal([]byte(line), &page)
 		if err != nil {
-			log.Fatal("Error while unmarshalling json.",err)
+			return errors.Wrapf(err,"Error while unmarshalling json.")
 		}
 		for i := range page {
 			for word := range *page[i].Words {
@@ -79,9 +79,10 @@ func topicWordsWriter(resultDir string) {
 	}
 
 	closeAll(topicWordWriters)
+	return nil
 }
 
-func mapWordsInFile(file string) *map[string]uint32 {
+func mapWordsInFile(file string) (*map[string]uint32, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		panic(err)
@@ -90,7 +91,7 @@ func mapWordsInFile(file string) *map[string]uint32 {
 
 	fileReader, err := ioutil.ReadAll(f)
 	if err != nil {
-		log.Fatal("Error while trying to read file.",err)
+		return nil, errors.Wrapf(err,"Error while trying to read file.")
 	}
 
 	wordMap := make(map[string]uint32)
@@ -103,7 +104,7 @@ func mapWordsInFile(file string) *map[string]uint32 {
 		}
 	}
 
-	return &wordMap
+	return &wordMap, nil
 }
 
 func getJSONBytes(topicFile string, words *map[string]uint32) *[]byte {
@@ -112,25 +113,26 @@ func getJSONBytes(topicFile string, words *map[string]uint32) *[]byte {
 	topicMap := make(map[string]*map[string]uint32)
 	topicMap[topicID] = words
 
-	wordsDict, err := json.Marshal(topicMap)
-	if err != nil {
-		log.Fatalf("%+v", err)
-	}
+	wordsDict, _ := json.Marshal(topicMap)
+
 	return &wordsDict
 }
 
-func topicWordsMapper(resultDir string) {
+func topicWordsMapper(resultDir string) error {
 	topicFiles := utils.FilesInDir(resultDir, "T*")
 
 	outFile, err := os.Create(resultDir + "GlobalTopicsWords.json")
 	if err != nil {
-		log.Fatalf("%+v", err)
+		return errors.Wrapf(err, "Error while creating file")
 	}
 	writer := bufio.NewWriter(outFile)
 	defer outFile.Close()
 
 	for i, topicFile := range topicFiles {
-		topicWords := mapWordsInFile(topicFile)
+		topicWords, err := mapWordsInFile(topicFile)
+		if err != nil {
+			return err
+		}
 		jsonTopicWords := string(*getJSONBytes(topicFile, topicWords))
 
 		if i == 0 {
@@ -148,11 +150,19 @@ func topicWordsMapper(resultDir string) {
 	}
 	writer.Write([]byte("}"))
 	writer.Flush()
+	return nil
 }
 
 // TopicWords given the result dir process topics files containing the set of words and their absolute frequency
 // which appear on pages of that topic
-func TopicWords(resultDir string) {
-	topicWordsWriter(resultDir)
-	topicWordsMapper(resultDir)
+func TopicWords(resultDir string) error {
+	err := topicWordsWriter(resultDir)
+	if err != nil {
+		return err
+	}
+	err = topicWordsMapper(resultDir)
+	if err != nil {
+		return err
+	}
+	return nil
 }

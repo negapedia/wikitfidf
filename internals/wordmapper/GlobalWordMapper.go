@@ -3,6 +3,7 @@ package wordmapper
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,7 +13,7 @@ import (
 )
 
 // GlobalWordMapper given the result dir, generate the file containing the global report about word frequency
-func GlobalWordMapper(resultDir string) {
+func GlobalWordMapper(resultDir string) error {
 	fileList := utils.FilesInDir(resultDir, "M[0-9]*")
 	nFile := len(fileList)
 
@@ -27,7 +28,7 @@ func GlobalWordMapper(resultDir string) {
 
 		jsonFile, err := os.Open(file)
 		if err != nil {
-			log.Fatal("Error happened while trying to open file:", file, "Error:",err)
+			return errors.Wrapf(err,"Error happened while trying to open file:"+ file)
 		}
 
 		byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -37,7 +38,7 @@ func GlobalWordMapper(resultDir string) {
 
 		err = json.Unmarshal(byteValue, &page)
 		if err != nil {
-			log.Fatal("Error while unmarshalling json.",err)
+			return errors.Wrapf(err,"Error while unmarshalling json.")
 		}
 
 		totalPage++
@@ -62,4 +63,5 @@ func GlobalWordMapper(resultDir string) {
 	globalWord["@Total Page"]["tot"] = totalPage
 
 	utils.WriteGlobalWord(resultDir, &globalWord)
+	return nil
 }

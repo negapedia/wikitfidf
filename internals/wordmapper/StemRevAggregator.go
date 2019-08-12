@@ -3,6 +3,7 @@ package wordmapper
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,7 +12,7 @@ import (
 )
 
 // StemRevAggregator given the result directory, will aggregate all Stem files into a single global file
-func StemRevAggregator(resultDir string) {
+func StemRevAggregator(resultDir string) error{
 	fileList := utils.FilesInDir(resultDir+"Stem/", "StemRev_*")
 	nFile := len(fileList)
 	globalStemRev := make(map[string]string)
@@ -22,13 +23,13 @@ func StemRevAggregator(resultDir string) {
 		jsonFile, err := os.Open(file)
 		// if we os.Open returns an error then handle it
 		if err != nil {
-			panic(err)
+			return errors.Wrapf(err, "error while opening file")
 		}
 
 		byteValue, err := ioutil.ReadAll(jsonFile)
 		jsonFile.Close()
 		if err != nil {
-			log.Fatal(err)
+			return errors.Wrapf(err, "error while reading file")
 		}
 
 		err = os.Remove(file)
@@ -40,7 +41,7 @@ func StemRevAggregator(resultDir string) {
 
 		err = json.Unmarshal(byteValue, &StemDict)
 		if err != nil {
-			panic(err)
+			return errors.Wrapf(err, "error while unmarshalling json")
 		}
 
 		for StemWord, RealWord := range StemDict {
@@ -57,4 +58,5 @@ func StemRevAggregator(resultDir string) {
 
 	println(len(globalStemRev))
 	utils.WriteGlobalStem(resultDir, &globalStemRev)
+	return nil
 }
