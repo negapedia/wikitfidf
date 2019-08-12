@@ -1,4 +1,4 @@
-package wikidumpconflictanalyzer
+package WikipediaConflicutalWords
 
 import (
 	"fmt"
