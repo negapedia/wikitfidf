@@ -430,7 +430,7 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) cha
 func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) chan map[string]map[string]uint32 {
 	ch := make(chan map[string]map[string]uint32)
 
-	globalTopic, err := os.Open(wd.ResultDir+"GlobalTopics_top"+strconv.Itoa(wd.TopNWords.TopNWordsPages)+".json")
+	globalTopic, err := os.Open(wd.ResultDir+"GlobalTopicsWords_top"+strconv.Itoa(wd.TopNWords.TopNTopicWords)+".json")
 
 	if err != nil {
 		log.Fatal("Error happened while trying to open GlobalTopics_top.json ", err)

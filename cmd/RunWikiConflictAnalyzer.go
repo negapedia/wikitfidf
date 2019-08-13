@@ -22,12 +22,15 @@ func main() {
 	flag.Parse()
 
 	wd := new(WDCA.WikiDumpConflitcAnalyzer)
+	// TODO wd,err := WDCA.New()
+
 
 	wd.NewWikiDump(*langFlag, *dirFlag, *startDateFlag, *endDateFlag, *specialPageListFlag,
-		*nRevert, *nTopWords, *compressFinalOut, *verboseMode)
+		*nRevert, *nTopWords, 100, 100, *compressFinalOut, *verboseMode)
 
 	ctx, fail := ctxutils.WithFail(context.Background())
 	pageChannel := wikibrief.New(ctx, fail, wd.ResultDir, wd.Lang)
+
 	wd.Preprocess(pageChannel)
 
 	if err := fail(nil); err != nil {
