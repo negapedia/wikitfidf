@@ -25,4 +25,5 @@ RUN cd $GOPATH/src/internals/destemmer/ && python3 compile.py build_ext --inplac
 WORKDIR $GOPATH/src
 
 RUN cd cmd && go build RunWikiConflictAnalyzer.go
-ENTRYPOINT ["./cmd/RunWikiConflictAnalyzer.go", "-l", "vec", "-d", "/Result/", "-rev", "10", "-topPages", "50", "-topWords", "100", "-topTopic", "100"]
+ENTRYPOINT ["./cmd/RunWikiConflictAnalyzer", "-l", "vec", "-rev", "10", "-topPages", "50", "-topWords", "100", "-topTopic", "100"]
+
