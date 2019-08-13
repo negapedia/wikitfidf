@@ -348,8 +348,8 @@ func (wd *WikiDumpConflitcAnalyzer) CheckErrors() {
 	}
 }
 
-func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter(ctx context.Context) chan map[string]map[string]uint32 {
-	ch := make(chan map[string]map[string]uint32)
+func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter(ctx context.Context) chan map[string]uint32 {
+	ch := make(chan map[string]uint32)
 
 	globalWord, err := utils.GetGlobalWordsTopN(wd.ResultDir, wd.TopNWords.TopNGlobalWords)
 	if err != nil {
@@ -369,7 +369,7 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter(ctx context.Context) chan
 
 				}
 			}
-			x := make(map[string]map[string]uint32)
+			x := make(map[string]uint32)
 			x[key] = value
 			ch <- x
 		}

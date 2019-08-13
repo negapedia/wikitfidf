@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-func GetGlobalWordsTopN(resultDir string, topN int) (map[string]map[string]uint32, error) {
+func GetGlobalWordsTopN(resultDir string, topN int) (map[string]uint32, error) {
 	top := strconv.Itoa(topN)
 
 	jsonFile, err := os.Open(resultDir + "GlobalWords_top"+top+".json")
@@ -21,7 +21,7 @@ func GetGlobalWordsTopN(resultDir string, topN int) (map[string]map[string]uint3
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 	_ = jsonFile.Close()
 
-	var globalWord map[string]map[string]uint32
+	var globalWord map[string]uint32
 
 	err = json.Unmarshal(byteValue, &globalWord)
 	if err != nil {
