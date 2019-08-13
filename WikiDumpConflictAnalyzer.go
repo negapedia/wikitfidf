@@ -280,14 +280,15 @@ func (wd *WikiDumpConflitcAnalyzer) Process() error {
 	}
 
 	if wd.VerbouseMode{
-		fmt.Println("Processing top N words per page start")
+		fmt.Println("Processing top N words start")
 	}
 	start = time.Now()
-	topNWordsPageExtractor := exec.Command("python3", "./internals/topwordspageextractor/runTopNWordsPageExtractor.py", wd.ResultDir, strconv.Itoa(wd.TopNWords.TopNWordsPages))
+	topNWordsPageExtractor := exec.Command("python3", "./internals/topwordspageextractor/runTopNWordsPageExtractor.py", wd.ResultDir,
+		strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNTopicWords))
 	_ = topNWordsPageExtractor.Run()
 	if wd.VerbouseMode{
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Processing top N words per page end")
+		fmt.Println("Processing top N words end")
 	}
 
 	if wd.VerbouseMode{

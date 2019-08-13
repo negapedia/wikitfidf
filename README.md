@@ -55,8 +55,10 @@ example:<br>
 - `-s`: revert starting date to consider;
 - `-e`: revert ending date to consider;
 - `-specialList`: special page list to consider;
-- `-r`: number of revert to consider;
-- `-t`: number of top words per page to consider;
+- `-rev`: number of revert to consider;
+- `-topPages`: number of top words per page to consider;
+- `-topWords`: number of top words of global words to consider;
+- `-topTopic`: number of top words per topic to consider;
 - `-delete`: if true, after compressing results directory will be deleted (default: true);
 - `-verbose`: if true, logs are shown (default: true).
 <br>
