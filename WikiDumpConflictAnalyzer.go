@@ -155,14 +155,15 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string,
 		return strings.Split(specialPageList, "-")
 	}(specialPageList)
 
+	wd.CompressAndRemoveFinalOut = compress
+	wd.VerbouseMode = verbouseMode
+
 	if _, err := os.Stat(wd.ResultDir + "Stem"); os.IsNotExist(err) {
-		err = os.MkdirAll(wd.ResultDir+"Stem", 0755)
+		err = os.MkdirAll(wd.ResultDir+"Stem", 0700) //0755
 		if err != nil {
 			log.Fatal("Error happened while trying to create", wd.ResultDir, "and", wd.ResultDir+"Stem")
 		}
 	}
-	wd.CompressAndRemoveFinalOut = compress
-	wd.VerbouseMode = verbouseMode
 }
 
 // Preprocess given a wikibrief.EvolvingPage channel reduce the amount of information in pages and save them

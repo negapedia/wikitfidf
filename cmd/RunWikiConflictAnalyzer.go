@@ -11,7 +11,7 @@ import (
 
 func main() {
 	langFlag := flag.String("l", "", "Dump language")
-	dirFlag := flag.String("d", "", "Result dir")
+	dirFlag := flag.String("d", "/Result/", "Result dir")
 	startDateFlag := flag.String("s", "", "Revision starting date")
 	endDateFlag := flag.String("e", "", "Revision ending date")
 	specialPageListFlag := flag.String("specialList", "", "Special page list, page not in this list will be ignored. Input PageID like: id1-id2-...")
