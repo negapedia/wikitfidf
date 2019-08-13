@@ -380,7 +380,7 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter(ctx context.Context) chan
 func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) chan map[string]structures.TfidfTopNWordPage {
 	ch := make(chan map[string]structures.TfidfTopNWordPage)
 
-	globalPage, err := os.Open("./GlobalPagesTFIDF_top"+strconv.Itoa(wd.TopNWords.TopNWordsPages)+".json")
+	globalPage, err := os.Open(wd.ResultDir+"GlobalPagesTFIDF_top"+strconv.Itoa(wd.TopNWords.TopNWordsPages)+".json")
 
 	if err != nil {
 		log.Fatal("Error happened while trying to open GlobalPages.json file:GlobalPages.json", err)

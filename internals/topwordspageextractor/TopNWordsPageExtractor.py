@@ -14,7 +14,7 @@ def _top_n_getter(words_dict: dict, n: int):
     return words_dict
 
 
-def _get_top_n_words_dict(pageDict: dict, n: int):
+def _get_top_n_words_pages_dict(pageDict: dict, n: int):
     words_dict = {}
     for page in pageDict:
         for word in pageDict[page]["Words"]:
@@ -29,6 +29,15 @@ def _get_top_n_words_dict(pageDict: dict, n: int):
                                 "Words": words_dict}
 
         return top_n_page
+
+def _get_global_words(globalDict: dict):
+    newGlobalDict = {}
+    for word in globalDict:
+        if word == "@Total Word" or word == "@Total Page":
+            continue
+        newGlobalDict[word] = globalDict[word]["a"]
+
+    return newGlobalDict
 
 
 def top_n_Words_Page_Extractor(result_dir: str, n):
@@ -55,7 +64,7 @@ def top_n_Words_Page_Extractor(result_dir: str, n):
         line = line[:len(line) - 2] + "}"
 
         pageDict = json.loads(line)
-        pageDict = _get_top_n_words_dict(pageDict, n)
+        pageDict = _get_top_n_words_pages_dict(pageDict, n)
 
         if counter == 0:
             page_json = json.dumps(pageDict)
@@ -74,5 +83,22 @@ def top_n_Words_Page_Extractor(result_dir: str, n):
     gloabalTFIDF.close()
 
 
+def top_n_Global_Words_Extractor(result_dir: str, n):
+    """
+    top_n_Global_Words_Extractor given the result dir compute the n most frequent word in GlobalWord
+    :param result_dir: result dir path
+    :param n: amount of most important words to calculate
+    """
+    globalWordTopN = open(result_dir + "GlobalWords_top" + n + ".json", "w")
+
+    with open(result_dir + "GlobalWords.json", "r") as gloabalWords:
+        globalWordsDict = json.load(gloabalWords)
+
+    json.dump(_top_n_getter(_get_global_words(globalWordsDict), int(n)), globalWordTopN)
+    globalWordTopN.flush()
+    globalWordTopN.close()
+
+
 if __name__ == "__main__":
-    top_n_Words_Page_Extractor(sys.argv[1], sys.argv[2])
+    #top_n_Words_Page_Extractor(sys.argv[1], sys.argv[2])
+    top_n_Global_Words_Extractor(sys.argv[1], sys.argv[2])
