@@ -29,15 +29,17 @@ func keepLastNRevert(page *structures.Page, nRev int) {
 }
 
 func writePage(page *wikibrief.EvolvingPage, revArray *[]structures.Revision, nRevision int, resultDir string) {
-	if len(*revArray) > 0 { // if page has revisions
-		pageToWrite := structures.Page{PageID: page.PageID, TopicID: page.TopicID, Revision: *revArray}
-
-		if nRevision != 0 { // if reverts limit is set
-			keepLastNRevert(&pageToWrite, nRevision)
-		}
-
-		utils.WriteCleanPage(resultDir, &pageToWrite)
+	if len(*revArray) == 0 {
+		return
 	}
+	// if page has revisions
+	pageToWrite := structures.Page{PageID: page.PageID, TopicID: page.TopicID, Revision: *revArray}
+
+	if nRevision != 0 { // if reverts limit is set
+		keepLastNRevert(&pageToWrite, nRevision)
+	}
+
+	utils.WriteCleanPage(resultDir, &pageToWrite)
 }
 
 func applyTimeFilter(rev *wikibrief.Revision, revArray *[]structures.Revision, startDate time.Time, endDate time.Time) {

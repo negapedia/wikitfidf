@@ -12,7 +12,7 @@ import (
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
 )
 
-func getGlobalWord(resultDir string) (map[string]map[string]float64, error) {
+func GetGlobalWord(resultDir string) (map[string]map[string]float64, error) {
 	jsonFile, err := os.Open(resultDir + "GlobalWords.json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
@@ -34,7 +34,7 @@ func getGlobalWord(resultDir string) (map[string]map[string]float64, error) {
 
 // ComputeTFIDF given the result dir, compute the TFIDF for all available pages
 func ComputeTFIDF(resultDir string) error {
-	globalWord, err := getGlobalWord(resultDir)
+	globalWord, err := GetGlobalWord(resultDir)
 	if err != nil {
 		return err
 	}
