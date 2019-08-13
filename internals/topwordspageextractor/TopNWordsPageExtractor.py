@@ -40,6 +40,7 @@ def _get_global_words(globalDict: dict):
     return newGlobalDict
 
 
+
 def top_n_Words_Page_Extractor(result_dir: str, n):
     """
     top_N_Words_Page_Extractor given the result dir compute the n most important words for each page in GlobalPageTFIDF
@@ -94,11 +95,56 @@ def top_n_Global_Words_Extractor(result_dir: str, n):
     with open(result_dir + "GlobalWords.json", "r") as gloabalWords:
         globalWordsDict = json.load(gloabalWords)
 
-    json.dump(_top_n_getter(_get_global_words(globalWordsDict), int(n)), globalWordTopN)
+    globalWordsDict = _get_global_words(globalWordsDict)
+    json.dump(_top_n_getter(globalWordsDict, int(n)), globalWordTopN)
     globalWordTopN.flush()
     globalWordTopN.close()
 
+def top_n_Topic_Words_Extractor(result_dir: str, n):
+    """
+    top_n_Global_Words_Extractor given the result dir compute the n most frequent word in GlobalWord
+    :param result_dir: result dir path
+    :param n: amount of most important words to calculate
+    """
+    globalWordTopN = open(result_dir + "GlobalTopicsWords_top" + n + ".json", "w")
+
+    globalTopic = open(result_dir + "GlobalTopicsWords.json", "r");
+    globalTopic_iter = iter(globalTopic.readline, "")
+
+    n = int(n)
+
+    counter = 0
+    for line in globalTopic_iter:
+        if line == "}":
+            break
+
+        if line[:1] != "{":
+            line = "{" + line
+
+        line = line[:len(line) - 2] + "}"
+
+        topicDict = json.loads(line)
+
+        for topic in topicDict:
+            topWords = {topic: _top_n_getter(topicDict[topic], n)}
+
+        if counter == 0:
+            page_json = json.dumps(topWords)
+            page_json = page_json[:len(page_json) - 1] + ",\n"
+            globalWordTopN.write(page_json)
+        elif counter >= 0:
+            page_json = json.dumps(topWords)
+            page_json = page_json[1:len(page_json) - 1] + ",\n"
+            globalWordTopN.write(page_json)
+        globalWordTopN.flush()
+        counter += 1
+
+    globalWordTopN.write("}")
+    globalWordTopN.flush()
+    globalWordTopN.close()
+    globalTopic.close()
 
 if __name__ == "__main__":
     #top_n_Words_Page_Extractor(sys.argv[1], sys.argv[2])
-    top_n_Global_Words_Extractor(sys.argv[1], sys.argv[2])
+    #top_n_Global_Words_Extractor(sys.argv[1], sys.argv[2])
+    top_n_Topic_Words_Extractor(sys.argv[1], sys.argv[2])

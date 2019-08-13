@@ -427,4 +427,53 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) cha
 	return ch
 }
 
+func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) chan map[string]map[string]uint32 {
+	ch := make(chan map[string]map[string]uint32)
+
+	globalTopic, err := os.Open(wd.ResultDir+"GlobalTopics_top"+strconv.Itoa(wd.TopNWords.TopNWordsPages)+".json")
+
+	if err != nil {
+		log.Fatal("Error happened while trying to open GlobalTopics_top.json ", err)
+	}
+	globalPageReader := bufio.NewReader(globalTopic)
+
+	go func(){
+		defer close(ch)
+		defer globalTopic.Close()
+
+		for{
+			line, err := globalPageReader.ReadString('\n')
+			println(line)
+			if err != nil {
+				break
+			}
+			if line == "}" {
+				break
+			}
+
+			var topic map[string]map[string]uint32
+
+			if line[:1] != "{" {
+				line = "{" + line
+			}
+
+			line = line[:len(line)-2] + "}"
+			err = json.Unmarshal([]byte(line), &topic)
+			if err != nil {
+				wd.Error = errors.Wrapf(err, "Error while unmarshalling json.")
+				return
+			}
+			if ctx != nil {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
+			}
+			ch <- topic
+		}
+
+	}()
+	return ch
+}
 
