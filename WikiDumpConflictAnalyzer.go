@@ -1,11 +1,16 @@
-package WikipediaConflicutalWords
+package WikiConflict
 
 import (
+	"bufio"
+	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/badwords"
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/dumpreducer"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/tfidf"
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/topicwords"
+	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/utils"
 	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/wordmapper"
 	"github.com/negapedia/wikibrief"
 	"github.com/pkg/errors"
@@ -17,6 +22,12 @@ import (
 	"time"
 )
 
+type nTopWords struct{
+	TopNWordsPages int
+	TopNGlobalWords int
+	TopNTopicWords int
+}
+
 // WikiDumpConflitcAnalyzer represent the main specific of desiderd Wikipedia dumps
 // and some options for the elaboration process
 type WikiDumpConflitcAnalyzer struct {
@@ -25,13 +36,19 @@ type WikiDumpConflitcAnalyzer struct {
 	date      string
 
 	Nrevert   int
-	NTopWords int
+	TopNWords nTopWords
 
 	StartDate                 time.Time
 	EndDate                   time.Time
 	SpecialPageList           []string
 	CompressAndRemoveFinalOut bool
 	VerbouseMode 			  bool
+
+	Error	error
+}
+
+func New() (*WikiDumpConflitcAnalyzer, error) { //TODO
+	return new(WikiDumpConflitcAnalyzer), nil
 }
 
 func CheckAvailableLanguage(lang string) (bool, error) {
@@ -96,7 +113,7 @@ func CheckAvailableLanguage(lang string) (bool, error) {
 // start and end date which admits to work only in a specific time frame, number of revert to consider: will be processed
 // only the last "n" revert per page
 func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string,
-	startDate string, endDate string, specialPageList string, nRevert, topNWords int, compress bool, verbouseMode bool) {
+	startDate string, endDate string, specialPageList string, nRevert, topNWordsPages, topNGlobalWords, topNTopicWords int, compress bool, verbouseMode bool) {
 
 	_, err := CheckAvailableLanguage(lang)
 	if err != nil {
@@ -127,7 +144,9 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string,
 	}
 	wd.ResultDir += "/"
 
-	wd.NTopWords = topNWords
+	wd.TopNWords.TopNWordsPages = topNWordsPages
+	wd.TopNWords.TopNGlobalWords = topNGlobalWords
+	wd.TopNWords.TopNTopicWords = topNTopicWords
 
 	wd.SpecialPageList = func(specialPageList string) []string {
 		if specialPageList == "" {
@@ -322,3 +341,90 @@ func (wd *WikiDumpConflitcAnalyzer) CompressResultDir(whereToSave string) {
 		}
 	}
 }
+
+func (wd *WikiDumpConflitcAnalyzer) CheckErrors() {
+	if wd.Error != nil{
+		log.Fatal(wd.Error)
+	}
+}
+
+func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter(ctx context.Context) chan map[string]map[string]uint32 {
+	ch := make(chan map[string]map[string]uint32)
+
+	globalWord, err := utils.GetGlobalWordsTopN(wd.ResultDir, wd.TopNWords.TopNGlobalWords)
+	if err != nil {
+		wd.Error = errors.Wrap(err, "")
+		return nil
+	}
+
+	go func(){
+		defer close(ch)
+
+		for key, value := range globalWord{
+			if ctx != nil {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+
+				}
+			}
+			x := make(map[string]map[string]uint32)
+			x[key] = value
+			ch <- x
+		}
+	}()
+	return ch
+}
+
+func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) chan map[string]structures.TfidfTopNWordPage {
+	ch := make(chan map[string]structures.TfidfTopNWordPage)
+
+	globalPage, err := os.Open("./GlobalPagesTFIDF_top"+strconv.Itoa(wd.TopNWords.TopNWordsPages)+".json")
+
+	if err != nil {
+		log.Fatal("Error happened while trying to open GlobalPages.json file:GlobalPages.json", err)
+	}
+	globalPageReader := bufio.NewReader(globalPage)
+
+	go func(){
+		defer close(ch)
+		defer globalPage.Close()
+
+		for{
+			line, err := globalPageReader.ReadString('\n')
+			println(line)
+			if err != nil {
+				break
+			}
+			if line == "}" {
+				break
+			}
+
+			var page map[string]structures.TfidfTopNWordPage
+
+			if line[:1] != "{" {
+				line = "{" + line
+			}
+
+			line = line[:len(line)-2] + "}"
+			err = json.Unmarshal([]byte(line), &page)
+			if err != nil {
+				wd.Error = errors.Wrapf(err, "Error while unmarshalling json.")
+				return
+			}
+			if ctx != nil {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
+			}
+			ch <- page
+		}
+
+	}()
+	return ch
+}
+
+
