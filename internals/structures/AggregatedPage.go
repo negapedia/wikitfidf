@@ -20,3 +20,9 @@ type TfidfAggregatedPage struct {
 	Tot     uint32
 	Words   *map[string]map[string]float64
 }
+
+type TfidfTopNWordPage struct {
+	TopicID uint32
+	Tot     uint32
+	Words   *map[string]float64
+}
