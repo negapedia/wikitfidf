@@ -479,3 +479,52 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) ch
 	return ch
 }
 
+func (wd *WikiDumpConflitcAnalyzer) BadwordsReportExporter(ctx context.Context) chan map[string]structures.BadWordsReport {
+	ch := make(chan map[string]structures.BadWordsReport)
+
+	globalTopic, err := os.Open(wd.ResultDir+"BadWordsReport.json")
+
+	if err != nil {
+		log.Fatal("Error happened while trying to open BadWordsReport.json ", err)
+	}
+	globalPageReader := bufio.NewReader(globalTopic)
+
+	go func(){
+		defer close(ch)
+		defer globalTopic.Close()
+
+		for{
+			line, err := globalPageReader.ReadString('\n')
+			println(line)
+			if err != nil {
+				break
+			}
+			if line == "}" {
+				break
+			}
+
+			var page map[string]structures.BadWordsReport
+
+			if line[:1] != "{" {
+				line = "{" + line
+			}
+
+			line = line[:len(line)-2] + "}"
+			err = json.Unmarshal([]byte(line), &page)
+			if err != nil {
+				wd.Error = errors.Wrapf(err, "Error while unmarshalling json.")
+				return
+			}
+			if ctx != nil {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
+			}
+			ch <- page
+		}
+
+	}()
+	return ch
+}
