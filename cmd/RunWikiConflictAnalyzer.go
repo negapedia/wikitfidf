@@ -23,11 +23,7 @@ func main() {
 	verboseMode := flag.Bool("verbose", true, "If true verbouse mode on")
 	flag.Parse()
 
-	wd := new(WDCA.WikiDumpConflitcAnalyzer)
-	// TODO wd,err := WDCA.New()
-
-
-	wd.NewWikiDump(*langFlag, *dirFlag, *startDateFlag, *endDateFlag, *specialPageListFlag,
+	wd, err := WDCA.New(*langFlag, *dirFlag, *startDateFlag, *endDateFlag, *specialPageListFlag,
 		*nRevert, *nTopWordsPages, *nTopWordsGlobal, *nTopWordsTopic, *compressFinalOut, *verboseMode)
 
 	ctx, fail := ctxutils.WithFail(context.Background())

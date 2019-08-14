@@ -47,10 +47,6 @@ type WikiDumpConflitcAnalyzer struct {
 	Error	error
 }
 
-func New() (*WikiDumpConflitcAnalyzer, error) { //TODO
-	return new(WikiDumpConflitcAnalyzer), nil
-}
-
 func CheckAvailableLanguage(lang string) (bool, error) {
 	languages := map[string]string{
 		"en":     "english",
@@ -108,17 +104,24 @@ func CheckAvailableLanguage(lang string) (bool, error) {
 	return true, noLang
 }
 
-// NewWikiDump admits to initialize with parameters a WikiDumpConflitcAnalyzer. Parameters are about
-// required Wikipedia Dump language, result directory, special page list which admits to process only the page in list,
-// start and end date which admits to work only in a specific time frame, number of revert to consider: will be processed
-// only the last "n" revert per page
-func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string,
-	startDate string, endDate string, specialPageList string, nRevert, topNWordsPages, topNGlobalWords, topNTopicWords int, compress bool, verbouseMode bool) {
+// New admits to initialize with parameters a WikiDumpConflitcAnalyzer.
+func New(lang string, resultDir string,
+	startDate string, endDate string, specialPageList string,
+	nRevert, topNWordsPages, topNGlobalWords, topNTopicWords int,
+	compress bool, verbouseMode bool) (*WikiDumpConflitcAnalyzer, error){
+
+	if lang == ""{
+		return nil, errors.New("Langugage not set")
+	} else if topNWordsPages == 0 || topNGlobalWords == 0 || topNTopicWords == 0{
+		return nil, errors.New("Number of topwords to calculate are setted to 0")
+	}
 
 	_, err := CheckAvailableLanguage(lang)
 	if err != nil {
-		log.Fatal(err)
+		return nil, errors.New("Language required not available")
 	}
+
+	wd := new(WikiDumpConflitcAnalyzer)
 	wd.Lang = lang
 
 	wd.StartDate, _ = time.Parse(startDate, "2019-01-01T15:00")
@@ -144,9 +147,7 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string,
 	}
 	wd.ResultDir += "/"
 
-	wd.TopNWords.TopNWordsPages = topNWordsPages
-	wd.TopNWords.TopNGlobalWords = topNGlobalWords
-	wd.TopNWords.TopNTopicWords = topNTopicWords
+	wd.TopNWords = nTopWords{topNWordsPages, topNGlobalWords, topNTopicWords}
 
 	wd.SpecialPageList = func(specialPageList string) []string {
 		if specialPageList == "" {
@@ -164,6 +165,8 @@ func (wd *WikiDumpConflitcAnalyzer) NewWikiDump(lang string, resultDir string,
 			log.Fatal("Error happened while trying to create", wd.ResultDir, "and", wd.ResultDir+"Stem")
 		}
 	}
+
+	return wd, nil
 }
 
 // Preprocess given a wikibrief.EvolvingPage channel reduce the amount of information in pages and save them
@@ -321,6 +324,7 @@ func (wd *WikiDumpConflitcAnalyzer) Process() error {
 	return nil
 }
 
+// CompressResultDir compress to 7z the result dir
 func (wd *WikiDumpConflitcAnalyzer) CompressResultDir(whereToSave string) {
 	if wd.CompressAndRemoveFinalOut {
 		if wd.VerbouseMode{
@@ -344,12 +348,14 @@ func (wd *WikiDumpConflitcAnalyzer) CompressResultDir(whereToSave string) {
 	}
 }
 
+// CheckErrors check if errors happened during export process
 func (wd *WikiDumpConflitcAnalyzer) CheckErrors() {
 	if wd.Error != nil{
 		log.Fatal(wd.Error)
 	}
 }
 
+// GlobalWordExporter returns a channel with the data of GlobalWord (top N words)
 func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter(ctx context.Context) *map[string]uint32 {
 	globalWord, err := utils.GetGlobalWordsTopN(wd.ResultDir, wd.TopNWords.TopNGlobalWords)
 	if err != nil {
@@ -360,6 +366,7 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter(ctx context.Context) *map
 	return &globalWord
 }
 
+// GlobalPagesExporter returns a channel with the data of GlobalPagesTFIDF (top N words per page)
 func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) chan map[string]structures.TfidfTopNWordPage {
 	ch := make(chan map[string]structures.TfidfTopNWordPage)
 
@@ -411,6 +418,7 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) cha
 	return ch
 }
 
+// GlobalTopicsExporter returns a channel with the data of GlobalTopic (top N words per topic)
 func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) chan map[string]map[string]uint32 {
 	ch := make(chan map[string]map[string]uint32)
 
@@ -462,6 +470,7 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) ch
 	return ch
 }
 
+// BadwordsReportExporter returns a channel with the data of BadWords Report
 func (wd *WikiDumpConflitcAnalyzer) BadwordsReportExporter(ctx context.Context) chan map[string]structures.BadWordsReport {
 	ch := make(chan map[string]structures.BadWordsReport)
 
