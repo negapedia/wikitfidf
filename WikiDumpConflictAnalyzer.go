@@ -350,39 +350,21 @@ func (wd *WikiDumpConflitcAnalyzer) CheckErrors() {
 	}
 }
 
-func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter(ctx context.Context) chan map[string]uint32 {
-	ch := make(chan map[string]uint32)
-
+func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter(ctx context.Context) *map[string]uint32 {
 	globalWord, err := utils.GetGlobalWordsTopN(wd.ResultDir, wd.TopNWords.TopNGlobalWords)
 	if err != nil {
-		wd.Error = errors.Wrap(err, "")
+		wd.Error = errors.Wrap(err, "Errors happened while handling GlobalWords file")
 		return nil
 	}
 
-	go func(){
-		defer close(ch)
-
-		for key, value := range globalWord{
-			if ctx != nil {
-				select {
-				case <-ctx.Done():
-					return
-				default:
-
-				}
-			}
-			x := make(map[string]uint32)
-			x[key] = value
-			ch <- x
-		}
-	}()
-	return ch
+	return &globalWord
 }
 
 func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) chan map[string]structures.TfidfTopNWordPage {
 	ch := make(chan map[string]structures.TfidfTopNWordPage)
 
-	globalPage, err := os.Open(wd.ResultDir+"GlobalPagesTFIDF_top"+strconv.Itoa(wd.TopNWords.TopNWordsPages)+".json")
+	filename := wd.ResultDir+"GlobalPagesTFIDF_top"+strconv.Itoa(wd.TopNWords.TopNWordsPages)+".json"
+	globalPage, err := os.Open(filename)
 
 	if err != nil {
 		log.Fatal("Error happened while trying to open GlobalPages.json file:GlobalPages.json", err)
@@ -392,6 +374,7 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) cha
 	go func(){
 		defer close(ch)
 		defer globalPage.Close()
+		// defer os.Remove(filename)
 
 		for{
 			line, err := globalPageReader.ReadString('\n')
@@ -419,10 +402,9 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) cha
 				select {
 				case <-ctx.Done():
 					return
-				default:
+				case ch <- page:
 				}
 			}
-			ch <- page
 		}
 
 	}()
@@ -432,7 +414,8 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) cha
 func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) chan map[string]map[string]uint32 {
 	ch := make(chan map[string]map[string]uint32)
 
-	globalTopic, err := os.Open(wd.ResultDir+"GlobalTopicsWords_top"+strconv.Itoa(wd.TopNWords.TopNTopicWords)+".json")
+	filename := wd.ResultDir+"GlobalTopicsWords_top"+strconv.Itoa(wd.TopNWords.TopNTopicWords)+".json"
+	globalTopic, err := os.Open(filename)
 
 	if err != nil {
 		log.Fatal("Error happened while trying to open GlobalTopics_top.json ", err)
@@ -442,6 +425,7 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) ch
 	go func(){
 		defer close(ch)
 		defer globalTopic.Close()
+		// defer os.Remove(filename)
 
 		for{
 			line, err := globalPageReader.ReadString('\n')
@@ -469,10 +453,9 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) ch
 				select {
 				case <-ctx.Done():
 					return
-				default:
+				case ch <- topic:
 				}
 			}
-			ch <- topic
 		}
 
 	}()
@@ -482,7 +465,8 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) ch
 func (wd *WikiDumpConflitcAnalyzer) BadwordsReportExporter(ctx context.Context) chan map[string]structures.BadWordsReport {
 	ch := make(chan map[string]structures.BadWordsReport)
 
-	globalTopic, err := os.Open(wd.ResultDir+"BadWordsReport.json")
+	filename := wd.ResultDir+"BadWordsReport.json"
+	globalTopic, err := os.Open(filename)
 
 	if err != nil {
 		log.Fatal("Error happened while trying to open BadWordsReport.json ", err)
@@ -492,6 +476,7 @@ func (wd *WikiDumpConflitcAnalyzer) BadwordsReportExporter(ctx context.Context) 
 	go func(){
 		defer close(ch)
 		defer globalTopic.Close()
+		// defer os.Remove(filename)
 
 		for{
 			line, err := globalPageReader.ReadString('\n')
@@ -519,10 +504,9 @@ func (wd *WikiDumpConflitcAnalyzer) BadwordsReportExporter(ctx context.Context) 
 				select {
 				case <-ctx.Done():
 					return
-				default:
+				case ch <- page:
 				}
 			}
-			ch <- page
 		}
 
 	}()
