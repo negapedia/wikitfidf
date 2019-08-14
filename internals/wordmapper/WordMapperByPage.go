@@ -28,7 +28,10 @@ func getMappedPage(page *structures.StemmedPageJson) structures.PageElement {
 
 // WordMapperByPage given the result dir, generate a global file containing all the processed pages
 func WordMapperByPage(resultDir string) error {
-	fileList := utils.FilesInDir(resultDir, "S[0-9]*")
+	fileList, err := utils.FilesInDir(resultDir, "S[0-9]*")
+	if err != nil {
+		return err
+	}
 	nFile := len(fileList)
 
 	for i, file := range fileList {

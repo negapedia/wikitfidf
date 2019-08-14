@@ -13,7 +13,10 @@ import (
 
 // StemRevAggregator given the result directory, will aggregate all Stem files into a single global file
 func StemRevAggregator(resultDir string) error{
-	fileList := utils.FilesInDir(resultDir+"Stem/", "StemRev_*")
+	fileList, err := utils.FilesInDir(resultDir+"Stem/", "StemRev_*")
+	if err != nil {
+		return err
+	}
 	nFile := len(fileList)
 	globalStemRev := make(map[string]string)
 

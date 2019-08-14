@@ -26,6 +26,10 @@ func main() {
 	wd, err := WDCA.New(*langFlag, *dirFlag, *startDateFlag, *endDateFlag, *specialPageListFlag,
 		*nRevert, *nTopWordsPages, *nTopWordsGlobal, *nTopWordsTopic, *compressFinalOut, *verboseMode)
 
+	if err != nil {
+		log.Fatal("%+v", err)
+	}
+
 	ctx, fail := ctxutils.WithFail(context.Background())
 	pageChannel := wikibrief.New(ctx, fail, wd.ResultDir, wd.Lang)
 
@@ -35,7 +39,7 @@ func main() {
 		log.Fatal("%+v", err)
 	}
 
-	err := wd.Process()
+	err = wd.Process()
 	if err != nil{
 		log.Fatal(err)
 	}

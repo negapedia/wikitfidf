@@ -55,6 +55,7 @@ func badWordsListGetter(lang, path string) (map[string]bool, error ){
 	return badwordsList, nil
 }
 
+
 // BadWords create the badwords report for the given language, if available, and the given result dir
 func BadWords(lang, resultDir string) error {
 	if language, isAvailable := availableLanguage(lang); isAvailable {
@@ -63,7 +64,10 @@ func BadWords(lang, resultDir string) error {
 			return err
 		}
 
-		outFile, _ := os.Create(resultDir + "BadWordsReport.json")
+		outFile, err := os.Create(resultDir + "BadWordsReport.json")
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to create :"+resultDir + "BadWordsReport.json")
+		}
 		encWriter := bufio.NewWriter(outFile)
 		defer outFile.Close()
 
@@ -126,23 +130,33 @@ func BadWords(lang, resultDir string) error {
 					marshalledPage, _ := json.Marshal(newPage)
 					pageAsString := string(marshalledPage)
 					pageAsString = pageAsString[:len(pageAsString)-1] + ",\n"
-					_, _ = encWriter.Write([]byte(pageAsString))
-
+					_, err = encWriter.Write([]byte(pageAsString))
 				} else if i > 0 {
 					marshalledPage, _ := json.Marshal(newPage)
 					pageAsString := string(marshalledPage)
 					pageAsString = pageAsString[1:len(pageAsString)-1] + ",\n"
-					_, _ = encWriter.Write([]byte(pageAsString))
-
+					_, err = encWriter.Write([]byte(pageAsString))
 				}
-				_ = encWriter.Flush()
+				if err != nil {
+					return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir + "BadWordsReport.json")
+				}
+				err = encWriter.Flush()
+				if err != nil {
+					return errors.Wrapf(err, "Failed while trying to flush:"+resultDir + "BadWordsReport.json")
+				}
 			}
 			i++
 
 		}
 
-		_, _ = encWriter.Write([]byte("}"))
-		_ = encWriter.Flush()
+		_, err = encWriter.Write([]byte("}"))
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir + "BadWordsReport.json")
+		}
+		err = encWriter.Flush()
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir + "BadWordsReport.json")
+		}
 	}
 	return nil
 }

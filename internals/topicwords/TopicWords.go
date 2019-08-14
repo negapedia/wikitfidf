@@ -107,15 +107,19 @@ func mapWordsInFile(file string) (*map[string]uint32, error) {
 	return &wordMap, nil
 }
 
-func getJSONBytes(topicFile string, words *map[string]uint32) *[]byte {
+func getJSONBytes(topicFile string, words *map[string]uint32) (*[]byte, error) {
 	topicID := topicFile[len(topicFile)-10:]
 
 	topicMap := make(map[string]*map[string]uint32)
 	topicMap[topicID] = words
 
-	wordsDict, _ := json.Marshal(topicMap)
+	wordsDict, err := json.Marshal(topicMap)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error while unmarshalling ", topicFile)
+	}
 
-	return &wordsDict
+
+	return &wordsDict, nil
 }
 
 func topicWordsMapper(resultDir string) error {
@@ -133,23 +137,42 @@ func topicWordsMapper(resultDir string) error {
 		if err != nil {
 			return err
 		}
-		jsonTopicWords := string(*getJSONBytes(topicFile, topicWords))
+
+		jsonBytes, err := getJSONBytes(topicFile, topicWords)
+		if err != nil {
+			return err
+		}
+		jsonTopicWords := string(*jsonBytes)
 
 		if i == 0 {
 			jsonTopicWords = jsonTopicWords[:len(jsonTopicWords)-1] + ",\n"
-			_, _ = writer.Write([]byte(jsonTopicWords))
+			_, err = writer.Write([]byte(jsonTopicWords))
 
 		} else if i > 0 {
 			jsonTopicWords = jsonTopicWords[1:len(jsonTopicWords)-1] + ",\n"
-			_, _ = writer.Write([]byte(jsonTopicWords))
-
+			_, err = writer.Write([]byte(jsonTopicWords))
 		}
-		_ = writer.Flush()
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir + "GlobalTopicsWords.json")
+		}
+		err = writer.Flush()
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir + "GlobalTopicsWords.json")
+		}
 
-		_ = os.Remove(topicFile)
+		err = os.Remove(topicFile)
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to delete file:"+topicFile)
+		}
 	}
-	writer.Write([]byte("}"))
-	writer.Flush()
+	_, err = writer.Write([]byte("}"))
+	if err != nil {
+		return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir + "GlobalTopicsWords.json")
+	}
+	err = writer.Flush()
+	if err != nil {
+		return errors.Wrapf(err, "Failed while trying to flush:"+resultDir + "GlobalTopicsWords.json")
+	}
 	return nil
 }
 

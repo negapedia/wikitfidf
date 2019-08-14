@@ -7,16 +7,16 @@
 package utils
 
 import (
-	"log"
+	"github.com/pkg/errors"
 	"path/filepath"
 )
 
 // FilesInDir return a list of string of the files in a directory filtered by pattern
-func FilesInDir(dir string, pattern string) []string {
+func FilesInDir(dir string, pattern string) ([]string, error) {
 	files, err := filepath.Glob(dir + pattern)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, errors.Wrapf(err, "Error while trying to list file in path: "+dir)
 	}
-	return files
+	return files, nil
 }

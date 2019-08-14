@@ -24,7 +24,10 @@ func getTotalWordInPage(page *structures.PageElement) uint32 {
 
 // PageMapAggregator given the result dir, aggregate all the page files into a global file
 func PageMapAggregator(resultDir string) error {
-	fileList := utils.FilesInDir(resultDir, "M[0-9]*")
+	fileList, err := utils.FilesInDir(resultDir, "M[0-9]*")
+	if err != nil {
+		return err
+	}
 	nFile := len(fileList)
 
 	outFile, _ := os.Create(resultDir + "GlobalPages.json")

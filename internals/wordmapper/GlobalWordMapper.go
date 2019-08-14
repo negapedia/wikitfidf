@@ -13,7 +13,10 @@ import (
 
 // GlobalWordMapper given the result dir, generate the file containing the global report about word frequency
 func GlobalWordMapper(resultDir string) error {
-	fileList := utils.FilesInDir(resultDir, "M[0-9]*")
+	fileList, err := utils.FilesInDir(resultDir, "M[0-9]*")
+	if err != nil {
+		return err
+	}
 	nFile := len(fileList)
 
 	globalWord := make(map[string]map[string]uint32)
