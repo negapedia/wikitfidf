@@ -47,7 +47,7 @@ type WikiDumpConflitcAnalyzer struct {
 	Error	error
 }
 
-func CheckAvailableLanguage(lang string) (bool, error) {
+func CheckAvailableLanguage(lang string) error {
 	languages := map[string]string{
 		"en":     "english",
 		"ar":     "arabic",
@@ -97,11 +97,10 @@ func CheckAvailableLanguage(lang string) (bool, error) {
 		"vec":    "italian", // only test
 	}
 
-	var noLang error
 	if _, isIn := languages[lang]; !isIn {
-		noLang = errors.New(lang + " is not an available language!")
+		return errors.New(lang + " is not an available language!")
 	}
-	return true, noLang
+	return nil
 }
 
 // New admits to initialize with parameters a WikiDumpConflitcAnalyzer.
@@ -116,7 +115,7 @@ func New(lang string, resultDir string,
 		return nil, errors.New("Number of topwords to calculate are setted to 0")
 	}
 
-	_, err := CheckAvailableLanguage(lang)
+	err := CheckAvailableLanguage(lang)
 	if err != nil {
 		return nil, errors.New("Language required not available")
 	}
@@ -356,27 +355,35 @@ func (wd *WikiDumpConflitcAnalyzer) CheckErrors() {
 }
 
 // GlobalWordExporter returns a channel with the data of GlobalWord (top N words)
-func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter(ctx context.Context) *map[string]uint32 {
+func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter() map[string]uint32 {
+	if wd.Error != nil{
+		return nil
+	}
 	globalWord, err := utils.GetGlobalWordsTopN(wd.ResultDir, wd.TopNWords.TopNGlobalWords)
 	if err != nil {
 		wd.Error = errors.Wrap(err, "Errors happened while handling GlobalWords file")
 		return nil
 	}
 
-	return &globalWord
+	return globalWord
 }
 
 // GlobalPagesExporter returns a channel with the data of GlobalPagesTFIDF (top N words per page)
 func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) chan map[string]structures.TfidfTopNWordPage {
-	ch := make(chan map[string]structures.TfidfTopNWordPage)
+	if wd.Error != nil{
+		return nil
+	}
 
 	filename := wd.ResultDir+"GlobalPagesTFIDF_top"+strconv.Itoa(wd.TopNWords.TopNWordsPages)+".json"
 	globalPage, err := os.Open(filename)
 
 	if err != nil {
-		log.Fatal("Error happened while trying to open GlobalPages.json file:GlobalPages.json", err)
+		wd.Error = errors.Wrap(err,"Error happened while trying to open GlobalPages.json file:GlobalPages.json")
+		return nil
 	}
 	globalPageReader := bufio.NewReader(globalPage)
+
+	ch := make(chan map[string]structures.TfidfTopNWordPage)
 
 	go func(){
 		defer close(ch)
@@ -420,16 +427,20 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) cha
 
 // GlobalTopicsExporter returns a channel with the data of GlobalTopic (top N words per topic)
 func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) chan map[string]map[string]uint32 {
-	ch := make(chan map[string]map[string]uint32)
+	if wd.Error != nil{
+		return nil
+	}
 
 	filename := wd.ResultDir+"GlobalTopicsWords_top"+strconv.Itoa(wd.TopNWords.TopNTopicWords)+".json"
 	globalTopic, err := os.Open(filename)
 
 	if err != nil {
-		log.Fatal("Error happened while trying to open GlobalTopics_top.json ", err)
+		wd.Error = errors.Wrapf(err,"Error happened while trying to open GlobalTopics_top.json ")
+		return nil
 	}
 	globalPageReader := bufio.NewReader(globalTopic)
 
+	ch := make(chan map[string]map[string]uint32)
 	go func(){
 		defer close(ch)
 		defer globalTopic.Close()
@@ -472,16 +483,20 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) ch
 
 // BadwordsReportExporter returns a channel with the data of BadWords Report
 func (wd *WikiDumpConflitcAnalyzer) BadwordsReportExporter(ctx context.Context) chan map[string]structures.BadWordsReport {
-	ch := make(chan map[string]structures.BadWordsReport)
+	if wd.Error != nil{
+		return nil
+	}
 
 	filename := wd.ResultDir+"BadWordsReport.json"
 	globalTopic, err := os.Open(filename)
 
 	if err != nil {
-		log.Fatal("Error happened while trying to open BadWordsReport.json ", err)
+		wd.Error = errors.Wrap(err,"Error happened while trying to open BadWordsReport.json ")
+		return nil
 	}
 	globalPageReader := bufio.NewReader(globalTopic)
 
+	ch := make(chan map[string]structures.BadWordsReport)
 	go func(){
 		defer close(ch)
 		defer globalTopic.Close()
