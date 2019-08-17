@@ -21,6 +21,7 @@ type TfidfAggregatedPage struct {
 	Words   *map[string]map[string]float64
 }
 
+// TfidfTopNWordPage represent a wikipedia page words data with only tfidf value
 type TfidfTopNWordPage struct {
 	TopicID uint32
 	Tot     uint32

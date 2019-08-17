@@ -8,9 +8,10 @@ import (
 	"math"
 	"os"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
+	"github.com/negapedia/wikiconflict/internals/structures"
 )
 
+// GetGlobalWords return full GlobalWord map and a error
 func GetGlobalWord(resultDir string) (map[string]map[string]float64, error) {
 	jsonFile, err := os.Open(resultDir + "GlobalWords.json")
 	if err != nil {

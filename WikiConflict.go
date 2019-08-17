@@ -1,17 +1,17 @@
-package WikiConflict
+package wikiconflict
 
 import (
 	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/badwords"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/dumpreducer"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/tfidf"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/topicwords"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/utils"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/wordmapper"
+	"github.com/negapedia/wikiconflict/internals/badwords"
+	"github.com/negapedia/wikiconflict/internals/dumpreducer"
+	"github.com/negapedia/wikiconflict/internals/structures"
+	"github.com/negapedia/wikiconflict/internals/tfidf"
+	"github.com/negapedia/wikiconflict/internals/topicwords"
+	"github.com/negapedia/wikiconflict/internals/utils"
+	"github.com/negapedia/wikiconflict/internals/wordmapper"
 	"github.com/negapedia/wikibrief"
 	"github.com/pkg/errors"
 	"log"
@@ -28,9 +28,9 @@ type nTopWords struct{
 	TopNTopicWords int
 }
 
-// WikiDumpConflitcAnalyzer represent the main specific of desiderd Wikipedia dumps
+// Wikiconflict represent the main specific of desiderd Wikipedia dumps
 // and some options for the elaboration process
-type WikiDumpConflitcAnalyzer struct {
+type Wikiconflict struct {
 	Lang      string
 	ResultDir string
 	date      string
@@ -103,11 +103,11 @@ func CheckAvailableLanguage(lang string) error {
 	return nil
 }
 
-// New admits to initialize with parameters a WikiDumpConflitcAnalyzer.
+// New admits to initialize with parameters a Wikiconflict.
 func New(lang string, resultDir string,
 	startDate string, endDate string, specialPageList string,
 	nRevert, topNWordsPages, topNGlobalWords, topNTopicWords int,
-	compress bool, verbouseMode bool) (*WikiDumpConflitcAnalyzer, error){
+	compress bool, verbouseMode bool) (*Wikiconflict, error){
 
 	if lang == ""{
 		return nil, errors.New("Langugage not set")
@@ -120,7 +120,7 @@ func New(lang string, resultDir string,
 		return nil, errors.New("Language required not available")
 	}
 
-	wd := new(WikiDumpConflitcAnalyzer)
+	wd := new(Wikiconflict)
 	wd.Lang = lang
 
 	wd.StartDate, _ = time.Parse(startDate, "2019-01-01T15:00")
@@ -169,7 +169,7 @@ func New(lang string, resultDir string,
 }
 
 // Preprocess given a wikibrief.EvolvingPage channel reduce the amount of information in pages and save them
-func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel <-chan wikibrief.EvolvingPage) {
+func (wd *Wikiconflict) Preprocess(channel <-chan wikibrief.EvolvingPage) {
 	if wd.VerbouseMode{
 		fmt.Println("Parse and reduction start")
 	}
@@ -183,7 +183,7 @@ func (wd *WikiDumpConflitcAnalyzer) Preprocess(channel <-chan wikibrief.Evolving
 
 // Process is the main procedure where the data process happen. In this method page will be cleaned by wikitext,
 // will be performed tokenization, stopwords cleaning and stemming, files aggregation and then files de-stemming
-func (wd *WikiDumpConflitcAnalyzer) Process() error {
+func (wd *Wikiconflict) Process() error {
 	if wd.VerbouseMode{
 		fmt.Println("WikiMarkup cleaning start")
 	}
@@ -210,7 +210,7 @@ func (wd *WikiDumpConflitcAnalyzer) Process() error {
 		fmt.Println("Word mapping by page start")
 	}
 	start = time.Now()
-	err := wordmapper.WordMapperByPage(wd.ResultDir)
+	err := wordmapper.ByPage(wd.ResultDir)
 	if err != nil{
 		return err
 	}
@@ -324,7 +324,7 @@ func (wd *WikiDumpConflitcAnalyzer) Process() error {
 }
 
 // CompressResultDir compress to 7z the result dir
-func (wd *WikiDumpConflitcAnalyzer) CompressResultDir(whereToSave string) {
+func (wd *Wikiconflict) CompressResultDir(whereToSave string) {
 	if wd.CompressAndRemoveFinalOut {
 		if wd.VerbouseMode{
 			fmt.Println("Compressing ResultDir in 7z start")
@@ -348,14 +348,14 @@ func (wd *WikiDumpConflitcAnalyzer) CompressResultDir(whereToSave string) {
 }
 
 // CheckErrors check if errors happened during export process
-func (wd *WikiDumpConflitcAnalyzer) CheckErrors() {
+func (wd *Wikiconflict) CheckErrors() {
 	if wd.Error != nil{
 		log.Fatal(wd.Error)
 	}
 }
 
 // GlobalWordExporter returns a channel with the data of GlobalWord (top N words)
-func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter() map[string]uint32 {
+func (wd *Wikiconflict) GlobalWordExporter() map[string]uint32 {
 	if wd.Error != nil{
 		return nil
 	}
@@ -369,9 +369,11 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalWordExporter() map[string]uint32 {
 }
 
 // GlobalPagesExporter returns a channel with the data of GlobalPagesTFIDF (top N words per page)
-func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) chan map[string]structures.TfidfTopNWordPage {
+func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan map[string]structures.TfidfTopNWordPage {
+	ch := make(chan map[string]structures.TfidfTopNWordPage)
 	if wd.Error != nil{
-		return nil
+		close(ch)
+		return ch
 	}
 
 	filename := wd.ResultDir+"GlobalPagesTFIDF_top"+strconv.Itoa(wd.TopNWords.TopNWordsPages)+".json"
@@ -382,8 +384,6 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) cha
 		return nil
 	}
 	globalPageReader := bufio.NewReader(globalPage)
-
-	ch := make(chan map[string]structures.TfidfTopNWordPage)
 
 	go func(){
 		defer close(ch)
@@ -426,9 +426,12 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalPagesExporter(ctx context.Context) cha
 }
 
 // GlobalTopicsExporter returns a channel with the data of GlobalTopic (top N words per topic)
-func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) chan map[string]map[string]uint32 {
+func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan map[string]map[string]uint32 {
+	ch := make(chan map[string]map[string]uint32)
+
 	if wd.Error != nil{
-		return nil
+		close(ch)
+		return ch
 	}
 
 	filename := wd.ResultDir+"GlobalTopicsWords_top"+strconv.Itoa(wd.TopNWords.TopNTopicWords)+".json"
@@ -436,11 +439,11 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) ch
 
 	if err != nil {
 		wd.Error = errors.Wrapf(err,"Error happened while trying to open GlobalTopics_top.json ")
-		return nil
+		close(ch)
+		return ch
 	}
 	globalPageReader := bufio.NewReader(globalTopic)
 
-	ch := make(chan map[string]map[string]uint32)
 	go func(){
 		defer close(ch)
 		defer globalTopic.Close()
@@ -482,9 +485,12 @@ func (wd *WikiDumpConflitcAnalyzer) GlobalTopicsExporter(ctx context.Context) ch
 }
 
 // BadwordsReportExporter returns a channel with the data of BadWords Report
-func (wd *WikiDumpConflitcAnalyzer) BadwordsReportExporter(ctx context.Context) chan map[string]structures.BadWordsReport {
+func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan map[string]structures.BadWordsReport {
+	ch := make(chan map[string]structures.BadWordsReport)
+
 	if wd.Error != nil{
-		return nil
+		close(ch)
+		return ch
 	}
 
 	filename := wd.ResultDir+"BadWordsReport.json"
@@ -492,11 +498,11 @@ func (wd *WikiDumpConflitcAnalyzer) BadwordsReportExporter(ctx context.Context) 
 
 	if err != nil {
 		wd.Error = errors.Wrap(err,"Error happened while trying to open BadWordsReport.json ")
-		return nil
+		close(ch)
+		return ch
 	}
 	globalPageReader := bufio.NewReader(globalTopic)
 
-	ch := make(chan map[string]structures.BadWordsReport)
 	go func(){
 		defer close(ch)
 		defer globalTopic.Close()

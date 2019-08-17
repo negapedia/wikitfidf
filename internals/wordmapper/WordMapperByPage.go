@@ -7,11 +7,11 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/utils"
+	"github.com/negapedia/wikiconflict/internals/structures"
+	"github.com/negapedia/wikiconflict/internals/utils"
 )
 
-func getMappedPage(page *structures.StemmedPageJson) structures.PageElement {
+func getMappedPage(page *structures.StemmedPageJSON) structures.PageElement {
 	var mappedText = make(map[string]uint32)
 
 	for _, rev := range page.Revision {
@@ -44,7 +44,7 @@ func WordMapperByPage(resultDir string) error {
 		byteValue, _ := ioutil.ReadAll(jsonFile)
 		jsonFile.Close()
 
-		var page structures.StemmedPageJson
+		var page structures.StemmedPageJSON
 
 		err = json.Unmarshal(byteValue, &page)
 		if err != nil {

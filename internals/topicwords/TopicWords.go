@@ -15,8 +15,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/utils"
+	"github.com/negapedia/wikiconflict/internals/structures"
+	"github.com/negapedia/wikiconflict/internals/utils"
 )
 
 type topicWriter struct {
@@ -100,7 +100,7 @@ func mapWordsInFile(file string) (*map[string]uint32, error) {
 		if _, ok := wordMap[word]; !ok {
 			wordMap[word] = 1
 		} else {
-			wordMap[word] += 1
+			wordMap[word]++
 		}
 	}
 
@@ -115,7 +115,7 @@ func getJSONBytes(topicFile string, words *map[string]uint32) (*[]byte, error) {
 
 	wordsDict, err := json.Marshal(topicMap)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error while unmarshalling ", topicFile)
+		return nil, errors.Wrapf(err, "Error while unmarshalling "+topicFile)
 	}
 
 

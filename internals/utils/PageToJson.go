@@ -13,7 +13,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
+	"github.com/negapedia/wikiconflict/internals/structures"
 )
 
 // WriteCleanPage write a json containing the page after first clean

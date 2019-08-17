@@ -15,7 +15,7 @@ RUN go get github.com/ebonetti/ctxutils
 
 ADD / $GOPATH/src/
 
-RUN go get github.com/negapedia/Wikipedia-Conflict-Analyzer
+RUN go get github.com/negapedia/wikiconflict
 RUN 7z x $GOPATH/src/stopwords_data.7z -o/root/nltk_data
 RUN 7z x $GOPATH/src/badwords_data.7z -o/root/badwords_data
 

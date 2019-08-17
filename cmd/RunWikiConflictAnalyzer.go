@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"github.com/ebonetti/ctxutils"
-	WDCA "github.com/negapedia/Wikipedia-Conflict-Analyzer"
+	WDCA "github.com/negapedia/wikiconflict"
 	"github.com/negapedia/wikibrief"
 	"log"
 )

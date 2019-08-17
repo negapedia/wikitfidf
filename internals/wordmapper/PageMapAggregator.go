@@ -8,8 +8,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/utils"
+	"github.com/negapedia/wikiconflict/internals/structures"
+	"github.com/negapedia/wikiconflict/internals/utils"
 )
 
 func getTotalWordInPage(page *structures.PageElement) uint32 {

@@ -1,7 +1,7 @@
 # Wikipedia Conflict Analyzer
-[![Go Report Card](https://goreportcard.com/badge/github.com/MarcoChilese/NegapediaConflictualWords)](https://goreportcard.com/report/github.com/MarcoChilese/NegapediaConflictualWords)
-[![GoDoc](https://godoc.org/github.com/negapedia/Wikipedia-Conflict-Analyzer?status.svg)](https://godoc.org/github.com/MarcoChilese/Wikipedia-Conflict-Analyzer)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7e72ac26ecc45259dc0426758043996)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MarcoChilese/Wikipedia-Conflict-Analyzer&amp;utm_campaign=Badge_Grade)
+[![Go Report Card](https://goreportcard.com/badge/github.com/negapedia/wikiconflict)](https://goreportcard.com/report/github.com/negapedia/wikiconflict)
+[![GoDoc](https://godoc.org/github.com/negapedia/wikiconflict?status.svg)](https://godoc.org/github.com/MarcoChilese/wikiconflict)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c7e72ac26ecc45259dc0426758043996)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=MarcoChilese/wikiconflict&amp;utm_campaign=Badge_Grade)
 
 Negapedia Conflict Analyzer analyze Wikipedia's dumps and makes statistical analysis on reverts text.<br>
 The data produced in output can be used to clarify the theme of the contrast inside a Wikipedia page.<br>
@@ -68,4 +68,4 @@ execution flags have to be setted on Dockerfile entrypoint.
 
 #### Installation
 Go packages can be installed by:<br>
-``go get github.com/negapedia/Wikipedia-Conflict-Analyzer``
+``go get github.com/negapedia/wikiconflict``

@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"os"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/structures"
+	"github.com/negapedia/wikiconflict/internals/structures"
 )
 
 func availableLanguage(lang string) (string, bool) {

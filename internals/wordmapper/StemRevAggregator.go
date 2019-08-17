@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/negapedia/Wikipedia-Conflict-Analyzer/internals/utils"
+	"github.com/negapedia/wikiconflict/internals/utils"
 )
 
 // StemRevAggregator given the result directory, will aggregate all Stem files into a single global file
