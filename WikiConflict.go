@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -43,7 +45,7 @@ type Wikiconflict struct {
 	EndDate                   time.Time
 	SpecialPageList           []string
 	CompressAndRemoveFinalOut bool
-	VerbouseMode              bool
+	Logger                    io.Writer
 
 	Error error
 }
@@ -158,7 +160,11 @@ func New(lang string, resultDir string,
 	}(specialPageList)
 
 	wd.CompressAndRemoveFinalOut = compress
-	wd.VerbouseMode = verbouseMode
+	if verbouseMode {
+		wd.Logger = os.Stdout
+	} else {
+		wd.Logger = ioutil.Discard
+	}
 
 	if _, err := os.Stat(wd.ResultDir + "Stem"); os.IsNotExist(err) {
 		err = os.MkdirAll(wd.ResultDir+"Stem", 0700) //0755
@@ -172,165 +178,114 @@ func New(lang string, resultDir string,
 
 // Preprocess given a wikibrief.EvolvingPage channel reduce the amount of information in pages and save them
 func (wd *Wikiconflict) Preprocess(channel <-chan wikibrief.EvolvingPage) {
-	if wd.VerbouseMode {
-		fmt.Println("Parse and reduction start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Parse and reduction start")
 	start := time.Now()
 	dumpreducer.DumpReducer(channel, wd.ResultDir, time.Time{}, time.Time{}, nil, wd.Nrevert) //("../103KB_test.7z", wd.ResultDir, wd.startDate, wd.endDate, wd.SpecialPageList)// //startDate and endDate must be in the same format of dump timestamp!
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Parse and reduction end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Parse and reduction end")
 }
 
 // Process is the main procedure where the data process happen. In this method page will be cleaned by wikitext,
 // will be performed tokenization, stopwords cleaning and stemming, files aggregation and then files de-stemming
 func (wd *Wikiconflict) Process() error {
-	if wd.VerbouseMode {
-		fmt.Println("WikiMarkup cleaning start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "WikiMarkup cleaning start")
 	start := time.Now()
 	wikiMarkupClean := exec.Command("java", "-jar", "./internals/textnormalizer/WikipediaMarkupCleaner.jar", wd.ResultDir)
 	_ = wikiMarkupClean.Run()
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("WikiMarkup cleaning end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "WikiMarkup cleaning end")
 
-	if wd.VerbouseMode {
-		fmt.Println("Stopwords cleaning and stemming start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Stopwords cleaning and stemming start")
 	start = time.Now()
 	stopwordsCleanerStemming := exec.Command("python3", "./internals/textnormalizer/runStopwClean.py", wd.ResultDir, wd.Lang)
 	_ = stopwordsCleanerStemming.Run()
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Stopwords cleaning and stemming end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Stopwords cleaning and stemming end")
 
-	if wd.VerbouseMode {
-		fmt.Println("Word mapping by page start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Word mapping by page start")
 	start = time.Now()
 	err := wordmapper.ByPage(wd.ResultDir)
 	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Word mapping by page end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Word mapping by page end")
 
-	if wd.VerbouseMode {
-		fmt.Println("Processing GlobalWordMap file start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Processing GlobalWordMap file start")
 	start = time.Now()
 	err = wordmapper.GlobalWordMapper(wd.ResultDir)
 	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode {
-		fmt.Println("Processing GlobalWordMap file start")
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Processing GlobalWordMap file start")
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
 
-	if wd.VerbouseMode {
-		fmt.Println("Processing GlobalStem file start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Processing GlobalStem file start")
 	start = time.Now()
 	err = wordmapper.StemRevAggregator(wd.ResultDir)
 	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Processing GlobalStem file end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Processing GlobalStem file end")
 
-	if wd.VerbouseMode {
-		fmt.Println("Processing GlobalPage file start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Processing GlobalPage file start")
 	start = time.Now()
 	err = wordmapper.PageMapAggregator(wd.ResultDir)
 	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Processing GlobalPage file end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Processing GlobalPage file end")
 
-	if wd.VerbouseMode {
-		fmt.Println("Processing TFIDF file start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Processing TFIDF file start")
 	start = time.Now()
 	err = tfidf.ComputeTFIDF(wd.ResultDir)
 	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Processing TFIDF file end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Processing TFIDF file end")
 
-	if wd.VerbouseMode {
-		fmt.Println("Performing Destemming start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Performing Destemming start")
 	start = time.Now()
 	deStemming := exec.Command("python3", "./internals/destemmer/runDeStemming.py", wd.ResultDir)
 	_ = deStemming.Run()
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Performing Destemming file end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Performing Destemming file end")
 
-	if wd.VerbouseMode {
-		fmt.Println("Processing top N words start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Processing top N words start")
 	start = time.Now()
 	topNWordsPageExtractor := exec.Command("python3", "./internals/topwordspageextractor/runTopNWordsPageExtractor.py", wd.ResultDir,
 		strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNTopicWords))
 	_ = topNWordsPageExtractor.Run()
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Processing top N words end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Processing top N words end")
 
-	if wd.VerbouseMode {
-		fmt.Println("Processing topic words start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Processing topic words start")
 	start = time.Now()
 	err = topicwords.TopicWords(wd.ResultDir)
 	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Processing topic words end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Processing topic words end")
 
-	if wd.VerbouseMode {
-		fmt.Println("Processing Badwords report start")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Processing Badwords report start")
 	start = time.Now()
 	err = badwords.BadWords(wd.Lang, wd.ResultDir)
 	if err != nil {
 		return err
 	}
-
-	if wd.VerbouseMode {
-		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
-		fmt.Println("Processing Badwords report end")
-	}
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Processing Badwords report end")
 	return nil
 }
 
 // CompressResultDir compress to 7z the result dir
 func (wd *Wikiconflict) CompressResultDir(whereToSave string) {
 	if wd.CompressAndRemoveFinalOut {
-		if wd.VerbouseMode {
-			fmt.Println("Compressing ResultDir in 7z start")
-		}
+		_, _ = fmt.Fprintln(wd.Logger, "Compressing ResultDir in 7z start")
 		fileName := wd.Lang + "_" + wd.date
 		if wd.Nrevert != 0 {
 			fileName += "_last" + strconv.Itoa(wd.Nrevert)
@@ -339,13 +294,10 @@ func (wd *Wikiconflict) CompressResultDir(whereToSave string) {
 		start := time.Now()
 		topNWordsPageExtractor := exec.Command("7z", "a", "-r", whereToSave+fileName, wd.ResultDir+"*")
 		_ = topNWordsPageExtractor.Run()
-
 		_ = os.RemoveAll(wd.ResultDir)
 
-		if wd.VerbouseMode {
-			fmt.Println("Duration: (min) ", time.Now().Sub(start).Minutes())
-			fmt.Println("Compressing ResultDir in 7z end")
-		}
+		_, _ = fmt.Fprintln(wd.Logger, "Duration: (min) ", time.Now().Sub(start).Minutes())
+		_, _ = fmt.Fprintln(wd.Logger, "Compressing ResultDir in 7z end")
 	}
 }
 
