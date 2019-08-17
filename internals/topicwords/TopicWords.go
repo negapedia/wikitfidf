@@ -10,10 +10,11 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/negapedia/wikiconflict/internals/structures"
 	"github.com/negapedia/wikiconflict/internals/utils"
@@ -44,7 +45,7 @@ func topicWordsWriter(resultDir string) error {
 	globalPageTFIDF, err := os.Open(resultDir + "GlobalPagesTFIDF.json")
 	defer globalPageTFIDF.Close()
 	if err != nil {
-		return errors.Wrapf(err,"Error happened while trying to open GlobalPagesTFIDF.json file:"+ resultDir + "GlobalPagesTFIDF.json")
+		return errors.Wrapf(err, "Error happened while trying to open GlobalPagesTFIDF.json file:"+resultDir+"GlobalPagesTFIDF.json")
 	}
 	globalPageReader := bufio.NewReader(globalPageTFIDF)
 
@@ -69,7 +70,7 @@ func topicWordsWriter(resultDir string) error {
 		line = line[:len(line)-2] + "}"
 		err = json.Unmarshal([]byte(line), &page)
 		if err != nil {
-			return errors.Wrapf(err,"Error while unmarshalling json.")
+			return errors.Wrapf(err, "Error while unmarshalling json.")
 		}
 		for i := range page {
 			for word := range *page[i].Words {
@@ -91,7 +92,7 @@ func mapWordsInFile(file string) (*map[string]uint32, error) {
 
 	fileReader, err := ioutil.ReadAll(f)
 	if err != nil {
-		return nil, errors.Wrapf(err,"Error while trying to read file.")
+		return nil, errors.Wrapf(err, "Error while trying to read file.")
 	}
 
 	wordMap := make(map[string]uint32)
@@ -117,7 +118,6 @@ func getJSONBytes(topicFile string, words *map[string]uint32) (*[]byte, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error while unmarshalling "+topicFile)
 	}
-
 
 	return &wordsDict, nil
 }
@@ -156,11 +156,11 @@ func topicWordsMapper(resultDir string) error {
 			_, err = writer.Write([]byte(jsonTopicWords))
 		}
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir + "GlobalTopicsWords.json")
+			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"GlobalTopicsWords.json")
 		}
 		err = writer.Flush()
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir + "GlobalTopicsWords.json")
+			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"GlobalTopicsWords.json")
 		}
 
 		err = os.Remove(topicFile)
@@ -170,11 +170,11 @@ func topicWordsMapper(resultDir string) error {
 	}
 	_, err = writer.Write([]byte("}"))
 	if err != nil {
-		return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir + "GlobalTopicsWords.json")
+		return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"GlobalTopicsWords.json")
 	}
 	err = writer.Flush()
 	if err != nil {
-		return errors.Wrapf(err, "Failed while trying to flush:"+resultDir + "GlobalTopicsWords.json")
+		return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"GlobalTopicsWords.json")
 	}
 	return nil
 }

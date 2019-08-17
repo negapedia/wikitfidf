@@ -3,16 +3,17 @@ package wordmapper
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/pkg/errors"
 
 	"github.com/negapedia/wikiconflict/internals/utils"
 )
 
 // StemRevAggregator given the result directory, will aggregate all Stem files into a single global file
-func StemRevAggregator(resultDir string) error{
+func StemRevAggregator(resultDir string) error {
 	fileList, err := utils.FilesInDir(resultDir+"Stem/", "StemRev_*")
 	if err != nil {
 		return err

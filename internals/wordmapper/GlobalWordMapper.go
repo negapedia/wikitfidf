@@ -3,9 +3,10 @@ package wordmapper
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
+
+	"github.com/pkg/errors"
 
 	"github.com/negapedia/wikiconflict/internals/structures"
 	"github.com/negapedia/wikiconflict/internals/utils"
@@ -30,7 +31,7 @@ func GlobalWordMapper(resultDir string) error {
 
 		jsonFile, err := os.Open(file)
 		if err != nil {
-			return errors.Wrapf(err,"Error happened while trying to open file:"+ file)
+			return errors.Wrapf(err, "Error happened while trying to open file:"+file)
 		}
 
 		byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -40,7 +41,7 @@ func GlobalWordMapper(resultDir string) error {
 
 		err = json.Unmarshal(byteValue, &page)
 		if err != nil {
-			return errors.Wrapf(err,"Error while unmarshalling json.")
+			return errors.Wrapf(err, "Error while unmarshalling json.")
 		}
 
 		totalPage++

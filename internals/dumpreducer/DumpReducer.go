@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/negapedia/wikibrief"
 	"github.com/negapedia/wikiconflict/internals/structures"
 	"github.com/negapedia/wikiconflict/internals/utils"
-	"github.com/negapedia/wikibrief"
 )
 
 func keepLastNRevert(page *structures.Page, nRev int) {

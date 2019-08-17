@@ -15,24 +15,24 @@ import (
 func GetGlobalWord(resultDir string) (map[string]map[string]float64, error) {
 	jsonFile, err := os.Open(resultDir + "GlobalWords.json")
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to open GlobalWords.json file:"+resultDir + "GlobalWords.json")
+		return nil, errors.Wrapf(err, "Error happened while trying to open GlobalWords.json file:"+resultDir+"GlobalWords.json")
 	}
 
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to read GlobalWords.json file:"+resultDir + "GlobalWords.json")
+		return nil, errors.Wrapf(err, "Error happened while trying to read GlobalWords.json file:"+resultDir+"GlobalWords.json")
 	}
 
 	err = jsonFile.Close()
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to close GlobalWords.json file:"+resultDir + "GlobalWords.json")
+		return nil, errors.Wrapf(err, "Error happened while trying to close GlobalWords.json file:"+resultDir+"GlobalWords.json")
 	}
 
 	var globalWord map[string]map[string]float64
 
 	err = json.Unmarshal(byteValue, &globalWord)
 	if err != nil {
-		return nil, errors.Wrapf(err,"Error while unmarshalling json.")
+		return nil, errors.Wrapf(err, "Error while unmarshalling json.")
 	}
 
 	return globalWord, nil
@@ -49,7 +49,7 @@ func ComputeTFIDF(resultDir string) error {
 
 	outFile, err := os.Create(resultDir + "GlobalPagesTFIDF.json")
 	if err != nil {
-		return errors.Wrapf(err, "Error happened while trying to create GlobalPagesTFIDF.json file:"+resultDir + "GlobalPagesTFIDF.json")
+		return errors.Wrapf(err, "Error happened while trying to create GlobalPagesTFIDF.json file:"+resultDir+"GlobalPagesTFIDF.json")
 	}
 	defer outFile.Close()
 	encWriter := bufio.NewWriter(outFile)
@@ -57,7 +57,7 @@ func ComputeTFIDF(resultDir string) error {
 	globalPage, err := os.Open(resultDir + "GlobalPages.json")
 	defer globalPage.Close()
 	if err != nil {
-		return errors.Wrapf(err, "Error happened while trying to open GlobalPages.json file:"+ resultDir + "GlobalPages.json")
+		return errors.Wrapf(err, "Error happened while trying to open GlobalPages.json file:"+resultDir+"GlobalPages.json")
 	}
 	globalPageReader := bufio.NewReader(globalPage)
 	i := 0
@@ -111,27 +111,27 @@ func ComputeTFIDF(resultDir string) error {
 			_, err = encWriter.Write([]byte(pageAsString))
 		}
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir + "GlobalPagesTFIDF.json")
+			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"GlobalPagesTFIDF.json")
 		}
 		err = encWriter.Flush()
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir + "GlobalPagesTFIDF.json")
+			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"GlobalPagesTFIDF.json")
 		}
 		i++
 	}
 
 	_, err = encWriter.Write([]byte("}"))
 	if err != nil {
-		return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir + "GlobalPagesTFIDF.json")
+		return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"GlobalPagesTFIDF.json")
 	}
 	err = encWriter.Flush()
 	if err != nil {
-		return errors.Wrapf(err, "Failed while trying to flush:"+resultDir + "GlobalPagesTFIDF.json")
+		return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"GlobalPagesTFIDF.json")
 	}
 
 	err = os.Remove(resultDir + "GlobalPages.json")
 	if err != nil {
-		return errors.Wrapf(err, "Failed while trying to delete file:"+resultDir + "GlobalPages.json")
+		return errors.Wrapf(err, "Failed while trying to delete file:"+resultDir+"GlobalPages.json")
 	}
 	return nil
 }

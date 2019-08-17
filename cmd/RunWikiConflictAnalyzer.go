@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/ebonetti/ctxutils"
-	WDCA "github.com/negapedia/wikiconflict"
-	"github.com/negapedia/wikibrief"
 	"log"
+
+	"github.com/ebonetti/ctxutils"
+	"github.com/negapedia/wikibrief"
+	WDCA "github.com/negapedia/wikiconflict"
 )
 
 func main() {
@@ -40,7 +41,7 @@ func main() {
 	}
 
 	err = wd.Process()
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 	wd.CompressResultDir("/Result/")

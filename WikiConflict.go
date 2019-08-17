@@ -5,6 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/negapedia/wikibrief"
 	"github.com/negapedia/wikiconflict/internals/badwords"
 	"github.com/negapedia/wikiconflict/internals/dumpreducer"
 	"github.com/negapedia/wikiconflict/internals/structures"
@@ -12,20 +20,13 @@ import (
 	"github.com/negapedia/wikiconflict/internals/topicwords"
 	"github.com/negapedia/wikiconflict/internals/utils"
 	"github.com/negapedia/wikiconflict/internals/wordmapper"
-	"github.com/negapedia/wikibrief"
 	"github.com/pkg/errors"
-	"log"
-	"os"
-	"os/exec"
-	"strconv"
-	"strings"
-	"time"
 )
 
-type nTopWords struct{
-	TopNWordsPages int
+type nTopWords struct {
+	TopNWordsPages  int
 	TopNGlobalWords int
-	TopNTopicWords int
+	TopNTopicWords  int
 }
 
 // Wikiconflict represent the main specific of desiderd Wikipedia dumps
@@ -42,9 +43,9 @@ type Wikiconflict struct {
 	EndDate                   time.Time
 	SpecialPageList           []string
 	CompressAndRemoveFinalOut bool
-	VerbouseMode 			  bool
+	VerbouseMode              bool
 
-	Error	error
+	Error error
 }
 
 func CheckAvailableLanguage(lang string) error {
@@ -107,11 +108,11 @@ func CheckAvailableLanguage(lang string) error {
 func New(lang string, resultDir string,
 	startDate string, endDate string, specialPageList string,
 	nRevert, topNWordsPages, topNGlobalWords, topNTopicWords int,
-	compress bool, verbouseMode bool) (*Wikiconflict, error){
+	compress bool, verbouseMode bool) (*Wikiconflict, error) {
 
-	if lang == ""{
+	if lang == "" {
 		return nil, errors.New("Langugage not set")
-	} else if topNWordsPages == 0 || topNGlobalWords == 0 || topNTopicWords == 0{
+	} else if topNWordsPages == 0 || topNGlobalWords == 0 || topNTopicWords == 0 {
 		return nil, errors.New("Number of topwords to calculate are setted to 0")
 	}
 
@@ -170,7 +171,7 @@ func New(lang string, resultDir string,
 
 // Preprocess given a wikibrief.EvolvingPage channel reduce the amount of information in pages and save them
 func (wd *Wikiconflict) Preprocess(channel <-chan wikibrief.EvolvingPage) {
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Parse and reduction start")
 	}
 	start := time.Now()
@@ -184,139 +185,139 @@ func (wd *Wikiconflict) Preprocess(channel <-chan wikibrief.EvolvingPage) {
 // Process is the main procedure where the data process happen. In this method page will be cleaned by wikitext,
 // will be performed tokenization, stopwords cleaning and stemming, files aggregation and then files de-stemming
 func (wd *Wikiconflict) Process() error {
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("WikiMarkup cleaning start")
 	}
 	start := time.Now()
 	wikiMarkupClean := exec.Command("java", "-jar", "./internals/textnormalizer/WikipediaMarkupCleaner.jar", wd.ResultDir)
 	_ = wikiMarkupClean.Run()
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("WikiMarkup cleaning end")
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Stopwords cleaning and stemming start")
 	}
 	start = time.Now()
 	stopwordsCleanerStemming := exec.Command("python3", "./internals/textnormalizer/runStopwClean.py", wd.ResultDir, wd.Lang)
 	_ = stopwordsCleanerStemming.Run()
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Stopwords cleaning and stemming end")
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Word mapping by page start")
 	}
 	start = time.Now()
 	err := wordmapper.ByPage(wd.ResultDir)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Word mapping by page end")
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Processing GlobalWordMap file start")
 	}
 	start = time.Now()
 	err = wordmapper.GlobalWordMapper(wd.ResultDir)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Processing GlobalWordMap file start")
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Processing GlobalStem file start")
 	}
 	start = time.Now()
 	err = wordmapper.StemRevAggregator(wd.ResultDir)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing GlobalStem file end")
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Processing GlobalPage file start")
 	}
 	start = time.Now()
 	err = wordmapper.PageMapAggregator(wd.ResultDir)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing GlobalPage file end")
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Processing TFIDF file start")
 	}
 	start = time.Now()
 	err = tfidf.ComputeTFIDF(wd.ResultDir)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing TFIDF file end")
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Performing Destemming start")
 	}
 	start = time.Now()
 	deStemming := exec.Command("python3", "./internals/destemmer/runDeStemming.py", wd.ResultDir)
 	_ = deStemming.Run()
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Performing Destemming file end")
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Processing top N words start")
 	}
 	start = time.Now()
 	topNWordsPageExtractor := exec.Command("python3", "./internals/topwordspageextractor/runTopNWordsPageExtractor.py", wd.ResultDir,
 		strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNTopicWords))
 	_ = topNWordsPageExtractor.Run()
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing top N words end")
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Processing topic words start")
 	}
 	start = time.Now()
 	err = topicwords.TopicWords(wd.ResultDir)
-	if err != nil{
+	if err != nil {
 		return err
 	}
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing topic words end")
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Processing Badwords report start")
 	}
 	start = time.Now()
 	err = badwords.BadWords(wd.Lang, wd.ResultDir)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
-	if wd.VerbouseMode{
+	if wd.VerbouseMode {
 		fmt.Println("Duration: (h) ", time.Now().Sub(start).Hours())
 		fmt.Println("Processing Badwords report end")
 	}
@@ -326,7 +327,7 @@ func (wd *Wikiconflict) Process() error {
 // CompressResultDir compress to 7z the result dir
 func (wd *Wikiconflict) CompressResultDir(whereToSave string) {
 	if wd.CompressAndRemoveFinalOut {
-		if wd.VerbouseMode{
+		if wd.VerbouseMode {
 			fmt.Println("Compressing ResultDir in 7z start")
 		}
 		fileName := wd.Lang + "_" + wd.date
@@ -340,7 +341,7 @@ func (wd *Wikiconflict) CompressResultDir(whereToSave string) {
 
 		_ = os.RemoveAll(wd.ResultDir)
 
-		if wd.VerbouseMode{
+		if wd.VerbouseMode {
 			fmt.Println("Duration: (min) ", time.Now().Sub(start).Minutes())
 			fmt.Println("Compressing ResultDir in 7z end")
 		}
@@ -349,14 +350,14 @@ func (wd *Wikiconflict) CompressResultDir(whereToSave string) {
 
 // CheckErrors check if errors happened during export process
 func (wd *Wikiconflict) CheckErrors() {
-	if wd.Error != nil{
+	if wd.Error != nil {
 		log.Fatal(wd.Error)
 	}
 }
 
 // GlobalWordExporter returns a channel with the data of GlobalWord (top N words)
 func (wd *Wikiconflict) GlobalWordExporter() map[string]uint32 {
-	if wd.Error != nil{
+	if wd.Error != nil {
 		return nil
 	}
 	globalWord, err := utils.GetGlobalWordsTopN(wd.ResultDir, wd.TopNWords.TopNGlobalWords)
@@ -371,26 +372,26 @@ func (wd *Wikiconflict) GlobalWordExporter() map[string]uint32 {
 // GlobalPagesExporter returns a channel with the data of GlobalPagesTFIDF (top N words per page)
 func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan map[string]structures.TfidfTopNWordPage {
 	ch := make(chan map[string]structures.TfidfTopNWordPage)
-	if wd.Error != nil{
+	if wd.Error != nil {
 		close(ch)
 		return ch
 	}
 
-	filename := wd.ResultDir+"GlobalPagesTFIDF_top"+strconv.Itoa(wd.TopNWords.TopNWordsPages)+".json"
+	filename := wd.ResultDir + "GlobalPagesTFIDF_top" + strconv.Itoa(wd.TopNWords.TopNWordsPages) + ".json"
 	globalPage, err := os.Open(filename)
 
 	if err != nil {
-		wd.Error = errors.Wrap(err,"Error happened while trying to open GlobalPages.json file:GlobalPages.json")
+		wd.Error = errors.Wrap(err, "Error happened while trying to open GlobalPages.json file:GlobalPages.json")
 		return nil
 	}
 	globalPageReader := bufio.NewReader(globalPage)
 
-	go func(){
+	go func() {
 		defer close(ch)
 		defer globalPage.Close()
 		// defer os.Remove(filename)
 
-		for{
+		for {
 			line, err := globalPageReader.ReadString('\n')
 			println(line)
 			if err != nil {
@@ -429,27 +430,27 @@ func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan map[string
 func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan map[string]map[string]uint32 {
 	ch := make(chan map[string]map[string]uint32)
 
-	if wd.Error != nil{
+	if wd.Error != nil {
 		close(ch)
 		return ch
 	}
 
-	filename := wd.ResultDir+"GlobalTopicsWords_top"+strconv.Itoa(wd.TopNWords.TopNTopicWords)+".json"
+	filename := wd.ResultDir + "GlobalTopicsWords_top" + strconv.Itoa(wd.TopNWords.TopNTopicWords) + ".json"
 	globalTopic, err := os.Open(filename)
 
 	if err != nil {
-		wd.Error = errors.Wrapf(err,"Error happened while trying to open GlobalTopics_top.json ")
+		wd.Error = errors.Wrapf(err, "Error happened while trying to open GlobalTopics_top.json ")
 		close(ch)
 		return ch
 	}
 	globalPageReader := bufio.NewReader(globalTopic)
 
-	go func(){
+	go func() {
 		defer close(ch)
 		defer globalTopic.Close()
 		// defer os.Remove(filename)
 
-		for{
+		for {
 			line, err := globalPageReader.ReadString('\n')
 			println(line)
 			if err != nil {
@@ -488,27 +489,27 @@ func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan map[strin
 func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan map[string]structures.BadWordsReport {
 	ch := make(chan map[string]structures.BadWordsReport)
 
-	if wd.Error != nil{
+	if wd.Error != nil {
 		close(ch)
 		return ch
 	}
 
-	filename := wd.ResultDir+"BadWordsReport.json"
+	filename := wd.ResultDir + "BadWordsReport.json"
 	globalTopic, err := os.Open(filename)
 
 	if err != nil {
-		wd.Error = errors.Wrap(err,"Error happened while trying to open BadWordsReport.json ")
+		wd.Error = errors.Wrap(err, "Error happened while trying to open BadWordsReport.json ")
 		close(ch)
 		return ch
 	}
 	globalPageReader := bufio.NewReader(globalTopic)
 
-	go func(){
+	go func() {
 		defer close(ch)
 		defer globalTopic.Close()
 		// defer os.Remove(filename)
 
-		for{
+		for {
 			line, err := globalPageReader.ReadString('\n')
 			println(line)
 			if err != nil {
