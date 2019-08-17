@@ -3,9 +3,10 @@ package wordmapper
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
+
+	"github.com/pkg/errors"
 
 	"github.com/negapedia/wikiconflict/internals/structures"
 	"github.com/negapedia/wikiconflict/internals/utils"
@@ -26,8 +27,8 @@ func getMappedPage(page *structures.StemmedPageJSON) structures.PageElement {
 	return structures.PageElement{PageID: page.PageID, TopicID: page.TopicID, Word: mappedText}
 }
 
-// WordMapperByPage given the result dir, generate a global file containing all the processed pages
-func WordMapperByPage(resultDir string) error {
+// ByPage given the result dir, generate a global file containing all the processed pages
+func ByPage(resultDir string) error {
 	fileList, err := utils.FilesInDir(resultDir, "S[0-9]*")
 	if err != nil {
 		return err
