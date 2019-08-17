@@ -48,6 +48,7 @@ type Wikiconflict struct {
 	Error error
 }
 
+// CheckAvailableLanguage check if a language is handled
 func CheckAvailableLanguage(lang string) error {
 	languages := map[string]string{
 		"en":     "english",

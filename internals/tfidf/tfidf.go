@@ -3,15 +3,16 @@ package tfidf
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"math"
 	"os"
 
+	"github.com/pkg/errors"
+
 	"github.com/negapedia/wikiconflict/internals/structures"
 )
 
-// GetGlobalWords return full GlobalWord map and a error
+// GetGlobalWord return full GlobalWord map and a error
 func GetGlobalWord(resultDir string) (map[string]map[string]float64, error) {
 	jsonFile, err := os.Open(resultDir + "GlobalWords.json")
 	if err != nil {

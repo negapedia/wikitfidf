@@ -3,8 +3,9 @@ package badwords
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"os"
+
+	"github.com/pkg/errors"
 
 	"github.com/negapedia/wikiconflict/internals/structures"
 )
@@ -33,16 +34,16 @@ func availableLanguage(lang string) (string, bool) {
 		"pl":     "polish",
 		"th":     "thai",
 		"simple": "english",
-		"vec": "italian", // only as test
+		"vec":    "italian", // only as test
 	}
 	language, isIn := languages[lang]
 	return language, isIn
 }
 
-func badWordsListGetter(lang, path string) (map[string]bool, error ){
+func badWordsListGetter(lang, path string) (map[string]bool, error) {
 	file, err := os.Open(path + lang)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to open badwords file:"+ path + lang)
+		return nil, errors.Wrapf(err, "Error happened while trying to open badwords file:"+path+lang)
 	}
 	defer file.Close()
 
@@ -55,7 +56,6 @@ func badWordsListGetter(lang, path string) (map[string]bool, error ){
 	return badwordsList, nil
 }
 
-
 // BadWords create the badwords report for the given language, if available, and the given result dir
 func BadWords(lang, resultDir string) error {
 	if language, isAvailable := availableLanguage(lang); isAvailable {
@@ -66,7 +66,7 @@ func BadWords(lang, resultDir string) error {
 
 		outFile, err := os.Create(resultDir + "BadWordsReport.json")
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to create :"+resultDir + "BadWordsReport.json")
+			return errors.Wrapf(err, "Failed while trying to create :"+resultDir+"BadWordsReport.json")
 		}
 		encWriter := bufio.NewWriter(outFile)
 		defer outFile.Close()
@@ -138,11 +138,11 @@ func BadWords(lang, resultDir string) error {
 					_, err = encWriter.Write([]byte(pageAsString))
 				}
 				if err != nil {
-					return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir + "BadWordsReport.json")
+					return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"BadWordsReport.json")
 				}
 				err = encWriter.Flush()
 				if err != nil {
-					return errors.Wrapf(err, "Failed while trying to flush:"+resultDir + "BadWordsReport.json")
+					return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"BadWordsReport.json")
 				}
 			}
 			i++
@@ -151,11 +151,11 @@ func BadWords(lang, resultDir string) error {
 
 		_, err = encWriter.Write([]byte("}"))
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir + "BadWordsReport.json")
+			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"BadWordsReport.json")
 		}
 		err = encWriter.Flush()
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir + "BadWordsReport.json")
+			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"BadWordsReport.json")
 		}
 	}
 	return nil
