@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"github.com/negapedia/wikiconflict/internals/structures"
-
-	"github.com/davecgh/go-spew/spew"
 )
 
 func Test_getMappedPage(t *testing.T) {
@@ -14,7 +12,6 @@ func Test_getMappedPage(t *testing.T) {
 	var page structures.StemmedPageJSON
 
 	_ = json.Unmarshal(pagestr, &page)
-	spew.Dump(page.Revision)
 
 	result := getMappedPage(&page)
 

@@ -22,9 +22,7 @@ func GlobalWordMapper(resultDir string) error {
 
 	globalWord := make(map[string]map[string]uint32)
 	var totalWord uint32
-	totalWord = 0
 	var totalPage uint32
-	totalPage = 0
 
 	for i, file := range fileList {
 		fmt.Printf("\rOn %d/%d", i+1, nFile)

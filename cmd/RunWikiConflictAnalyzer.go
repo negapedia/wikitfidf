@@ -28,7 +28,7 @@ func main() {
 		*nRevert, *nTopWordsPages, *nTopWordsGlobal, *nTopWordsTopic, *compressFinalOut, *verboseMode)
 
 	if err != nil {
-		log.Fatal("%+v", err)
+		log.Fatal(err)
 	}
 
 	ctx, fail := ctxutils.WithFail(context.Background())
@@ -37,7 +37,7 @@ func main() {
 	wd.Preprocess(pageChannel)
 
 	if err := fail(nil); err != nil {
-		log.Fatal("%+v", err)
+		log.Fatal(err)
 	}
 
 	err = wd.Process()

@@ -15,7 +15,6 @@ import (
 
 func getTotalWordInPage(page *structures.PageElement) uint32 {
 	var tot uint32
-	tot = 0
 	for _, wordFreq := range page.Word {
 		tot += wordFreq
 	}
@@ -32,6 +31,7 @@ func PageMapAggregator(resultDir string) error {
 	nFile := len(fileList)
 
 	outFile, _ := os.Create(resultDir + "GlobalPages.json")
+	defer outFile.Close()
 	encWriter := bufio.NewWriter(outFile)
 
 	for i, file := range fileList {
@@ -61,22 +61,32 @@ func PageMapAggregator(resultDir string) error {
 			marshalledPage, _ := json.Marshal(pageToWrite)
 			pageAsString := string(marshalledPage)
 			pageAsString = pageAsString[:len(pageAsString)-1] + ",\n"
-			encWriter.Write([]byte(pageAsString))
+			_, err = encWriter.Write([]byte(pageAsString))
 
 		} else if /*i != nFile-1 && */ i > 0 {
 			marshalledPage, _ := json.Marshal(pageToWrite)
 			pageAsString := string(marshalledPage)
 			pageAsString = pageAsString[1:len(pageAsString)-1] + ",\n"
-			encWriter.Write([]byte(pageAsString))
-
+			_, err = encWriter.Write([]byte(pageAsString))
+		}
+		if err != nil {
+			return errors.Wrap(err, "Error while trying to write to file")
 		}
 
-		_ = encWriter.Flush()
+		err = encWriter.Flush()
+		if err != nil {
+			return errors.Wrap(err, "Error while trying to flush to file")
+		}
 	}
 	fmt.Println()
 
-	encWriter.Write([]byte("}"))
-	_ = encWriter.Flush()
-	outFile.Close()
+	_, err = encWriter.Write([]byte("}"))
+	if err != nil {
+		return errors.Wrap(err, "Error while trying to write to file")
+	}
+	err = encWriter.Flush()
+	if err != nil {
+		return errors.Wrap(err, "Error while trying to flush to file")
+	}
 	return nil
 }
