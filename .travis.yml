@@ -25,6 +25,8 @@ notifications:
 addons:
   sonarcloud:
     organization: "negapedia" # the key of the org you chose at step #3
+    token:
+      secure: "5bc4e215cd8c7f8dd81bfddd858fc41756abb379"
     
 # Anything in before_script that returns a nonzero exit code will flunk the
 # build and immediately stop. It's sorta like having set -e enabled in bash.
