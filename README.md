@@ -1,6 +1,6 @@
 # Wikipedia Conflict Analyzer
 [![Go Report Card](https://goreportcard.com/badge/github.com/negapedia/wikiconflict)](https://goreportcard.com/report/github.com/negapedia/wikiconflict)
-[![GoDoc](https://godoc.org/github.com/negapedia/wikiconflict?status.svg)](https://godoc.org/github.com/negapedia/wikiconflict)<br>
+[![GoDoc](https://godoc.org/github.com/negapedia/wikiconflict?status.svg)](https://godoc.org/github.com/negapedia/wikiconflict)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=alert_status)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=bugs)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=coverage)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
@@ -8,7 +8,8 @@
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=security_rating)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)<br>
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
+[![Build Status](https://travis-ci.org/negapedia/wikiconflict.svg?branch=develop)](https://travis-ci.org/negapedia/wikiconflict)<br>
 
 Negapedia Conflict Analyzer analyze Wikipedia's dumps and makes statistical analysis on reverts text.<br>
 The data produced in output can be used to clarify the theme of the contrast inside a Wikipedia page.<br>
