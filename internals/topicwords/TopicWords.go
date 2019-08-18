@@ -84,13 +84,7 @@ func topicWordsWriter(resultDir string) error {
 }
 
 func mapWordsInFile(file string) (*map[string]uint32, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	fileReader, err := ioutil.ReadAll(f)
+	fileReader, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error while trying to read file.")
 	}
