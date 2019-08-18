@@ -3,13 +3,12 @@ package wikiconflict
 import (
 	"testing"
 
-	WC "github.com/negapedia/wikiconflict"
 )
 
 func TestCheckAvailableLanguage(t *testing.T) {
-	lang1 := WC.CheckAvailableLanguage("en")
-	lang2 := WC.CheckAvailableLanguage("abc")
-	lang3 := WC.CheckAvailableLanguage("eml")
+	lang1 := CheckAvailableLanguage("en")
+	lang2 := CheckAvailableLanguage("abc")
+	lang3 := CheckAvailableLanguage("eml")
 
 	if lang1 == nil && lang2 != nil && lang3 != nil {
 		t.Log("Success.")
