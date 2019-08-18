@@ -73,6 +73,7 @@ def _stopwords_cleaner(revert_text, lang):
             revert_text = list(filter(word.__ne__, revert_text))
     return revert_text
 
+
 def _stemming(revert_text, stemmer_reverse_dict):
     ps = PorterStemmer()
 
@@ -104,7 +105,8 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
         if reverts["Text"] is None:
             continue
         reverts["Text"] = word_tokenize(reverts["Text"])
-        reverts["Text"] = [word for word in reverts["Text"] if not(len(word) > 20 or len(word) <= 3)] # fixing words length
+        reverts["Text"] = [word for word in reverts["Text"] if not(len(word) > 20 or len(word) <= 3)]  # fixing words
+        # length
         reverts["Text"] = _stopwords_cleaner(reverts["Text"], lang)
 
         reverts["Text"], reverse_stemming_dict = _stemming(reverts["Text"], reverse_stemming_dict)

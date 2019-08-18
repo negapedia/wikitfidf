@@ -44,18 +44,13 @@ func writePage(page *wikibrief.EvolvingPage, revArray *[]structures.Revision, nR
 
 func applyTimeFilter(rev *wikibrief.Revision, revArray *[]structures.Revision, startDate time.Time, endDate time.Time) {
 	timestamp := rev.Timestamp
-	if !startDate.IsZero() && !endDate.IsZero() {
-		if timestamp.Sub(startDate) >= 0 && timestamp.Sub(endDate) <= 0 {
-			*revArray = append(*revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
-		}
-	} else if startDate.IsZero() && !endDate.IsZero() {
-		if timestamp.Sub(endDate) <= 0 {
-			*revArray = append(*revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
-		}
-	} else if !startDate.IsZero() && endDate.IsZero() {
-		if timestamp.Sub(startDate) >= 0 {
-			*revArray = append(*revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
-		}
+	if !startDate.IsZero() && !endDate.IsZero() && timestamp.Sub(startDate) >= 0 && timestamp.Sub(endDate) <= 0 {
+		*revArray = append(*revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+	} else if startDate.IsZero() && !endDate.IsZero() && timestamp.Sub(endDate) <= 0 {
+		*revArray = append(*revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
+
+	} else if !startDate.IsZero() && endDate.IsZero() && timestamp.Sub(startDate) >= 0 {
+		*revArray = append(*revArray, structures.Revision{Text: rev.Text, Timestamp: rev.Timestamp})
 	}
 }
 
