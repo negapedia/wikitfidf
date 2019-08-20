@@ -39,7 +39,7 @@ func ByPage(resultDir string) error {
 		fmt.Printf("\rOn %d/%d", i+1, nFile)
 		jsonFile, err := os.Open(file)
 		if err != nil {
-			return errors.Wrapf(err, "Error while opening file.")
+			return errors.Wrapf(err, "Error while opening file: "+file)
 		}
 
 		byteValue, _ := ioutil.ReadAll(jsonFile)
@@ -49,7 +49,7 @@ func ByPage(resultDir string) error {
 
 		err = json.Unmarshal(byteValue, &page)
 		if err != nil {
-			return errors.Wrapf(err, "Error while unmarshalling json.")
+			return errors.Wrapf(err, "Error while unmarshalling json."+file)
 		}
 
 		mappedPage := getMappedPage(&page)

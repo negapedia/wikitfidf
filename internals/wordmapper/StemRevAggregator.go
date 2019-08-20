@@ -27,13 +27,13 @@ func StemRevAggregator(resultDir string) error {
 		jsonFile, err := os.Open(file)
 		// if we os.Open returns an error then handle it
 		if err != nil {
-			return errors.Wrapf(err, "error while opening file")
+			return errors.Wrapf(err, "error while opening file"+file)
 		}
 
 		byteValue, err := ioutil.ReadAll(jsonFile)
 		jsonFile.Close()
 		if err != nil {
-			return errors.Wrapf(err, "error while reading file")
+			return errors.Wrapf(err, "error while reading file: "+file)
 		}
 
 		err = os.Remove(file)

@@ -105,7 +105,8 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
         if reverts["Text"] is None:
             continue
         reverts["Text"] = word_tokenize(reverts["Text"])
-        reverts["Text"] = [word for word in reverts["Text"] if not(len(word) > 20 or len(word) <= 3)]  # fixing words
+        reverts["Text"] = [word for word in reverts["Text"] if
+                           not (len(word) > 20 or len(word) <= 3 or word == "https" or word == "http")]  # fixing words
         # length
         reverts["Text"] = _stopwords_cleaner(reverts["Text"], lang)
 

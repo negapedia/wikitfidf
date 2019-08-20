@@ -39,7 +39,7 @@ func GlobalWordMapper(resultDir string) error {
 
 		err = json.Unmarshal(byteValue, &page)
 		if err != nil {
-			return errors.Wrapf(err, "Error while unmarshalling json.")
+			return errors.Wrapf(err, "Error while unmarshalling json."+file)
 		}
 
 		totalPage++
