@@ -35,6 +35,7 @@ func ByPage(resultDir string) error {
 	}
 	nFile := len(fileList)
 
+	var skipped int
 	for i, file := range fileList {
 		fmt.Printf("\rOn %d/%d", i+1, nFile)
 		jsonFile, err := os.Open(file)
@@ -49,7 +50,10 @@ func ByPage(resultDir string) error {
 
 		err = json.Unmarshal(byteValue, &page)
 		if err != nil {
-			return errors.Wrapf(err, "Error while unmarshalling json."+file)
+			//return errors.Wrapf(err, "Error while unmarshalling json."+file)
+			skipped++
+			_ = os.Remove(file)
+			continue
 		}
 
 		mappedPage := getMappedPage(&page)
@@ -59,5 +63,6 @@ func ByPage(resultDir string) error {
 		}
 	}
 	fmt.Println()
+	fmt.Println("SKIPPED: ", skipped)
 	return nil
 }
