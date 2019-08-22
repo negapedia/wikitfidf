@@ -7,7 +7,7 @@ import os
 import sys
 from multiprocessing import Pool, cpu_count
 
-from nltk import word_tokenize
+from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 
@@ -101,10 +101,11 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
         dump_dict = json.load(f)
 
     reverse_stemming_dict = {}
+    tokenizer = RegexpTokenizer(r'\w+')
     for reverts in dump_dict["Revision"]:
         if reverts["Text"] is None:
             continue
-        reverts["Text"] = word_tokenize(reverts["Text"])
+        reverts["Text"] = tokenizer.tokenize(reverts["Text"])
         reverts["Text"] = [word for word in reverts["Text"] if
                            not (len(word) > 20 or len(word) <= 3 or word == "https" or word == "http")]  # fixing words
         # length
