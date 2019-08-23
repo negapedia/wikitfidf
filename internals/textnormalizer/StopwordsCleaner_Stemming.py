@@ -74,19 +74,37 @@ def _stopwords_cleaner(revert_text, lang):
     return revert_text
 
 
+def _increment_word_counter(word_dict, word):
+    if word in word_dict.keys():
+        word_dict[word] += 1
+    else:
+        word_dict[word] = 1
+
+
 def _stemming(revert_text, stemmer_reverse_dict):
     ps = PorterStemmer()
 
+    word_counter = {}
     text = []
+
     for word in revert_text:
-        new_word = ps.stem(word)
-        if word != new_word:  # stemmed word different from the original one
-            if new_word in stemmer_reverse_dict.keys():
-                if len(stemmer_reverse_dict[new_word]) > len(word):
-                    stemmer_reverse_dict[new_word] = word
+        stemmed_word = ps.stem(word)
+        if stemmed_word == word:  # if are equals
+            _increment_word_counter(word_counter, word)
+            if word in stemmer_reverse_dict.keys():
+                if len(stemmer_reverse_dict[word]) > len(word):
+                    del stemmer_reverse_dict[word]
+        else: # if are different
+            if stemmed_word in word_counter.keys() and stemmed_word not in stemmer_reverse_dict.keys():
+                _increment_word_counter(word_counter, stemmed_word)
             else:
-                stemmer_reverse_dict[new_word] = word
-        text.append(new_word)
+                _increment_word_counter(word_counter, stemmed_word)
+                if stemmed_word not in stemmer_reverse_dict.keys():
+                    stemmer_reverse_dict[stemmed_word] = word
+                elif len(stemmer_reverse_dict[stemmed_word]) > len(word):
+                    stemmer_reverse_dict[stemmed_word] = word
+
+        text.append(stemmed_word)
     return text, stemmer_reverse_dict
 
 

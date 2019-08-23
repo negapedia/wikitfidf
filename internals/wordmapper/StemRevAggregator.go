@@ -2,7 +2,6 @@ package wordmapper
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -18,11 +17,11 @@ func StemRevAggregator(resultDir string) error {
 	if err != nil {
 		return err
 	}
-	nFile := len(fileList)
+	//nFile := len(fileList)
 	globalStemRev := make(map[string]string)
 
-	for i, file := range fileList {
-		fmt.Printf("\rOn %d/%d", i+1, nFile)
+	for _, file := range fileList {
+		//fmt.Printf("\rOn %d/%d", i+1, nFile)
 
 		jsonFile, err := os.Open(file)
 		// if we os.Open returns an error then handle it
@@ -58,7 +57,7 @@ func StemRevAggregator(resultDir string) error {
 			}
 		}
 	}
-	fmt.Println()
+	//fmt.Println()
 
 	println(len(globalStemRev))
 	utils.WriteGlobalStem(resultDir, &globalStemRev)
