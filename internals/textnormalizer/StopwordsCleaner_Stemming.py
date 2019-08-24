@@ -93,7 +93,7 @@ def _stemming(revert_text, stemmer_reverse_dict):
             _increment_word_counter(word_counter, word)
             if word in stemmer_reverse_dict.keys():
                 if len(stemmer_reverse_dict[word]) > len(word):
-                    del stemmer_reverse_dict[word]
+                    stemmer_reverse_dict[word] = word
         else: # if are different
             if stemmed_word in word_counter.keys() and stemmed_word not in stemmer_reverse_dict.keys():
                 _increment_word_counter(word_counter, stemmed_word)
