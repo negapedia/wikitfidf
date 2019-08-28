@@ -10,11 +10,6 @@ from multiprocessing import Pool, cpu_count
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-from nltk.stem.snowball import SnowballStemmer
-''' SnowballStemmer available languages:
-    danish dutch english finnish french german hungarian italian
-    norwegian porter portuguese romanian russian spanish swedish
-'''
 
 
 def _lang_mapper(lang):
@@ -86,24 +81,20 @@ def _increment_word_counter(word_dict, word):
         word_dict[word] = 1
 
 
-def _stemming(revert_text, stemmer_reverse_dict, lang):
-    stemmer = None
-    try:
-        stemmer = SnowballStemmer(_lang_mapper(lang))
-    except Exception:
-        stemmer = PorterStemmer()
+def _stemming(revert_text, stemmer_reverse_dict):
+    ps = PorterStemmer()
 
-    # word_counter = {}
+    word_counter = {}
     text = []
 
     for word in revert_text:
-        '''stemmed_word = stemmer.stem(word)
-        if stemmed_word == word: # se sono uguali
+        stemmed_word = ps.stem(word)
+        if stemmed_word == word:  # if are equals
             _increment_word_counter(word_counter, word)
             if word in stemmer_reverse_dict.keys():
                 if len(stemmer_reverse_dict[word]) > len(word):
-                    stemmer_reverse_dict[word] = word
-        else: # se sono diverse
+                    del stemmer_reverse_dict[word]
+        else: # if are different
             if stemmed_word in word_counter.keys() and stemmed_word not in stemmer_reverse_dict.keys():
                 _increment_word_counter(word_counter, stemmed_word)
             else:
@@ -112,12 +103,6 @@ def _stemming(revert_text, stemmer_reverse_dict, lang):
                     stemmer_reverse_dict[stemmed_word] = word
                 elif len(stemmer_reverse_dict[stemmed_word]) > len(word):
                     stemmer_reverse_dict[stemmed_word] = word
-        '''
-        stemmed_word = stemmer.stem(word)
-        if stemmed_word in stemmer_reverse_dict.keys() and len(stemmer_reverse_dict[stemmed_word]) > len(word):
-            stemmer_reverse_dict[stemmed_word] = word
-        elif stemmed_word not in stemmer_reverse_dict.keys():
-            stemmer_reverse_dict[stemmed_word] = word
 
         text.append(stemmed_word)
     return text, stemmer_reverse_dict
