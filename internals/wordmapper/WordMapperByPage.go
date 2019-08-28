@@ -33,11 +33,9 @@ func ByPage(resultDir string) error {
 	if err != nil {
 		return err
 	}
-	nFile := len(fileList)
 
 	var skipped int
-	for i, file := range fileList {
-		fmt.Printf("\rOn %d/%d", i+1, nFile)
+	for _, file := range fileList {
 		jsonFile, err := os.Open(file)
 		if err != nil {
 			return errors.Wrapf(err, "Error while opening file: "+file)

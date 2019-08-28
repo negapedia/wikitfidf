@@ -48,16 +48,15 @@ func StemRevAggregator(resultDir string) error {
 		}
 
 		for StemWord, RealWord := range StemDict {
-			if _, ok := globalStemRev[StemWord]; ok {
-				if len(RealWord) < len(globalStemRev[StemWord]) {
+			if _, ok := globalStemRev[StemWord]; ok { // already exists in globalStemRev
+				if len(RealWord) < len(globalStemRev[StemWord]) { // if shorter, replace
 					globalStemRev[StemWord] = RealWord
 				}
-			} else {
+			} else { // if not exists in globalStemRev
 				globalStemRev[StemWord] = RealWord
 			}
 		}
 	}
-	//fmt.Println()
 
 	println(len(globalStemRev))
 	utils.WriteGlobalStem(resultDir, &globalStemRev)

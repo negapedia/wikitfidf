@@ -18,14 +18,12 @@ func GlobalWordMapper(resultDir string) error {
 	if err != nil {
 		return err
 	}
-	nFile := len(fileList)
 
 	globalWord := make(map[string]map[string]uint32)
 	var totalWord uint32
 	var totalPage uint32
 
-	for i, file := range fileList {
-		fmt.Printf("\rOn %d/%d", i+1, nFile)
+	for _, file := range fileList {
 
 		jsonFile, err := os.Open(file)
 		if err != nil {

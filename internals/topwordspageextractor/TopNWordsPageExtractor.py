@@ -108,7 +108,14 @@ def top_n_topic_words_extractor(result_dir: str, n):
     """
     global_word_top_n = open(result_dir + "GlobalTopicsWords_top" + n + ".json", "w")
 
-    global_topic = open(result_dir + "GlobalTopicsWords.json", "r")
+    global_topic = None
+    try:
+        global_topic = open(result_dir + "GlobalTopicsWords.json", "r")
+    except IOError:
+        global_word_top_n.write("Error while opening GlobalTopicsWords.json!")
+        global_word_top_n.flush()
+        global_word_top_n.close()
+
     global_topic_iter = iter(global_topic.readline, "")
 
     n = int(n)

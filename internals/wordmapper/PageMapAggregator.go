@@ -28,15 +28,12 @@ func PageMapAggregator(resultDir string) error {
 	if err != nil {
 		return err
 	}
-	nFile := len(fileList)
 
 	outFile, _ := os.Create(resultDir + "GlobalPages.json")
 	defer outFile.Close()
 	encWriter := bufio.NewWriter(outFile)
 
 	for i, file := range fileList {
-		fmt.Printf("\rOn %d/%d", i+1, nFile)
-
 		jsonFile, err := os.Open(file)
 		if err != nil {
 			return errors.Wrapf(err, "Error happened while trying to open file:"+file)
