@@ -7,7 +7,7 @@ import (
 
 	"github.com/ebonetti/ctxutils"
 	"github.com/negapedia/wikibrief"
-	WDCA "github.com/negapedia/wikiconflict"
+	"github.com/negapedia/wikiconflict"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	verboseMode := flag.Bool("verbose", true, "If true verbouse mode on")
 	flag.Parse()
 
-	wd, err := WDCA.New(*langFlag, *dirFlag, *startDateFlag, *endDateFlag, *specialPageListFlag,
+	wd, err := wikiconflict.New(*langFlag, *dirFlag, *startDateFlag, *endDateFlag, *specialPageListFlag,
 		*nRevert, *nTopWordsPages, *nTopWordsGlobal, *nTopWordsTopic, *compressFinalOut, *verboseMode)
 
 	if err != nil {
@@ -44,5 +44,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	wd.CompressResultDir("/Result/")
+	// wd.CompressResultDir("/Result/")
 }
