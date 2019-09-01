@@ -12,13 +12,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/negapedia/wikiconflict/internals/structures"
 )
 
 // WriteCleanPage write a json containing the page after first clean
 func WriteCleanPage(resultDir string, page *structures.Page) {
-	outFile, err := os.Create(resultDir + fmt.Sprint(page.PageID) + ".json")
+	outFile, err := os.Create(resultDir + strings.Repeat("0", 10-len(fmt.Sprint(page.PageID))) + fmt.Sprint(page.PageID) + ".json")
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
