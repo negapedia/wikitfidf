@@ -18,7 +18,7 @@ import (
 
 // WriteCleanPage write a json containing the page after first clean
 func WriteCleanPage(resultDir string, page *structures.Page) {
-	outFile, err := os.Create(resultDir + fmt.Sprint(page.TopicID) + "_" + fmt.Sprint(page.PageID) + ".json")
+	outFile, err := os.Create(resultDir + fmt.Sprint(page.PageID) + ".json")
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
@@ -35,7 +35,7 @@ func WriteCleanPage(resultDir string, page *structures.Page) {
 
 // WriteMappedPage write a json containing the mapped page with term frequency
 func WriteMappedPage(resultPath string, page *structures.PageElement) {
-	outFile, err := os.Create(resultPath + "M" + fmt.Sprint(page.TopicID) + "_" + fmt.Sprint(page.PageID) + ".json")
+	outFile, err := os.Create(resultPath + "M" + fmt.Sprint(page.PageID) + ".json")
 	if err == nil {
 		writer := bufio.NewWriter(outFile)
 		defer outFile.Close()

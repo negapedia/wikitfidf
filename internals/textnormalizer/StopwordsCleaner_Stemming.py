@@ -126,10 +126,10 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     topic_id = dump_dict["TopicID"]
 
     os.remove(filename)
-    with open(result_dir + "S" + str(topic_id) + "_" + str(page_id) + ".json", "w") as f:
+    with open(result_dir + "S" + str(page_id) + ".json", "w") as f:
         json.dump(dump_dict, f, ensure_ascii=False)
 
-    with open(result_dir + "Stem/StemRev_" + str(topic_id) + "_" + str(page_id) + ".json", "w") as f:
+    with open(result_dir + "Stem/StemRev_" + str(page_id) + ".json", "w") as f:
         json.dump(reverse_stemming_dict, f, ensure_ascii=False)
 
 

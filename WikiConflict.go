@@ -322,9 +322,18 @@ func (wd *Wikiconflict) GlobalWordExporter() map[string]uint32 {
 	return globalWord
 }
 
+// PageTFIF represent a single page with its data: ID, TopicID, Total number of words,
+// dictionary with the top N words in the following format: "word": tfidf_value
+type PageTFIF struct {
+	ID      uint32
+	TopicID uint32
+	Tot     uint32
+	Words   map[string]float64
+}
+
 // GlobalPagesExporter returns a channel with the data of GlobalPagesTFIDF (top N words per page)
-func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan map[uint32]structures.TfidfTopNWordPage {
-	ch := make(chan map[uint32]structures.TfidfTopNWordPage)
+func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan PageTFIF {
+	ch := make(chan PageTFIF)
 	if wd.Error != nil {
 		close(ch)
 		return ch
@@ -366,13 +375,13 @@ func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan map[uint32
 				wd.Error = errors.Wrapf(err, "Error while unmarshalling json.")
 				return
 			}
-
-			select {
-			case <-ctx.Done():
-				return
-			case ch <- page:
+			for id := range page {
+				select {
+				case <-ctx.Done():
+					return
+				case ch <- PageTFIF{ID: id, TopicID: page[id].TopicID, Tot: page[id].Tot, Words: *page[id].Words}:
+				}
 			}
-
 		}
 
 	}()
