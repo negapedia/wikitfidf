@@ -14,12 +14,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/negapedia/wikiconflict/internals/topicwords"
+
 	"github.com/negapedia/wikibrief"
 	"github.com/negapedia/wikiconflict/internals/badwords"
 	"github.com/negapedia/wikiconflict/internals/dumpreducer"
 	"github.com/negapedia/wikiconflict/internals/structures"
 	"github.com/negapedia/wikiconflict/internals/tfidf"
-	"github.com/negapedia/wikiconflict/internals/topicwords"
 	"github.com/negapedia/wikiconflict/internals/utils"
 	"github.com/negapedia/wikiconflict/internals/wordmapper"
 	"github.com/pkg/errors"
@@ -254,14 +255,6 @@ func (wd *Wikiconflict) Process() error {
 	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
 	_, _ = fmt.Fprintln(wd.Logger, "Performing Destemming file end")
 
-	_, _ = fmt.Fprintln(wd.Logger, "Processing top N words start")
-	start = time.Now()
-	topNWordsPageExtractor := exec.Command("python3", "./internals/topwordspageextractor/runTopNWordsPageExtractor.py", wd.ResultDir,
-		strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNTopicWords))
-	_ = topNWordsPageExtractor.Run()
-	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
-	_, _ = fmt.Fprintln(wd.Logger, "Processing top N words end")
-
 	_, _ = fmt.Fprintln(wd.Logger, "Processing topic words start")
 	start = time.Now()
 	err = topicwords.TopicWords(wd.ResultDir)
@@ -270,6 +263,14 @@ func (wd *Wikiconflict) Process() error {
 	}
 	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
 	_, _ = fmt.Fprintln(wd.Logger, "Processing topic words end")
+
+	_, _ = fmt.Fprintln(wd.Logger, "Processing top N words start")
+	start = time.Now()
+	topNWordsPageExtractor := exec.Command("python3", "./internals/topwordspageextractor/runTopNWordsPageExtractor.py", wd.ResultDir,
+		strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNTopicWords))
+	_ = topNWordsPageExtractor.Run()
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Processing top N words end")
 
 	_, _ = fmt.Fprintln(wd.Logger, "Processing Badwords report start")
 	start = time.Now()
@@ -322,9 +323,9 @@ func (wd *Wikiconflict) GlobalWordExporter() map[string]uint32 {
 	return globalWord
 }
 
-// PageTFIF represent a single page with its data: ID, TopicID, Total number of words,
+// ExportedPageTFIF represent a single page with its data: ID, TopicID, Total number of words,
 // dictionary with the top N words in the following format: "word": tfidf_value
-type PageTFIF struct {
+type ExportedPageTFIF struct {
 	ID      uint32
 	TopicID uint32
 	Tot     uint32
@@ -332,8 +333,8 @@ type PageTFIF struct {
 }
 
 // GlobalPagesExporter returns a channel with the data of GlobalPagesTFIDF (top N words per page)
-func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan PageTFIF {
-	ch := make(chan PageTFIF)
+func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan ExportedPageTFIF {
+	ch := make(chan ExportedPageTFIF)
 	if wd.Error != nil {
 		close(ch)
 		return ch
@@ -379,7 +380,7 @@ func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan PageTFIF {
 				select {
 				case <-ctx.Done():
 					return
-				case ch <- PageTFIF{ID: id, TopicID: page[id].TopicID, Tot: page[id].Tot, Words: *page[id].Words}:
+				case ch <- ExportedPageTFIF{ID: id, TopicID: page[id].TopicID, Tot: page[id].Tot, Words: *page[id].Words}:
 				}
 			}
 		}
@@ -388,9 +389,16 @@ func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan PageTFIF {
 	return ch
 }
 
+// ExportedTopic represent a single topic with TopicID and the list of top N words in it in
+// the following format: "word": number_of_occurrence
+type ExportedTopic struct {
+	TopicID uint32
+	Words   map[string]uint32
+}
+
 // GlobalTopicsExporter returns a channel with the data of GlobalTopic (top N words per topic)
-func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan map[string]map[string]uint32 {
-	ch := make(chan map[string]map[string]uint32)
+func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan ExportedTopic {
+	ch := make(chan ExportedTopic)
 
 	if wd.Error != nil {
 		close(ch)
@@ -422,7 +430,7 @@ func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan map[strin
 				break
 			}
 
-			var topic map[string]map[string]uint32
+			var topic map[uint32]map[string]uint32
 
 			if line[:1] != "{" {
 				line = "{" + line
@@ -435,10 +443,12 @@ func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan map[strin
 				return
 			}
 
-			select {
-			case <-ctx.Done():
-				return
-			case ch <- topic:
+			for topicId := range topic {
+				select {
+				case <-ctx.Done():
+					return
+				case ch <- ExportedTopic{TopicID: topicId, Words: topic[topicId]}:
+				}
 			}
 
 		}
@@ -447,9 +457,19 @@ func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan map[strin
 	return ch
 }
 
+// ExportedBadWordsPage represent a single page with badwords data: PageID, TopicID, Absolute number of badwords in page,
+// Relative number of badwords in page (tot/abs) and the list of the badwords in the following format: "badWord": number_of_occurrence
+type ExportedBadWordsPage struct {
+	PageID  uint32
+	TopicID uint32
+	Abs     uint32
+	Rel     float64
+	BadW    map[string]int
+}
+
 // BadwordsReportExporter returns a channel with the data of BadWords Report
-func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan map[string]structures.BadWordsReport {
-	ch := make(chan map[string]structures.BadWordsReport)
+func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan ExportedBadWordsPage {
+	ch := make(chan ExportedBadWordsPage)
 
 	if wd.Error != nil {
 		close(ch)
@@ -481,7 +501,7 @@ func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan map[str
 				break
 			}
 
-			var page map[string]structures.BadWordsReport
+			var page map[uint32]structures.BadWordsReport
 
 			if line[:1] != "{" {
 				line = "{" + line
@@ -494,12 +514,14 @@ func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan map[str
 				return
 			}
 
-			select {
-			case <-ctx.Done():
-				return
-			case ch <- page:
+			for id := range page {
+				select {
+				case <-ctx.Done():
+					return
+				case ch <- ExportedBadWordsPage{PageID: id, TopicID: page[id].TopicID,
+					Abs: page[id].Abs, Rel: page[id].Rel, BadW: page[id].BadW}:
+				}
 			}
-
 		}
 
 	}()
