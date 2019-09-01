@@ -72,7 +72,7 @@ func ComputeTFIDF(resultDir string) error {
 			break
 		}
 
-		var page map[string]structures.AggregatedPage
+		var page map[uint32]structures.AggregatedPage
 
 		if line[:1] != "{" {
 			line = "{" + line
@@ -85,10 +85,10 @@ func ComputeTFIDF(resultDir string) error {
 		}
 
 		newPageWords := make(map[string]map[string]float64)
-		var newPage = make(map[string]structures.TfidfAggregatedPage)
-		for i := range page {
-			for word, wordFreq := range page[i].Words {
-				tf := float64(wordFreq) / float64(page[i].Tot)
+		var newPage = make(map[uint32]structures.TfidfAggregatedPage)
+		for id := range page {
+			for word, wordFreq := range page[id].Words {
+				tf := float64(wordFreq) / float64(page[id].Tot)
 				appearIn := globalWord[word]["i"]
 				idf := math.Log10(totalPage / appearIn)
 				tfidf := math.Round((tf*idf)*10000) / 10000
@@ -97,7 +97,7 @@ func ComputeTFIDF(resultDir string) error {
 				newPageWords[word]["abs"] = float64(wordFreq)
 				newPageWords[word]["tfidf"] = tfidf
 			}
-			newPage[i] = structures.TfidfAggregatedPage{TopicID: page[i].TopicID, Tot: page[i].Tot, Words: &newPageWords}
+			newPage[id] = structures.TfidfAggregatedPage{TopicID: page[id].TopicID, Tot: page[id].Tot, Words: &newPageWords}
 		}
 
 		if i == 0 {

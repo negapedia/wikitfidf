@@ -61,7 +61,7 @@ func topicWordsWriter(resultDir string) error {
 			break
 		}
 
-		var page map[string]structures.TfidfAggregatedPage
+		var page map[uint32]structures.TfidfAggregatedPage
 
 		if line[:1] != "{" {
 			line = "{" + line

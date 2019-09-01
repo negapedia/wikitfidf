@@ -89,7 +89,7 @@ func BadWords(lang, resultDir string) error {
 				break
 			}
 
-			var page map[string]structures.TfidfAggregatedPage
+			var page map[uint32]structures.TfidfAggregatedPage
 
 			if line[:1] != "{" {
 				line = "{" + line
@@ -102,7 +102,7 @@ func BadWords(lang, resultDir string) error {
 			}
 
 			toIgnore := false
-			newPage := make(map[string]structures.BadWordsReport)
+			newPage := make(map[uint32]structures.BadWordsReport)
 			for p := range page {
 				badwordInPage := make(map[string]int)
 				var totalBadW uint32

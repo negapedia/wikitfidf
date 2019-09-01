@@ -323,8 +323,8 @@ func (wd *Wikiconflict) GlobalWordExporter() map[string]uint32 {
 }
 
 // GlobalPagesExporter returns a channel with the data of GlobalPagesTFIDF (top N words per page)
-func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan map[string]structures.TfidfTopNWordPage {
-	ch := make(chan map[string]structures.TfidfTopNWordPage)
+func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan map[uint32]structures.TfidfTopNWordPage {
+	ch := make(chan map[uint32]structures.TfidfTopNWordPage)
 	if wd.Error != nil {
 		close(ch)
 		return ch
@@ -354,7 +354,7 @@ func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan map[string
 				break
 			}
 
-			var page map[string]structures.TfidfTopNWordPage
+			var page map[uint32]structures.TfidfTopNWordPage
 
 			if line[:1] != "{" {
 				line = "{" + line
@@ -366,13 +366,13 @@ func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan map[string
 				wd.Error = errors.Wrapf(err, "Error while unmarshalling json.")
 				return
 			}
-			if ctx != nil {
-				select {
-				case <-ctx.Done():
-					return
-				case ch <- page:
-				}
+
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- page:
 			}
+
 		}
 
 	}()
@@ -425,13 +425,13 @@ func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan map[strin
 				wd.Error = errors.Wrapf(err, "Error while unmarshalling json.")
 				return
 			}
-			if ctx != nil {
-				select {
-				case <-ctx.Done():
-					return
-				case ch <- topic:
-				}
+
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- topic:
 			}
+
 		}
 
 	}()
@@ -484,13 +484,13 @@ func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan map[str
 				wd.Error = errors.Wrapf(err, "Error while unmarshalling json.")
 				return
 			}
-			if ctx != nil {
-				select {
-				case <-ctx.Done():
-					return
-				case ch <- page:
-				}
+
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- page:
 			}
+
 		}
 
 	}()
