@@ -20,12 +20,11 @@ func main() {
 	nTopWordsPages := flag.Int("topPages", 0, "Number of top words per page to process")
 	nTopWordsGlobal := flag.Int("topWords", 0, "Number of top global words to process")
 	nTopWordsTopic := flag.Int("topTopic", 0, "Number of top topic words to process")
-	compressFinalOut := flag.Bool("delete", true, "If true compress in 7z and delete the final output folder")
 	verboseMode := flag.Bool("verbose", true, "If true verbouse mode on")
 	flag.Parse()
 
 	wd, err := wikiconflict.New(*langFlag, *dirFlag, *startDateFlag, *endDateFlag, *specialPageListFlag,
-		*nRevert, *nTopWordsPages, *nTopWordsGlobal, *nTopWordsTopic, *compressFinalOut, *verboseMode)
+		*nRevert, *nTopWordsPages, *nTopWordsGlobal, *nTopWordsTopic, *verboseMode)
 
 	if err != nil {
 		log.Fatal(err)
@@ -44,5 +43,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// wd.CompressResultDir("/Result/")
 }

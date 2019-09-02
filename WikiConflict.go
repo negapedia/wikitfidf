@@ -44,11 +44,10 @@ type Wikiconflict struct {
 	Nrevert   int
 	TopNWords nTopWords
 
-	StartDate                 time.Time
-	EndDate                   time.Time
-	SpecialPageList           []string
-	CompressAndRemoveFinalOut bool
-	Logger                    io.Writer
+	StartDate       time.Time
+	EndDate         time.Time
+	SpecialPageList []string
+	Logger          io.Writer
 
 	Error error
 }
@@ -114,7 +113,7 @@ func CheckAvailableLanguage(lang string) error {
 func New(lang string, resultDir string,
 	startDate string, endDate string, specialPageList string,
 	nRevert, topNWordsPages, topNGlobalWords, topNTopicWords int,
-	compress bool, verbouseMode bool) (*Wikiconflict, error) {
+	verbouseMode bool) (*Wikiconflict, error) {
 
 	if lang == "" {
 		return nil, errors.New("Langugage not set")
@@ -162,7 +161,6 @@ func New(lang string, resultDir string,
 		return strings.Split(specialPageList, "-")
 	}(specialPageList)
 
-	wd.CompressAndRemoveFinalOut = compress
 	if verbouseMode {
 		wd.Logger = os.Stdout
 	} else {
@@ -286,25 +284,6 @@ func (wd *Wikiconflict) Process() error {
 	return nil
 }
 
-// CompressResultDir compress to 7z the result dir
-func (wd *Wikiconflict) CompressResultDir(whereToSave string) {
-	if wd.CompressAndRemoveFinalOut {
-		_, _ = fmt.Fprintln(wd.Logger, "Compressing ResultDir in 7z start")
-		fileName := wd.Lang + "_" + wd.date
-		if wd.Nrevert != 0 {
-			fileName += "_last" + strconv.Itoa(wd.Nrevert)
-		}
-
-		start := time.Now()
-		topNWordsPageExtractor := exec.Command("7z", "a", "-r", whereToSave+fileName, wd.ResultDir+"*")
-		_ = topNWordsPageExtractor.Run()
-		_ = os.RemoveAll(wd.ResultDir)
-
-		_, _ = fmt.Fprintln(wd.Logger, "Duration: (min) ", time.Now().Sub(start).Minutes())
-		_, _ = fmt.Fprintln(wd.Logger, "Compressing ResultDir in 7z end")
-	}
-}
-
 // CheckErrors check if errors happened during export process
 func (wd *Wikiconflict) CheckErrors() {
 	if wd.Error != nil {
@@ -321,8 +300,8 @@ func (wd *Wikiconflict) Clean() error {
 	return nil
 }
 
-// GlobalWordExporter returns a channel with the data of GlobalWord (top N words)
-func (wd *Wikiconflict) GlobalWordExporter() map[string]uint32 {
+// GlobalWordsExporter returns a channel with the data of GlobalWord (top N words)
+func (wd *Wikiconflict) GlobalWordsExporter() map[string]uint32 {
 	if wd.Error != nil {
 		return nil
 	}
