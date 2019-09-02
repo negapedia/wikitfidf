@@ -65,7 +65,7 @@ func BadWords(lang, resultDir string) error {
 			return err
 		}
 
-		outFile, err := os.Create(resultDir + "BadWordsReport.json")
+		outFile, err := os.Create(resultDir + "BadWordsReport.json.gz")
 		if err != nil {
 			return errors.Wrapf(err, "Failed while trying to create :"+resultDir+"BadWordsReport.json")
 		}

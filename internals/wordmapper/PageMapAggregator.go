@@ -3,7 +3,6 @@ package wordmapper
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -75,7 +74,6 @@ func PageMapAggregator(resultDir string) error {
 			return errors.Wrap(err, "Error while trying to flush to file")
 		}
 	}
-	fmt.Println()
 
 	_, err = encWriter.Write([]byte("}"))
 	if err != nil {

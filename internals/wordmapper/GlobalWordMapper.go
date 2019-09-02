@@ -2,7 +2,6 @@ package wordmapper
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -54,7 +53,6 @@ func GlobalWordMapper(resultDir string) error {
 			totalWord += uint32(freq)
 		}
 	}
-	fmt.Println()
 
 	globalWord["@Total Word"] = make(map[string]uint32)
 	globalWord["@Total Word"]["tot"] = totalWord
