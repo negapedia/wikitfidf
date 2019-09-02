@@ -2,6 +2,7 @@ package wikiconflict
 
 import (
 	"bufio"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -14,10 +15,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/negapedia/wikiconflict/internals/badwords"
+
 	"github.com/negapedia/wikiconflict/internals/topicwords"
 
 	"github.com/negapedia/wikibrief"
-	"github.com/negapedia/wikiconflict/internals/badwords"
 	"github.com/negapedia/wikiconflict/internals/dumpreducer"
 	"github.com/negapedia/wikiconflict/internals/structures"
 	"github.com/negapedia/wikiconflict/internals/tfidf"
@@ -264,14 +266,6 @@ func (wd *Wikiconflict) Process() error {
 	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
 	_, _ = fmt.Fprintln(wd.Logger, "Processing topic words end")
 
-	_, _ = fmt.Fprintln(wd.Logger, "Processing top N words start")
-	start = time.Now()
-	topNWordsPageExtractor := exec.Command("python3", "./internals/topwordspageextractor/runTopNWordsPageExtractor.py", wd.ResultDir,
-		strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNTopicWords))
-	_ = topNWordsPageExtractor.Run()
-	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
-	_, _ = fmt.Fprintln(wd.Logger, "Processing top N words end")
-
 	_, _ = fmt.Fprintln(wd.Logger, "Processing Badwords report start")
 	start = time.Now()
 	err = badwords.BadWords(wd.Lang, wd.ResultDir)
@@ -280,6 +274,15 @@ func (wd *Wikiconflict) Process() error {
 	}
 	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
 	_, _ = fmt.Fprintln(wd.Logger, "Processing Badwords report end")
+
+	_, _ = fmt.Fprintln(wd.Logger, "Processing top N words start")
+	start = time.Now()
+	topNWordsPageExtractor := exec.Command("python3", "./internals/topwordspageextractor/runTopNWordsPageExtractor.py", wd.ResultDir,
+		strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNWordsPages), strconv.Itoa(wd.TopNWords.TopNTopicWords))
+	_ = topNWordsPageExtractor.Run()
+	_, _ = fmt.Fprintln(wd.Logger, "Duration: (h) ", time.Now().Sub(start).Hours())
+	_, _ = fmt.Fprintln(wd.Logger, "Processing top N words end")
+
 	return nil
 }
 
@@ -349,26 +352,24 @@ func (wd *Wikiconflict) PagesExporter(ctx context.Context) chan PageTFIF {
 		return ch
 	}
 
-	filename := wd.ResultDir + "GlobalPagesTFIDF_top" + strconv.Itoa(wd.TopNWords.TopNWordsPages) + ".json"
+	filename := wd.ResultDir + "GlobalPagesTFIDF_top" + strconv.Itoa(wd.TopNWords.TopNWordsPages) + ".json.gz"
 	globalPage, err := os.Open(filename)
-
 	if err != nil {
 		wd.Error = errors.Wrap(err, "Error happened while trying to open GlobalPages.json file:GlobalPages.json")
 		return nil
 	}
-	globalPageReader := bufio.NewReader(globalPage)
+
+	globalPageReader, err := gzip.NewReader(globalPage)
+	lineReader := bufio.NewScanner(globalPageReader)
 
 	go func() {
 		defer close(ch)
 		defer globalPage.Close()
-		// defer os.Remove(filename)
+		defer globalPageReader.Close()
 
-		for {
-			line, err := globalPageReader.ReadString('\n')
+		for lineReader.Scan() {
+			line := lineReader.Text()
 			println(line)
-			if err != nil {
-				break
-			}
 			if line == "}" {
 				break
 			}
@@ -414,7 +415,7 @@ func (wd *Wikiconflict) TopicsExporter(ctx context.Context) chan Topic {
 		return ch
 	}
 
-	filename := wd.ResultDir + "GlobalTopicsWords_top" + strconv.Itoa(wd.TopNWords.TopNTopicWords) + ".json"
+	filename := wd.ResultDir + "GlobalTopicsWords_top" + strconv.Itoa(wd.TopNWords.TopNTopicWords) + ".json.gz"
 	globalTopic, err := os.Open(filename)
 
 	if err != nil {
@@ -422,15 +423,16 @@ func (wd *Wikiconflict) TopicsExporter(ctx context.Context) chan Topic {
 		close(ch)
 		return ch
 	}
-	globalPageReader := bufio.NewReader(globalTopic)
+	globalPageReader, err := gzip.NewReader(globalTopic)
+	lineRead := bufio.NewScanner(globalPageReader)
 
 	go func() {
 		defer close(ch)
 		defer globalTopic.Close()
-		// defer os.Remove(filename)
+		defer globalPageReader.Close()
 
-		for {
-			line, err := globalPageReader.ReadString('\n')
+		for lineRead.Scan() {
+			line := lineRead.Text()
 			println(line)
 			if err != nil {
 				break
@@ -485,7 +487,7 @@ func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan BadWord
 		return ch
 	}
 
-	filename := wd.ResultDir + "BadWordsReport.json"
+	filename := wd.ResultDir + "BadWordsReport.json.gz"
 	globalTopic, err := os.Open(filename)
 
 	if err != nil {
@@ -493,15 +495,16 @@ func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan BadWord
 		close(ch)
 		return ch
 	}
-	globalPageReader := bufio.NewReader(globalTopic)
+	globalPageReader, err := gzip.NewReader(globalTopic)
+	fileReader := bufio.NewScanner(globalPageReader)
 
 	go func() {
 		defer close(ch)
 		defer globalTopic.Close()
-		// defer os.Remove(filename)
+		defer globalPageReader.Close()
 
-		for {
-			line, err := globalPageReader.ReadString('\n')
+		for fileReader.Scan() {
+			line := fileReader.Text()
 			println(line)
 			if err != nil {
 				break
