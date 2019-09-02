@@ -104,3 +104,8 @@ def global_word_destem(result_dir):
             del global_dict_new[word]
 
     _dict_writer(global_dict_new, "GlobalWords", result_dir)
+
+
+def remove_destem_file(result_dir):
+    os.remove(result_dir + "GlobalStem.json")
+    os.removedirs(result_dir + "Stem/")
