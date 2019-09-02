@@ -309,6 +309,15 @@ func (wd *Wikiconflict) CheckErrors() {
 	}
 }
 
+// Clean delete files from result directory
+func (wd *Wikiconflict) Clean() error {
+	err := os.RemoveAll(wd.ResultDir)
+	if err != nil {
+		return errors.Wrap(err, "Error happened while trying to delete result dir")
+	}
+	return nil
+}
+
 // GlobalWordExporter returns a channel with the data of GlobalWord (top N words)
 func (wd *Wikiconflict) GlobalWordExporter() map[string]uint32 {
 	if wd.Error != nil {
@@ -323,9 +332,9 @@ func (wd *Wikiconflict) GlobalWordExporter() map[string]uint32 {
 	return globalWord
 }
 
-// ExportedPageTFIF represents a single page with its data: ID, TopicID, Total number of words,
+// PageTFIF represents a single page with its data: ID, TopicID, Total number of words,
 // dictionary with the top N words in the following format: "word": tfidf_value
-type ExportedPageTFIF struct {
+type PageTFIF struct {
 	ID      uint32
 	TopicID uint32
 	Tot     uint32
@@ -333,8 +342,8 @@ type ExportedPageTFIF struct {
 }
 
 // GlobalPagesExporter returns a channel with the data of GlobalPagesTFIDF (top N words per page)
-func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan ExportedPageTFIF {
-	ch := make(chan ExportedPageTFIF)
+func (wd *Wikiconflict) PagesExporter(ctx context.Context) chan PageTFIF {
+	ch := make(chan PageTFIF)
 	if wd.Error != nil {
 		close(ch)
 		return ch
@@ -380,7 +389,7 @@ func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan ExportedPa
 				select {
 				case <-ctx.Done():
 					return
-				case ch <- ExportedPageTFIF{ID: id, TopicID: page[id].TopicID, Tot: page[id].Tot, Words: *page[id].Words}:
+				case ch <- PageTFIF{ID: id, TopicID: page[id].TopicID, Tot: page[id].Tot, Words: *page[id].Words}:
 				}
 			}
 		}
@@ -389,16 +398,16 @@ func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan ExportedPa
 	return ch
 }
 
-// ExportedTopic represents a single topic with TopicID and the list of top N words in it in
+// Topic represents a single topic with TopicID and the list of top N words in it in
 // the following format: "word": number_of_occurrence
-type ExportedTopic struct {
+type Topic struct {
 	TopicID uint32
 	Words   map[string]uint32
 }
 
-// GlobalTopicsExporter returns a channel with the data of GlobalTopic (top N words per topic)
-func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan ExportedTopic {
-	ch := make(chan ExportedTopic)
+// TopicsExporter returns a channel with the data of GlobalTopic (top N words per topic)
+func (wd *Wikiconflict) TopicsExporter(ctx context.Context) chan Topic {
+	ch := make(chan Topic)
 
 	if wd.Error != nil {
 		close(ch)
@@ -447,7 +456,7 @@ func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan ExportedT
 				select {
 				case <-ctx.Done():
 					return
-				case ch <- ExportedTopic{TopicID: topicId, Words: topic[topicId]}:
+				case ch <- Topic{TopicID: topicId, Words: topic[topicId]}:
 				}
 			}
 
@@ -457,9 +466,9 @@ func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan ExportedT
 	return ch
 }
 
-// ExportedBadWordsPage represents a single page with badwords data: PageID, TopicID, Absolute number of badwords in page,
+// BadWordsPage represents a single page with badwords data: PageID, TopicID, Absolute number of badwords in page,
 // Relative number of badwords in page (tot/abs) and the list of the badwords in the following format: "badWord": number_of_occurrence
-type ExportedBadWordsPage struct {
+type BadWordsPage struct {
 	PageID  uint32
 	TopicID uint32
 	Abs     uint32
@@ -468,8 +477,8 @@ type ExportedBadWordsPage struct {
 }
 
 // BadwordsReportExporter returns a channel with the data of BadWords Report
-func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan ExportedBadWordsPage {
-	ch := make(chan ExportedBadWordsPage)
+func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan BadWordsPage {
+	ch := make(chan BadWordsPage)
 
 	if wd.Error != nil {
 		close(ch)
@@ -518,7 +527,7 @@ func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan Exporte
 				select {
 				case <-ctx.Done():
 					return
-				case ch <- ExportedBadWordsPage{PageID: id, TopicID: page[id].TopicID,
+				case ch <- BadWordsPage{PageID: id, TopicID: page[id].TopicID,
 					Abs: page[id].Abs, Rel: page[id].Rel, BadW: page[id].BadW}:
 				}
 			}
