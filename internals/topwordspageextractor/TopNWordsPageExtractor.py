@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import gzip
 import json
 import os
 from collections import Counter
@@ -49,7 +50,8 @@ def top_n_words_page_extractor(result_dir: str, n, delete: bool):
     :param n: amount of most important words to calculate
     :param delete: if true after processing original file is deleted
     """
-    global_top_ntfidf = open(result_dir + "GlobalPagesTFIDF_top" + n + ".json", "w")
+    global_top_ntfidf = gzip.GzipFile(filename=result_dir + "GlobalPagesTFIDF_top" + n + ".json.gz", mode="w",
+                                      compresslevel=9)
 
     gloabal_tfidf = open(result_dir + "GlobalPagesTFIDF.json", "r")
     global_tfidf_it = iter(gloabal_tfidf.readline, "")
@@ -97,13 +99,15 @@ def top_n_global_words_extractor(result_dir: str, n, delete: bool):
     :param n: amount of most important words to calculate
     :param delete: if true after processing original file is deleted
     """
-    global_word_top_n = open(result_dir + "GlobalWords_top" + n + ".json", "w")
+
+    global_word_top_n = gzip.GzipFile(filename=result_dir + "GlobalWords_top" + n + ".json.gz", mode="w",
+                                      compresslevel=9)
 
     with open(result_dir + "GlobalWords.json", "r") as gloabal_words:
         global_words_dict = json.load(gloabal_words)
 
     global_words_dict = _get_global_words(global_words_dict)
-    json.dump(_top_n_getter(global_words_dict, int(n)), global_word_top_n)
+    global_word_top_n.write(json.dumps(_top_n_getter(global_words_dict, int(n))).encode())
     global_word_top_n.flush()
     global_word_top_n.close()
 
@@ -119,7 +123,8 @@ def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
     :param n: amount of most important words to calculate
     :param delete: if true after processing original file is deleted
     """
-    global_word_top_n = open(result_dir + "GlobalTopicsWords_top" + n + ".json", "w")
+    global_word_top_n = gzip.GzipFile(filename=result_dir + "GlobalTopicsWords_top" + n + ".json.gz", mode="w",
+                                      compresslevel=9)
 
     global_topic = None
     try:
@@ -151,15 +156,15 @@ def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
         if counter == 0:
             page_json = json.dumps(top_words)
             page_json = page_json[:len(page_json) - 1] + ",\n"
-            global_word_top_n.write(page_json)
+            global_word_top_n.write(page_json.encode())
         elif counter >= 0:
             page_json = json.dumps(top_words)
             page_json = page_json[1:len(page_json) - 1] + ",\n"
-            global_word_top_n.write(page_json)
+            global_word_top_n.write(page_json.encode())
         global_word_top_n.flush()
         counter += 1
 
-    global_word_top_n.write("}")
+    global_word_top_n.write("}".encode())
     global_word_top_n.flush()
     global_word_top_n.close()
     global_topic.close()
