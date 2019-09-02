@@ -58,7 +58,6 @@ func StemRevAggregator(resultDir string) error {
 		}
 	}
 
-	println(len(globalStemRev))
 	utils.WriteGlobalStem(resultDir, &globalStemRev)
 	return nil
 }

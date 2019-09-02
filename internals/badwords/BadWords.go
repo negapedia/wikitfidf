@@ -2,6 +2,7 @@ package badwords
 
 import (
 	"bufio"
+	"compress/gzip"
 	"encoding/json"
 	"os"
 
@@ -68,7 +69,10 @@ func BadWords(lang, resultDir string) error {
 		if err != nil {
 			return errors.Wrapf(err, "Failed while trying to create :"+resultDir+"BadWordsReport.json")
 		}
-		encWriter := bufio.NewWriter(outFile)
+		encWriter, err := gzip.NewWriterLevel(outFile, gzip.BestCompression)
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to create gzip writer for BadWordsReport.json")
+		}
 		defer outFile.Close()
 
 		globalPage, err := os.Open(resultDir + "GlobalPagesTFIDF.json")

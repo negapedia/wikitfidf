@@ -74,15 +74,15 @@ def top_n_words_page_extractor(result_dir: str, n, delete: bool):
         if counter == 0:
             page_json = json.dumps(page_dict)
             page_json = page_json[:len(page_json) - 1] + ",\n"
-            global_top_ntfidf.write(page_json)
+            global_top_ntfidf.write(page_json.encode())
         elif counter >= 0:
             page_json = json.dumps(page_dict)
             page_json = page_json[1:len(page_json) - 1] + ",\n"
-            global_top_ntfidf.write(page_json)
+            global_top_ntfidf.write(page_json.encode())
         global_top_ntfidf.flush()
         counter += 1
 
-    global_top_ntfidf.write("}")
+    global_top_ntfidf.write("}".encode())
     global_top_ntfidf.flush()
     global_top_ntfidf.close()
     gloabal_tfidf.close()
@@ -130,7 +130,7 @@ def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
     try:
         global_topic = open(result_dir + "GlobalTopicsWords.json", "r")
     except IOError:
-        global_word_top_n.write("Error while opening GlobalTopicsWords.json!")
+        global_word_top_n.write("Error while opening GlobalTopicsWords.json!".encode())
         global_word_top_n.flush()
         global_word_top_n.close()
 
