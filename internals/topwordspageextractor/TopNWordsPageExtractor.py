@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import json
+import os
 from collections import Counter
 
 
@@ -40,11 +41,13 @@ def _get_global_words(global_dict: dict):
     return new_global_dict
 
 
-def top_n_words_page_extractor(result_dir: str, n):
+def top_n_words_page_extractor(result_dir: str, n, delete: bool):
     """
-    top_N_Words_Page_Extractor given the result dir compute the n most important words for each page in GlobalPageTFIDF
+    top_N_Words_Page_Extractor given the result dir compute the n most important words for each page in GlobalPageTFIDF.
+    After processing, original file is deleted if delete is true
     :param result_dir: result dir path
     :param n: amount of most important words to calculate
+    :param delete: if true after processing original file is deleted
     """
     global_top_ntfidf = open(result_dir + "GlobalPagesTFIDF_top" + n + ".json", "w")
 
@@ -82,12 +85,17 @@ def top_n_words_page_extractor(result_dir: str, n):
     global_top_ntfidf.close()
     gloabal_tfidf.close()
 
+    if delete:
+        os.remove(result_dir + "GlobalPagesTFIDF.json")
 
-def top_n_global_words_extractor(result_dir: str, n):
+
+def top_n_global_words_extractor(result_dir: str, n, delete: bool):
     """
-    top_n_Global_Words_Extractor given the result dir compute the n most frequent word in GlobalWord
+    top_n_Global_Words_Extractor given the result dir compute the n most frequent word in GlobalWord.
+    After processing, original file is deleted if delete is true
     :param result_dir: result dir path
     :param n: amount of most important words to calculate
+    :param delete: if true after processing original file is deleted
     """
     global_word_top_n = open(result_dir + "GlobalWords_top" + n + ".json", "w")
 
@@ -99,12 +107,17 @@ def top_n_global_words_extractor(result_dir: str, n):
     global_word_top_n.flush()
     global_word_top_n.close()
 
+    if delete:
+        os.remove(result_dir + "GlobalWords.json")
 
-def top_n_topic_words_extractor(result_dir: str, n):
+
+def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
     """
-    top_n_Global_Words_Extractor given the result dir compute the n most frequent word in GlobalWord
+    top_n_Global_Words_Extractor given the result dir compute the n most frequent word in GlobalWord.
+    After processing, original file is deleted if delete is true
     :param result_dir: result dir path
     :param n: amount of most important words to calculate
+    :param delete: if true after processing original file is deleted
     """
     global_word_top_n = open(result_dir + "GlobalTopicsWords_top" + n + ".json", "w")
 
@@ -150,3 +163,6 @@ def top_n_topic_words_extractor(result_dir: str, n):
     global_word_top_n.flush()
     global_word_top_n.close()
     global_topic.close()
+
+    if delete:
+        os.remove(result_dir + "GlobalTopicsWords.json")
