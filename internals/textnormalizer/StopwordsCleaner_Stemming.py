@@ -140,7 +140,7 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
     :param lang: wiki language
     """
 
-    file_to_clean = sorted(glob.glob(result_dir + "W[1-9]*.json"),
+    file_to_clean = sorted(glob.glob(result_dir + "W[0-9]*.json"),
                            key=os.path.getsize)  # from the smallest to the biggest
 
     executor = Pool(cpu_count())

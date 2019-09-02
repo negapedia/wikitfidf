@@ -323,7 +323,7 @@ func (wd *Wikiconflict) GlobalWordExporter() map[string]uint32 {
 	return globalWord
 }
 
-// ExportedPageTFIF represent a single page with its data: ID, TopicID, Total number of words,
+// ExportedPageTFIF represents a single page with its data: ID, TopicID, Total number of words,
 // dictionary with the top N words in the following format: "word": tfidf_value
 type ExportedPageTFIF struct {
 	ID      uint32
@@ -389,7 +389,7 @@ func (wd *Wikiconflict) GlobalPagesExporter(ctx context.Context) chan ExportedPa
 	return ch
 }
 
-// ExportedTopic represent a single topic with TopicID and the list of top N words in it in
+// ExportedTopic represents a single topic with TopicID and the list of top N words in it in
 // the following format: "word": number_of_occurrence
 type ExportedTopic struct {
 	TopicID uint32
@@ -457,7 +457,7 @@ func (wd *Wikiconflict) GlobalTopicsExporter(ctx context.Context) chan ExportedT
 	return ch
 }
 
-// ExportedBadWordsPage represent a single page with badwords data: PageID, TopicID, Absolute number of badwords in page,
+// ExportedBadWordsPage represents a single page with badwords data: PageID, TopicID, Absolute number of badwords in page,
 // Relative number of badwords in page (tot/abs) and the list of the badwords in the following format: "badWord": number_of_occurrence
 type ExportedBadWordsPage struct {
 	PageID  uint32
