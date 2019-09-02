@@ -365,16 +365,19 @@ func (wd *Wikiconflict) PagesExporter(ctx context.Context) chan PageTFIF {
 		close(ch)
 		return ch
 	}
-	lineReader := bufio.NewScanner(globalPageReader)
+	lineReader := bufio.NewReader(globalPageReader)
 
 	go func() {
 		defer close(ch)
 		defer globalPage.Close()
 		defer globalPageReader.Close()
 
-		for lineReader.Scan() {
-			line := lineReader.Text()
-			println(line)
+		for {
+			line, err := lineReader.ReadString('\n')
+			if err != nil {
+				wd.Error = errors.Wrapf(err, "Error while reading line")
+				return
+			}
 			if line == "}" {
 				break
 			}
@@ -434,16 +437,19 @@ func (wd *Wikiconflict) TopicsExporter(ctx context.Context) chan Topic {
 		close(ch)
 		return ch
 	}
-	lineRead := bufio.NewScanner(globalPageReader)
+	lineReader := bufio.NewReader(globalPageReader)
 
 	go func() {
 		defer close(ch)
 		defer globalTopic.Close()
 		defer globalPageReader.Close()
 
-		for lineRead.Scan() {
-			line := lineRead.Text()
-			println(line)
+		for {
+			line, err := lineReader.ReadString('\n')
+			if err != nil {
+				wd.Error = errors.Wrapf(err, "Error while reading line")
+				return
+			}
 			if err != nil {
 				break
 			}
@@ -511,16 +517,19 @@ func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan BadWord
 		close(ch)
 		return ch
 	}
-	fileReader := bufio.NewScanner(globalPageReader)
+	lineReader := bufio.NewReader(globalPageReader)
 
 	go func() {
 		defer close(ch)
 		defer globalTopic.Close()
 		defer globalPageReader.Close()
 
-		for fileReader.Scan() {
-			line := fileReader.Text()
-			println(line)
+		for {
+			line, err := lineReader.ReadString('\n')
+			if err != nil {
+				wd.Error = errors.Wrapf(err, "Error while reading line")
+				return
+			}
 			if err != nil {
 				break
 			}
