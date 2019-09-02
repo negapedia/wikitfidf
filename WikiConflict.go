@@ -360,6 +360,11 @@ func (wd *Wikiconflict) PagesExporter(ctx context.Context) chan PageTFIF {
 	}
 
 	globalPageReader, err := gzip.NewReader(globalPage)
+	if err != nil {
+		wd.Error = errors.Wrap(err, "Error happened while trying to create gzip reader")
+		close(ch)
+		return ch
+	}
 	lineReader := bufio.NewScanner(globalPageReader)
 
 	go func() {
@@ -424,6 +429,11 @@ func (wd *Wikiconflict) TopicsExporter(ctx context.Context) chan Topic {
 		return ch
 	}
 	globalPageReader, err := gzip.NewReader(globalTopic)
+	if err != nil {
+		wd.Error = errors.Wrap(err, "Error happened while trying to create gzip reader")
+		close(ch)
+		return ch
+	}
 	lineRead := bufio.NewScanner(globalPageReader)
 
 	go func() {
@@ -496,6 +506,11 @@ func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan BadWord
 		return ch
 	}
 	globalPageReader, err := gzip.NewReader(globalTopic)
+	if err != nil {
+		wd.Error = errors.Wrap(err, "Error happened while trying to create gzip reader")
+		close(ch)
+		return ch
+	}
 	fileReader := bufio.NewScanner(globalPageReader)
 
 	go func() {
