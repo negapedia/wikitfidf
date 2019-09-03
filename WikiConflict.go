@@ -300,6 +300,39 @@ func (wd *Wikiconflict) Clean() error {
 	return nil
 }
 
+// CheckExportFileExistence check if files that have to be exported exists.
+// If not, returns an error with the specified missing file(s)
+func (wd *Wikiconflict) CheckExportFileExistence() error {
+	var errorMessage string
+
+	// check if GlobalPagesTFIDF_topN file exists
+	if _, err := os.Stat(wd.ResultDir + "GlobalPagesTFIDF_top" + strconv.Itoa(wd.TopNWords.TopNWordsPages) + ".json.gz"); os.IsNotExist(err) {
+		errorMessage += "GlobalPagesTFIDF_topN.json.gz DOES NOT EXISTS! "
+	}
+
+	// check if GlobalTopicsWords_topN file exists
+	if _, err := os.Stat(wd.ResultDir + "GlobalTopicsWords_top" + strconv.Itoa(wd.TopNWords.TopNTopicWords) + ".json.gz"); os.IsNotExist(err) {
+		errorMessage += "GlobalTopicsWords_topN.json.gz DOES NOT EXISTS! "
+	}
+
+	// check if GlobalWords_topN file exists
+	if _, err := os.Stat(wd.ResultDir + "GlobalWords_top" + strconv.Itoa(wd.TopNWords.TopNGlobalWords) + ".json.gz"); os.IsNotExist(err) {
+		errorMessage += "GlobalWords_topN.json.gz DOES NOT EXISTS! "
+	}
+
+	// check if BadWordsReport should exists, if yes, check if file exists
+	if _, exists := badwords.AvailableLanguage(wd.Lang); exists {
+		if _, err := os.Stat(wd.ResultDir + "BadWordsReport.json.gz"); os.IsNotExist(err) {
+			errorMessage += "BadWordsReport.json.gz DOES NOT EXISTS! "
+		}
+	}
+
+	if errorMessage != "" {
+		return errors.Errorf(errorMessage)
+	}
+	return nil
+}
+
 // GlobalWordsExporter returns a channel with the data of GlobalWord (top N words)
 func (wd *Wikiconflict) GlobalWordsExporter() map[string]uint32 {
 	if wd.Error != nil {
@@ -324,6 +357,7 @@ type PageTFIF struct {
 }
 
 // GlobalPagesExporter returns a channel with the data of GlobalPagesTFIDF (top N words per page)
+// pages sent in channel are descending ordered
 func (wd *Wikiconflict) PagesExporter(ctx context.Context) chan PageTFIF {
 	ch := make(chan PageTFIF)
 	if wd.Error != nil {
@@ -474,10 +508,16 @@ type BadWordsPage struct {
 }
 
 // BadwordsReportExporter returns a channel with the data of BadWords Report
+// pages sent in channel are descending ordered
 func (wd *Wikiconflict) BadwordsReportExporter(ctx context.Context) chan BadWordsPage {
 	ch := make(chan BadWordsPage)
 
 	if wd.Error != nil {
+		close(ch)
+		return ch
+	}
+
+	if _, exists := badwords.AvailableLanguage(wd.Lang); !exists {
 		close(ch)
 		return ch
 	}

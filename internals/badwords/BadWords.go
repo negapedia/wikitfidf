@@ -11,7 +11,7 @@ import (
 	"github.com/negapedia/wikiconflict/internals/structures"
 )
 
-func availableLanguage(lang string) (string, bool) {
+func AvailableLanguage(lang string) (string, bool) {
 	languages := map[string]string{
 		"en":     "english",
 		"ar":     "arabic",
@@ -59,7 +59,7 @@ func badWordsListGetter(lang, path string) (map[string]bool, error) {
 
 // BadWords create the badwords report for the given language, if available, and the given result dir
 func BadWords(lang, resultDir string) error {
-	if language, isAvailable := availableLanguage(lang); isAvailable {
+	if language, isAvailable := AvailableLanguage(lang); isAvailable {
 		badWordsMap, err := badWordsListGetter(language, "/root/badwords_data/")
 		if err != nil {
 			return err
