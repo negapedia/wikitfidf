@@ -14,7 +14,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/negapedia/wikiconflict/internals/structures"
+	"github.com/negapedia/wikitfidf/internals/structures"
 )
 
 // WriteCleanPage write a json containing the page after first clean

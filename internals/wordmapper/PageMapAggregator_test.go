@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/negapedia/wikiconflict/internals/structures"
+	"github.com/negapedia/wikitfidf/internals/structures"
 )
 
 func Test_getTotalWordInPage(t *testing.T) {

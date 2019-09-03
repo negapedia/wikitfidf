@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/negapedia/wikiconflict/internals/structures"
+	"github.com/negapedia/wikitfidf/internals/structures"
 )
 
 func Test_getMappedPage(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/negapedia/wikiconflict/internals/structures"
-	"github.com/negapedia/wikiconflict/internals/utils"
+	"github.com/negapedia/wikitfidf/internals/structures"
+	"github.com/negapedia/wikitfidf/internals/utils"
 )
 
 // GlobalWordMapper given the result dir, generate the file containing the global report about word frequency

@@ -1,8 +1,7 @@
-package wikiconflict
+package wikitfidf
 
 import (
 	"testing"
-
 )
 
 func TestCheckAvailableLanguage(t *testing.T) {

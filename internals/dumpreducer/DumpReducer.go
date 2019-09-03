@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/negapedia/wikibrief"
-	"github.com/negapedia/wikiconflict/internals/structures"
-	"github.com/negapedia/wikiconflict/internals/utils"
+	"github.com/negapedia/wikitfidf/internals/structures"
+	"github.com/negapedia/wikitfidf/internals/utils"
 )
 
 func keepLastNRevert(page *structures.Page, nRev int) {

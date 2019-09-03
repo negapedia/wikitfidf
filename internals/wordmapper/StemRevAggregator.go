@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/negapedia/wikiconflict/internals/utils"
+	"github.com/negapedia/wikitfidf/internals/utils"
 )
 
 // StemRevAggregator given the result directory, will aggregate all Stem files into a single global file

@@ -1,4 +1,4 @@
-package wikiconflict
+package wikitfidf
 
 import (
 	"bufio"
@@ -15,16 +15,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/negapedia/wikiconflict/internals/badwords"
+	"github.com/negapedia/wikitfidf/internals/badwords"
 
-	"github.com/negapedia/wikiconflict/internals/topicwords"
+	"github.com/negapedia/wikitfidf/internals/topicwords"
 
 	"github.com/negapedia/wikibrief"
-	"github.com/negapedia/wikiconflict/internals/dumpreducer"
-	"github.com/negapedia/wikiconflict/internals/structures"
-	"github.com/negapedia/wikiconflict/internals/tfidf"
-	"github.com/negapedia/wikiconflict/internals/utils"
-	"github.com/negapedia/wikiconflict/internals/wordmapper"
+	"github.com/negapedia/wikitfidf/internals/dumpreducer"
+	"github.com/negapedia/wikitfidf/internals/structures"
+	"github.com/negapedia/wikitfidf/internals/tfidf"
+	"github.com/negapedia/wikitfidf/internals/utils"
+	"github.com/negapedia/wikitfidf/internals/wordmapper"
 	"github.com/pkg/errors"
 )
 

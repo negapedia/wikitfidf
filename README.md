@@ -75,4 +75,4 @@ execution flags have to be setted on Dockerfile entrypoint.
 
 #### Installation
 Go packages can be installed by:<br>
-``go get github.com/negapedia/wikiconflict``
+``go get github.com/negapedia/wikitfidf``

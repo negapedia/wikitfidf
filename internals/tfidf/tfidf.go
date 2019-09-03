@@ -9,7 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/negapedia/wikiconflict/internals/structures"
+	"github.com/negapedia/wikitfidf/internals/structures"
 )
 
 // GetGlobalWord return full GlobalWord map and a error

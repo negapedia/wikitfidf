@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/negapedia/wikibrief"
-	"github.com/negapedia/wikiconflict/internals/structures"
+	"github.com/negapedia/wikitfidf/internals/structures"
 )
 
 func getRevChan() chan wikibrief.Revision {
