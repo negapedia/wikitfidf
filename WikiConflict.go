@@ -306,24 +306,24 @@ func (wd *Wikiconflict) CheckExportFileExistence() error {
 	var errorMessage string
 
 	// check if GlobalPagesTFIDF_topN file exists
-	if _, err := os.Stat(wd.ResultDir + "GlobalPagesTFIDF_top" + strconv.Itoa(wd.TopNWords.TopNWordsPages) + ".json.gz"); os.IsNotExist(err) {
-		errorMessage += "GlobalPagesTFIDF_topN.json.gz DOES NOT EXISTS! "
+	if _, err := os.Stat(wd.ResultDir + "GlobalPagesTFIDF_topN.json.gz"); os.IsNotExist(err) {
+		errorMessage += "GlobalPagesTFIDF_topN.json.gz does not exist! "
 	}
 
 	// check if GlobalTopicsWords_topN file exists
-	if _, err := os.Stat(wd.ResultDir + "GlobalTopicsWords_top" + strconv.Itoa(wd.TopNWords.TopNTopicWords) + ".json.gz"); os.IsNotExist(err) {
-		errorMessage += "GlobalTopicsWords_topN.json.gz DOES NOT EXISTS! "
+	if _, err := os.Stat(wd.ResultDir + "GlobalTopicsWords_topN.json.gz"); os.IsNotExist(err) {
+		errorMessage += "GlobalTopicsWords_topN.json.gz does not exist! "
 	}
 
 	// check if GlobalWords_topN file exists
-	if _, err := os.Stat(wd.ResultDir + "GlobalWords_top" + strconv.Itoa(wd.TopNWords.TopNGlobalWords) + ".json.gz"); os.IsNotExist(err) {
-		errorMessage += "GlobalWords_topN.json.gz DOES NOT EXISTS! "
+	if _, err := os.Stat(wd.ResultDir + "GlobalWords_topN.json.gz"); os.IsNotExist(err) {
+		errorMessage += "GlobalWords_topN.json.gz does not exist! "
 	}
 
 	// check if BadWordsReport should exists, if yes, check if file exists
 	if _, exists := badwords.AvailableLanguage(wd.Lang); exists {
 		if _, err := os.Stat(wd.ResultDir + "BadWordsReport.json.gz"); os.IsNotExist(err) {
-			errorMessage += "BadWordsReport.json.gz DOES NOT EXISTS! "
+			errorMessage += "BadWordsReport.json.gz does not exist! "
 		}
 	}
 
@@ -365,7 +365,7 @@ func (wd *Wikiconflict) PagesExporter(ctx context.Context) chan PageTFIF {
 		return ch
 	}
 
-	filename := wd.ResultDir + "GlobalPagesTFIDF_top" + strconv.Itoa(wd.TopNWords.TopNWordsPages) + ".json.gz"
+	filename := wd.ResultDir + "GlobalPagesTFIDF_topN.json.gz"
 	globalPage, err := os.Open(filename)
 	if err != nil {
 		wd.Error = errors.Wrap(err, "Error happened while trying to open GlobalPages.json file:GlobalPages.json")
@@ -436,11 +436,11 @@ func (wd *Wikiconflict) TopicsExporter(ctx context.Context) chan Topic {
 		return ch
 	}
 
-	filename := wd.ResultDir + "GlobalTopicsWords_top" + strconv.Itoa(wd.TopNWords.TopNTopicWords) + ".json.gz"
+	filename := wd.ResultDir + "GlobalTopicsWords_topN.json.gz"
 	globalTopic, err := os.Open(filename)
 
 	if err != nil {
-		wd.Error = errors.Wrapf(err, "Error happened while trying to open GlobalTopics_top.json ")
+		wd.Error = errors.Wrapf(err, "Error happened while trying to open GlobalTopics_topN.json ")
 		close(ch)
 		return ch
 	}
