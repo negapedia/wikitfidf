@@ -1,30 +1,19 @@
 FROM ebonetti/golang-petsc
 
-RUN apt-get update
+RUN set -eux; \
+	apt-get update && apt-get install -y --no-install-recommends \
+		p7zip-full \
+        default-jdk \
+        python3-dev \
+		python3-pip \
+        python3-setuptools; \
+    pip3 install --no-cache-dir \
+        nltk \
+        cython; \
+	apt-get clean; \
+	rm -rf /var/lib/apt/lists/*;
 
-RUN apt-get install -y software-properties-common
-RUN apt install default-jdk -y
-RUN apt install python3-pip -y
-RUN pip3 install nltk
-RUN pip3 install cython
-
-RUN apt-get install -y --no-install-recommends p7zip-full
-
-RUN go get github.com/negapedia/wikibrief
-RUN go get github.com/ebonetti/ctxutils
-
-ADD / $GOPATH/src/
-
-RUN go get github.com/negapedia/wikitfidf
-# RUN 7z x $GOPATH/src/stopwords_data.7z -o/root/nltk_data
-# RUN 7z x $GOPATH/src/badwords_data.7z -o/root/badwords_data
-RUN cd /root/ && mkdir nltk_data && git clone https://github.com/negapedia/words.git && mv /root/words/stopwords_data/corpora /root/nltk_data/ && mv /root/words/stopwords_data/tokenizers /root/nltk_data/ &&    mv /root/words/badwords_data /root/badwords_data
-
-RUN cd $GOPATH/src/internals/textnormalizer/ && python3 compile.py build_ext --inplace
-RUN cd $GOPATH/src/internals/destemmer/ && python3 compile.py build_ext --inplace
-
-WORKDIR $GOPATH/src
-
-RUN cd cmd && go build RunWikiConflictAnalyzer.go
-ENTRYPOINT ["./cmd/RunWikiConflictAnalyzer", "-l", "vec", "-rev", "10", "-topPages", "50", "-topWords", "100", "-topTopic", "100"]
-
+ENV PROJECT github.com/negapedia/wikitfidf
+ADD . $GOPATH/src/$PROJECT
+RUN go get $PROJECT/...;
+WORKDIR /data

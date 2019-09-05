@@ -1,16 +1,16 @@
-# Wikipedia Conflict Analyzer
-[![Go Report Card](https://goreportcard.com/badge/github.com/negapedia/wikiconflict)](https://goreportcard.com/report/github.com/negapedia/wikiconflict)
-[![GoDoc](https://godoc.org/github.com/negapedia/wikiconflict?status.svg)](https://godoc.org/github.com/negapedia/wikiconflict)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=bugs)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=coverage)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=ncloc)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=security_rating)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikiconflict&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=negapedia_wikiconflict)
-[![Build Status](https://travis-ci.org/negapedia/wikiconflict.svg?branch=develop)](https://travis-ci.org/negapedia/wikiconflict)<br>
+# Wikipedia TFIDF Analyzer
+[![Go Report Card](https://goreportcard.com/badge/github.com/negapedia/wikitfidf)](https://goreportcard.com/report/github.com/negapedia/wikitfidf)
+[![GoDoc](https://godoc.org/github.com/negapedia/wikitfidf?status.svg)](https://godoc.org/github.com/negapedia/wikitfidf)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikitfidf&metric=bugs)](https://sonarcloud.io/dashboard?id=negapedia_wikitfidf)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikitfidf&metric=coverage)](https://sonarcloud.io/dashboard?id=negapedia_wikitfidf)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikitfidf&metric=ncloc)](https://sonarcloud.io/dashboard?id=negapedia_wikitfidf)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikitfidf&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=negapedia_wikitfidf)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikitfidf&metric=reliability_rating)](https://sonarcloud.io/dashboard?id=negapedia_wikitfidf)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikitfidf&metric=security_rating)](https://sonarcloud.io/dashboard?id=negapedia_wikitfidf)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=negapedia_wikitfidf&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=negapedia_wikitfidf)
+[![Build Status](https://travis-ci.org/negapedia/wikitfidf.svg?branch=develop)](https://travis-ci.org/negapedia/wikitfidf)<br>
 
-Negapedia Conflict Analyzer analyze Wikipedia's dumps and makes statistical analysis on reverts text.<br>
+Negapedia TFIDF Analyzer analyze Wikipedia's dumps and makes statistical analysis on reverts text.<br>
 The data produced in output can be used to clarify the theme of the contrast inside a Wikipedia page.<br>
 
 #### Handled languages
@@ -57,7 +57,7 @@ example:<br>
 ``docker run -d -v ~/Documents/Results/:/Results/ my_image ``<br>
 
 #### Executions flags
-- `-l`: wiki language;
+- `-lang`: wiki language;
 - `-d`: container result dir;
 - `-s`: revert starting date to consider;
 - `-e`: revert ending date to consider;
@@ -70,8 +70,7 @@ example:<br>
 - `-verbose`: if true, logs are shown (default: true).
 <br>
 example:<br>
-``./WikiConflictAnalyzer -l it -d /Result/ -r 10 -t 50``<br>
-execution flags have to be setted on Dockerfile entrypoint.
+``docker run -v /path/2/out/dir:/data wikitfidf dothething -lang it``<br>
 
 #### Installation
 Go packages can be installed by:<br>
