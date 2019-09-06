@@ -205,6 +205,15 @@ func (wt builder) Process(ctx context.Context, fail func(error) error) (wtOut bu
 	}
 	fmt.Fprintln(wt.Logger, "Done in", time.Now().Sub(start))
 
+	fmt.Fprintln(wt.Logger, "Processing Badwords Topic report")
+	start = time.Now()
+	err = badwords.TopicBadWords(wt.Lang, wt.ResultDir)
+	if err != nil {
+		fail(err)
+		return wt
+	}
+	fmt.Fprintln(wt.Logger, "Done in", time.Now().Sub(start))
+
 	fmt.Fprintln(wt.Logger, "Processing top N words")
 	start = time.Now()
 	err = assets.Run(ctx, "topwordspageextractor", ".", map[string]string{

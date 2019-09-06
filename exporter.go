@@ -26,6 +26,7 @@ const (
 	globalWordsName       = "GlobalWords_topN.json.gz"
 	badWordsReportName    = "BadWordsReport.json.gz"
 	globalBadWordsName    = "GlobalBadWords_topN.json.gz"
+	topicBadWordsName     = "TopicBadWords_topN.json.gz"
 )
 
 // From returns an exporter from existing data, it check if files that have to be exported exists.
@@ -323,6 +324,80 @@ func (exporter Exporter) PageBadwords(ctx context.Context, fail func(error) erro
 				case <-ctx.Done():
 					return
 				case ch <- BadWordsPage{PageID: id, Abs: page[id].Abs, Rel: page[id].Rel, BadW: page[id].BadW}:
+				}
+			}
+		}
+
+	}()
+	return ch
+}
+
+type TopicBadWords struct {
+	TopicID     uint32
+	TotBadWords uint32
+	Badwords    map[string]uint32
+}
+
+// TopicBadwords returns a channel with the data of BadWords Report for topic with top N
+func (exporter Exporter) TopicBadwords(ctx context.Context, fail func(error) error) chan TopicBadWords {
+	ch := make(chan TopicBadWords)
+
+	if _, exists := badwords.AvailableLanguage(exporter.Lang); !exists {
+		close(ch)
+		return ch
+	}
+
+	badWords, err := os.Open(filepath.Join(exporter.ResultDir, topicBadWordsName))
+	if err != nil {
+		fail(errors.Wrapf(err, "Error happened while trying to open %v", topicBadWordsName))
+		close(ch)
+		return ch
+	}
+
+	globalPageReader, err := gzip.NewReader(badWords)
+	if err != nil {
+		fail(errors.Wrapf(err, "Error happened while trying to create gzip reader for %v", topicBadWordsName))
+		close(ch)
+		return ch
+	}
+	lineReader := bufio.NewReader(globalPageReader)
+
+	go func() {
+		defer close(ch)
+		defer badWords.Close()
+		defer globalPageReader.Close()
+
+		for {
+			line, err := lineReader.ReadString('\n')
+			if err != nil {
+				fail(errors.Wrapf(err, "Error while reading line in %v", topicBadWordsName))
+				return
+			}
+			if err != nil {
+				break
+			}
+			if line == "}" {
+				break
+			}
+
+			var topic map[uint32]structures.TopicBadWords
+
+			if line[:1] != "{" {
+				line = "{" + line
+			}
+
+			line = line[:len(line)-2] + "}"
+
+			if err = json.Unmarshal([]byte(line), &topic); err != nil {
+				fail(errors.Wrapf(err, "Error while unmarshalling json in %v", topicBadWordsName))
+				return
+			}
+
+			for id := range topic {
+				select {
+				case <-ctx.Done():
+					return
+				case ch <- TopicBadWords{TopicID: id, TotBadWords: topic[id].TotBadw, Badwords: topic[id].BadW}:
 				}
 			}
 		}
