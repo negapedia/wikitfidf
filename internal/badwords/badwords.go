@@ -178,3 +178,126 @@ func BadWords(lang, resultDir string) (err error) {
 	}
 	return nil
 }
+
+// TopicBadWords built a file with the list of badwords in each topic with total number of badwords
+// per topic and number of occurence for each badword
+func TopicBadWords(lang, resultDir string) (err error) {
+	if language, isAvailable := AvailableLanguage(lang); isAvailable {
+		badWordsMap, err := badWordsListGetter(language)
+		if err != nil {
+			return err
+		}
+
+		outFile, err := os.Create(filepath.Join(resultDir, "TopicBadWords.json.gz"))
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to create :"+resultDir+"TopicBadWords.json.gz")
+		}
+		encWriter, err := gzip.NewWriterLevel(outFile, gzip.BestCompression)
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to create gzip writer for TopicBadWords.json.gz")
+		}
+		defer func() {
+			if e := outFile.Close(); e != nil && err == nil {
+				err = errors.Wrapf(err, "Error while closing file %v", outFile.Name())
+			}
+		}()
+
+		badwordsReport, err := os.Open(filepath.Join(resultDir, "BadWordsReport.json.gz"))
+		defer func() {
+			if e := badwordsReport.Close(); e != nil && err == nil {
+				err = errors.Wrapf(err, "Error while closing file %v", badwordsReport.Name())
+			}
+		}()
+
+		if err != nil {
+			return errors.Wrapf(err, "Error happened while trying to open BadWordsReport.json file:"+resultDir+"GlobalPagesTFIDF.json.gz")
+		}
+		badwordsReader, err := gzip.NewReader(badwordsReport)
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to create gzip reader for BadWordsReport.json.gz")
+		}
+		lineReader := bufio.NewReader(badwordsReader)
+
+		i := 0
+
+		for {
+			line, err := lineReader.ReadString('\n')
+
+			if err != nil {
+				break
+			}
+			if line == "}" {
+				break
+			}
+
+			var topic map[uint32]map[string]uint32
+
+			if line[:1] != "{" {
+				line = "{" + line
+			}
+
+			line = line[:len(line)-2] + "}"
+			err = json.Unmarshal([]byte(line), &topic)
+			if err != nil {
+				return errors.Wrapf(err, "error while unmarshalling json")
+			}
+
+			toIgnore := false
+			newTopic := make(map[uint32]structures.TopicBadWords)
+			for p := range topic {
+				badwordInPage := make(map[string]uint32)
+				var totalBadW uint32
+				for word := range topic[p] {
+					if _, isBadword := badWordsMap[word]; isBadword {
+						totalBadW++
+						if _, ok := badwordInPage[word]; ok {
+							badwordInPage[word]++
+						} else {
+							badwordInPage[word] = 1
+						}
+					}
+				}
+
+				if len(badwordInPage) > 0 {
+					newTopic[p] = structures.TopicBadWords{TotBadw: totalBadW, BadW: badwordInPage}
+				} else {
+					toIgnore = true // no badwords in this page
+				}
+
+			}
+
+			if !toIgnore {
+				if i == 0 {
+					marshalledPage, _ := json.Marshal(newTopic)
+					topicAsString := string(marshalledPage)
+					topicAsString = topicAsString[:len(topicAsString)-1] + ",\n"
+					_, err = encWriter.Write([]byte(topicAsString))
+				} else if i > 0 {
+					marshalledPage, _ := json.Marshal(newTopic)
+					topicAsString := string(marshalledPage)
+					topicAsString = topicAsString[1:len(topicAsString)-1] + ",\n"
+					_, err = encWriter.Write([]byte(topicAsString))
+				}
+				if err != nil {
+					return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"TopicBadWords.json.gz")
+				}
+				err = encWriter.Flush()
+				if err != nil {
+					return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"TopicBadWords.json.gz")
+				}
+			}
+			i++
+
+		}
+
+		_, err = encWriter.Write([]byte("}"))
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"TopicBadWords.json.gz")
+		}
+		err = encWriter.Flush()
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"TopicBadWords.json.gz")
+		}
+	}
+	return nil
+}
