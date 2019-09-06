@@ -27,3 +27,11 @@ type TfidfTopNWordPage struct {
 	Tot     uint32
 	Words   *map[string]float64
 }
+
+// PageTopNWords represent a Wikipedia page words data with only the top N words
+type PageTopNWords struct {
+	TopicID    uint32
+	TotWords   uint32
+	Word2TFIDF map[string]float64
+	Word2Occur map[string]uint32
+}
