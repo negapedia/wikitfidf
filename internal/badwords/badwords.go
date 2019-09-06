@@ -230,7 +230,7 @@ func TopicBadWords(lang, resultDir string) (err error) {
 				break
 			}
 
-			var topic map[uint32]map[string]uint32
+			var topic map[uint32]structures.BadWordsReport
 
 			if line[:1] != "{" {
 				line = "{" + line
@@ -247,7 +247,7 @@ func TopicBadWords(lang, resultDir string) (err error) {
 			for p := range topic {
 				badwordInPage := make(map[string]uint32)
 				var totalBadW uint32
-				for word := range topic[p] {
+				for word := range topic[p].BadW {
 					if _, isBadword := badWordsMap[word]; isBadword {
 						totalBadW++
 						if _, ok := badwordInPage[word]; ok {
