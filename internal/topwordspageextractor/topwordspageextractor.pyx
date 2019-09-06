@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-#cython: language_level=3
+# cython: language_level=3
 # -*- coding: utf-8 -*-
 
-#IF YOU MODIFY THIS FILE, YOU NEED TO RUN "go generate" IN "assets" FOR CHANGES TO TAKE EFFECT.
+# IF YOU MODIFY THIS FILE, YOU NEED TO RUN "go generate" IN "assets" FOR CHANGES TO TAKE EFFECT.
 
 import gzip
 import json
@@ -21,30 +21,40 @@ def _top_n_getter(words_dict: dict, n: int):
 
 
 def _get_top_n_words_pages_dict(page_dict: dict, n: int):
-    words_dict = {}
+    words_dict_TFIDF = {}
+    words_dict_Occur = {}
     for page in page_dict:
         for word in page_dict[page]["Words"]:
-            words_dict[word] = page_dict[page]["Words"][word]["tfidf"]
+            words_dict_TFIDF[word] = page_dict[page]["Words"][word]["tfidf"]
+            words_dict_Occur[word] = page_dict[page]["Words"][word]["abs"]
 
         top_n_page = {}
-        if len(words_dict) > n:
+        if len(words_dict_TFIDF) > n:
             top_n_page[page] = {"TopicID": page_dict[page]["TopicID"], "Tot": page_dict[page]["Tot"],
-                                "Words": _top_n_getter(words_dict, n)}
+                                "Word2TFIDF": _top_n_getter(words_dict_TFIDF, n),
+                                "Word2Occur": _top_n_getter(words_dict_Occur, n)}
         else:
             top_n_page[page] = {"TopicID": page_dict[page]["TopicID"], "Tot": page_dict[page]["Tot"],
-                                "Words": words_dict}
+                                "Word2TFIDF": words_dict_TFIDF, "Word2Occur": words_dict_Occur}
 
         return top_n_page
 
 
 def _get_global_words(global_dict: dict):
-    new_global_dict = {}
+    new_global_dict = {"@TOTAL Words": global_dict["Total Word"]}
     for word in global_dict:
         if word == "@Total Word" or word == "@Total Page":
             continue
         new_global_dict[word] = global_dict[word]["a"]
 
     return new_global_dict
+
+
+def _words_counter(words_dic: dict):
+    counter = 0
+    for word in words_dic:
+        counter += words_dic[word]
+    return counter
 
 
 def top_n_words_page_extractor(result_dir: str, n, delete: bool):
@@ -111,7 +121,7 @@ def top_n_global_words_extractor(result_dir: str, n, delete: bool):
     global_words_dict = json.load(open(join(result_dir, "GlobalWords.json"), "r"))
 
     global_words_dict = _get_global_words(global_words_dict)
-    global_word_top_n.write(json.dumps(_top_n_getter(global_words_dict, int(n))).encode())
+    global_word_top_n.write(json.dumps(_top_n_getter(global_words_dict, int(n) + 1)).encode())
     global_word_top_n.flush()
     global_word_top_n.close()
 
@@ -149,7 +159,9 @@ def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
         topic_dict = json.loads(line)
 
         for topic in topic_dict:
-            top_words = {topic: _top_n_getter(topic_dict[topic], n)}
+            top_n_words = _top_n_getter(topic_dict[topic], n)
+            top_n_words["@TOT"] = _words_counter(topic_dict[topic])
+            top_words = {top_n_words}
 
         if counter == 0:
             page_json = json.dumps(top_words)
@@ -170,10 +182,47 @@ def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
     if delete:
         os.remove(join(result_dir, "GlobalTopicsWords.json"))
 
+
+def top_n_global_badwords_extractor(result_dir: str, n):
+    badw = gzip.open(join(result_dir, "BadWordsReport.json.gz"), "r")
+    badw_iter = iter(badw.readline, "")
+
+    global_badwords_dict = {}
+    tot = 0
+    for line in badw_iter:
+        line = line.decode()
+        if line == "}":
+            break
+
+        if line[:1] != "{":
+            line = "{" + line
+
+        line = line[:len(line) - 2] + "}"
+
+        page_dict = json.loads(line)
+        badw_dict = {}
+        for page in page_dict:
+            for word in page_dict[page]["BadW"]:
+                tot += page_dict[page]["BadW"][word]
+                if word in global_badwords_dict.keys():
+                    global_badwords_dict[word] += page_dict[page]["BadW"][word]
+                else:
+                    global_badwords_dict[word] = page_dict[page]["BadW"][word]
+
+    global_badwords_dict["@TOTAL Words"] = tot
+    global_badword_top_n = gzip.GzipFile(filename=join(result_dir, "GlobalBadWords_topN.json.gz"), mode="w",
+                                         compresslevel=9)
+    global_badword_top_n.write(json.dumps(_top_n_getter(global_badwords_dict, int(n)+1)).encode())
+    global_badword_top_n.flush()
+    global_badword_top_n.close()
+
+
 def main():
     top_n_words_page_extractor(sys.argv[1], sys.argv[2], True)
     top_n_global_words_extractor(sys.argv[1], sys.argv[3], True)
     top_n_topic_words_extractor(sys.argv[1], sys.argv[4], True)
+    top_n_global_badwords_extractor(sys.argv[1], sys.argv[3])
+
 
 if __name__ == "__main__":
     main()
