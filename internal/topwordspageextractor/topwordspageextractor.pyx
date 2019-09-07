@@ -199,7 +199,6 @@ def top_n_global_badwords_extractor(result_dir: str, n):
         line = line[:len(line) - 2] + "}"
 
         page_dict = json.loads(line)
-        badw_dict = {}
         for page in page_dict:
             for word in page_dict[page]["BadW"]:
                 tot += page_dict[page]["BadW"][word]
@@ -248,11 +247,15 @@ def top_n_topic_badwords_extractor(result_dir: str, n):
 
 
 def main():
-    top_n_words_page_extractor(sys.argv[1], sys.argv[2], True)
-    top_n_global_words_extractor(sys.argv[1], sys.argv[3], True)
-    top_n_global_badwords_extractor(sys.argv[1], sys.argv[3])  # like globalWords
-    top_n_topic_badwords_extractor(sys.argv[1], sys.argv[4])  # like topic
-    top_n_topic_words_extractor(sys.argv[1], sys.argv[4], True)
+    try:
+        top_n_words_page_extractor(sys.argv[1], sys.argv[2], True)
+        top_n_global_words_extractor(sys.argv[1], sys.argv[3], True)
+        top_n_global_badwords_extractor(sys.argv[1], sys.argv[3])  # like globalWords
+        top_n_topic_badwords_extractor(sys.argv[1], sys.argv[4])  # like topic
+        top_n_topic_words_extractor(sys.argv[1], sys.argv[4], True)
+    except Exception as e:
+        with open("LOG.TXT", "w") as log:
+            log.write(str(e))
 
 
 if __name__ == "__main__":
