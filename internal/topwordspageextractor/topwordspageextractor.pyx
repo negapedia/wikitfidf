@@ -261,9 +261,10 @@ def top_n_topic_badwords_extractor(result_dir: str, n):
 def main():
     top_n_words_page_extractor(sys.argv[1], sys.argv[2], True)
     top_n_global_words_extractor(sys.argv[1], sys.argv[3], True)
-    top_n_topic_words_extractor(sys.argv[1], sys.argv[4], True)
     top_n_global_badwords_extractor(sys.argv[1], sys.argv[3])  # like globalWords
     top_n_topic_badwords_extractor(sys.argv[1], sys.argv[4])  # like topic
+    top_n_topic_words_extractor(sys.argv[1], sys.argv[4], True)
+
 
 
 if __name__ == "__main__":
