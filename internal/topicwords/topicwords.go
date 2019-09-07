@@ -111,7 +111,9 @@ func mapWordsInFile(file string) (*map[string]uint32, error) {
 
 	wordMap := make(map[string]uint32)
 
+	var tot uint32
 	for _, word := range strings.Split(string(fileReader), "\n") {
+		tot += wordMap[word]
 		if _, ok := wordMap[word]; !ok {
 			wordMap[word] = 1
 		} else {
@@ -119,6 +121,7 @@ func mapWordsInFile(file string) (*map[string]uint32, error) {
 		}
 	}
 
+	wordMap["@TOT"] = tot
 	return &wordMap, nil
 }
 

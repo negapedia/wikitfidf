@@ -116,7 +116,7 @@ func (wt builder) Process(ctx context.Context, fail func(error) error) (wtOut bu
 		return wt
 	}
 
-	fmt.Fprintln(wt.Logger, "WikiMarkup and Stopwords cleaning;")
+	fmt.Fprintln(wt.Logger, "WikiMarkup and Stopwords cleaning")
 	start := time.Now()
 	err := assets.Run(ctx, "textnormalizer", ".", map[string]string{"RESULTDIR": wt.ResultDir, "LANG": wt.Lang})
 	if err != nil {
@@ -199,6 +199,15 @@ func (wt builder) Process(ctx context.Context, fail func(error) error) (wtOut bu
 	fmt.Fprintln(wt.Logger, "Processing Badwords report")
 	start = time.Now()
 	err = badwords.BadWords(wt.Lang, wt.ResultDir)
+	if err != nil {
+		fail(err)
+		return wt
+	}
+	fmt.Fprintln(wt.Logger, "Done in", time.Now().Sub(start))
+
+	fmt.Fprintln(wt.Logger, "Processing Badwords Topic report")
+	start = time.Now()
+	err = badwords.TopicBadWords(wt.Lang, wt.ResultDir)
 	if err != nil {
 		fail(err)
 		return wt
