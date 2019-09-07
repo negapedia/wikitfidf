@@ -210,7 +210,7 @@ func TopicBadWords(lang, resultDir string) (err error) {
 		}()
 
 		if err != nil {
-			return errors.Wrapf(err, "Error happened while trying to open BadWordsReport.json file:"+resultDir+"GlobalPagesTFIDF.json.gz")
+			return errors.Wrapf(err, "Error happened while trying to open GlobalTopicsWords.json file:"+resultDir+"GlobalTopicsWords.json")
 		}
 		topicReader := bufio.NewReader(globalTopic)
 
@@ -226,13 +226,15 @@ func TopicBadWords(lang, resultDir string) (err error) {
 				break
 			}
 
-			var topic map[uint32]map[string]uint32
-
 			if line[:1] != "{" {
 				line = "{" + line
 			}
 
 			line = line[:len(line)-2] + "}"
+
+			var topic map[uint32]map[string]uint32
+
+			println(line[:15])
 			err = json.Unmarshal([]byte(line), &topic)
 			if err != nil {
 				return errors.Wrapf(err, "error while unmarshalling json")
@@ -241,21 +243,21 @@ func TopicBadWords(lang, resultDir string) (err error) {
 			toIgnore := false
 			newTopic := make(map[uint32]structures.TopicBadWords)
 			for p := range topic {
-				badwordInPage := make(map[string]uint32)
+				badwordInTopic := make(map[string]uint32)
 				var totalBadW uint32
 				for word := range topic[p] {
 					if _, isBadword := badWordsMap[word]; isBadword {
 						totalBadW++
-						if _, ok := badwordInPage[word]; ok {
-							badwordInPage[word]++
+						if _, ok := badwordInTopic[word]; ok {
+							badwordInTopic[word]++
 						} else {
-							badwordInPage[word] = 1
+							badwordInTopic[word] = 1
 						}
 					}
 				}
 
-				if len(badwordInPage) > 0 {
-					newTopic[p] = structures.TopicBadWords{TotBadw: totalBadW, BadW: badwordInPage}
+				if len(badwordInTopic) > 0 {
+					newTopic[p] = structures.TopicBadWords{TotBadw: totalBadW, BadW: badwordInTopic}
 				} else {
 					toIgnore = true // no badwords in this page
 				}
