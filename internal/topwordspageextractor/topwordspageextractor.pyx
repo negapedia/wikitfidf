@@ -161,14 +161,13 @@ def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
         for topic in topic_dict:
             top_n_words = _top_n_getter(topic_dict[topic], n)
             top_n_words["@TOT"] = _words_counter(topic_dict[topic])
-            top_words = {top_n_words}
 
         if counter == 0:
-            page_json = json.dumps(top_words)
+            page_json = json.dumps(top_n_words)
             page_json = page_json[:len(page_json) - 1] + ",\n"
             global_word_top_n.write(page_json.encode())
         elif counter >= 0:
-            page_json = json.dumps(top_words)
+            page_json = json.dumps(top_n_words)
             page_json = page_json[1:len(page_json) - 1] + ",\n"
             global_word_top_n.write(page_json.encode())
         global_word_top_n.flush()
