@@ -224,7 +224,7 @@ def top_n_topic_badwords_extractor(result_dir: str, n):
     global_badword_top_n = gzip.GzipFile(filename=join(result_dir, "TopicBadWords_topN.json.gz"), mode="w",
                                          compresslevel=9)
 
-    counter = 0
+    top_n_dict = {}
     for line in badw_iter:
         line = line.decode()
         if line == "}":
@@ -239,20 +239,9 @@ def top_n_topic_badwords_extractor(result_dir: str, n):
         for topic in topic_dict:
             badw_dict = topic_dict[topic]["BadW"]
             tot = topic_dict[topic]["TotBadw"]
+            top_n_dict[topic] = {"TotBadw": tot, "Badwords": _top_n_getter(badw_dict, int(n))}
 
-            top_n_dict = {topic: {"TotBadw": tot, "Badwords": _top_n_getter(badw_dict, int(n))}}
-            if counter == 0:
-                topic_json = json.dumps(top_n_dict)
-                topic_json = topic_json[:len(topic_json) - 1] + ",\n"
-                global_badword_top_n.write(topic_json.encode())
-            elif counter >= 0:
-                topic_json = json.dumps(top_n_dict)
-                topic_json = topic_json[1:len(topic_json) - 1] + ",\n"
-                global_badword_top_n.write(topic_json.encode())
-            global_badword_top_n.flush()
-            counter += 1
-
-    global_badword_top_n.write("}".encode())
+    global_badword_top_n.write(json.dumps(top_n_dict).encode())
     global_badword_top_n.flush()
     global_badword_top_n.close()
     badw.close()

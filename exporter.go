@@ -367,38 +367,25 @@ func (exporter Exporter) TopicBadwords(ctx context.Context, fail func(error) err
 		defer badWords.Close()
 		defer globalPageReader.Close()
 
-		for {
-			line, err := lineReader.ReadString('\n')
-			if err != nil {
-				fail(errors.Wrapf(err, "Error while reading line in %v", topicBadWordsName))
+		byteValue, err := ioutil.ReadAll(lineReader)
+		if err != nil {
+			fail(errors.Wrapf(err, "Error happened while trying to read gzip %v", topicBadWordsName))
+			close(ch)
+			return
+		}
+
+		var topics map[uint32]structures.TopicBadWords
+
+		if err = json.Unmarshal(byteValue, &topics); err != nil {
+			fail(errors.Wrapf(err, "Error while unmarshalling json in %v", topicBadWordsName))
+			return
+		}
+
+		for id := range topics {
+			select {
+			case <-ctx.Done():
 				return
-			}
-			if err != nil {
-				break
-			}
-			if line == "}" {
-				break
-			}
-
-			var topic map[uint32]structures.TopicBadWords
-
-			if line[:1] != "{" {
-				line = "{" + line
-			}
-
-			line = line[:len(line)-2] + "}"
-
-			if err = json.Unmarshal([]byte(line), &topic); err != nil {
-				fail(errors.Wrapf(err, "Error while unmarshalling json in %v", topicBadWordsName))
-				return
-			}
-
-			for id := range topic {
-				select {
-				case <-ctx.Done():
-					return
-				case ch <- TopicBadWords{TopicID: id, TotBadWords: topic[id].TotBadw, Badwords: topic[id].BadW}:
-				}
+			case ch <- TopicBadWords{TopicID: id, TotBadWords: topics[id].TotBadw, Badwords: topics[id].BadW}:
 			}
 		}
 
