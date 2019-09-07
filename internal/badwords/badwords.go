@@ -296,6 +296,10 @@ func TopicBadWords(lang, resultDir string) (err error) {
 		if err != nil {
 			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"TopicBadWords.json.gz")
 		}
+		err = encWriter.Close()
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to close writer of:"+resultDir+"TopicBadWords.json.gz")
+		}
 	}
 	return nil
 }
