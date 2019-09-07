@@ -99,18 +99,18 @@ func (exporter Exporter) GlobalWords() (word2Occurencies map[string]uint32, err 
 	return globalWord, nil
 }
 
-// PageTFIF represents a single page with its data: ID, TopicID, Total number of words,
+// PageTFIDF represents a single page with its data: ID, TopicID, Total number of words,
 // dictionary with the top N words in the following format: "word": tfidf_value
-type PageTFIF struct {
+type PageTFIDF struct {
 	ID      uint32
 	TopicID uint32
 	Tot     uint32
 	Words   map[string]float64
 }
 
-// Pages returns a channel with the data of PageTFIF (top N words per page), pages sent in channel are ascending order.
-func (exporter Exporter) Pages(ctx context.Context, fail func(error) error) chan PageTFIF {
-	ch := make(chan PageTFIF)
+// Pages returns a channel with the data of PageTFIDF (top N words per page), pages sent in channel are ascending order.
+func (exporter Exporter) Pages(ctx context.Context, fail func(error) error) chan PageTFIDF {
+	ch := make(chan PageTFIDF)
 
 	globalPage, err := os.Open(filepath.Join(exporter.ResultDir, globalPagesTFIDFName))
 	if err != nil {
@@ -158,7 +158,7 @@ func (exporter Exporter) Pages(ctx context.Context, fail func(error) error) chan
 				select {
 				case <-ctx.Done():
 					return
-				case ch <- PageTFIF{ID: id, TopicID: page[id].TopicID, Tot: page[id].Tot, Words: *page[id].Words}:
+				case ch <- PageTFIDF{ID: id, TopicID: page[id].TopicID, Tot: page[id].Tot, Words: *page[id].Words}:
 				}
 			}
 		}

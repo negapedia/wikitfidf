@@ -122,7 +122,7 @@ func BadWords(lang, resultDir string) (err error) {
 			toIgnore := false
 			newPage := make(map[uint32]structures.BadWordsReport)
 			for p := range page {
-				badwordInPage := make(map[string]int)
+				badwordInPage := make(map[string]uint32)
 				var totalBadW uint32
 				for word := range *page[p].Words {
 					if _, isBadword := badWordsMap[word]; isBadword {
