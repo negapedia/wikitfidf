@@ -244,7 +244,7 @@ type BadWordsPage struct {
 	TopicID uint32
 	Abs     uint32
 	Rel     float64
-	BadW    map[string]int
+	BadW    map[string]uint32
 }
 
 // BadwordsReport returns a channel with the data of BadWords Report
