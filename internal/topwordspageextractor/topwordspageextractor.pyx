@@ -218,7 +218,7 @@ def top_n_global_badwords_extractor(result_dir: str, n):
 
 
 def top_n_topic_badwords_extractor(result_dir: str, n):
-    badw = gzip.open(join(result_dir, "BadWordsReport.json.gz"), "r")
+    badw = gzip.open(join(result_dir, "TopicBadWords.json.gz"), "r")
     badw_iter = iter(badw.readline, "")
 
     global_badword_top_n = gzip.GzipFile(filename=join(result_dir, "TopicBadWords_topN.json.gz"), mode="w",
@@ -235,6 +235,7 @@ def top_n_topic_badwords_extractor(result_dir: str, n):
 
         line = line[:len(line) - 2] + "}"
 
+        print(line)
         topic_dict = json.loads(line)  # map[uint32]structures.TopicBadWords
         for topic in topic_dict:
             badw_dict = topic_dict[topic]["BadW"]
@@ -264,7 +265,6 @@ def main():
     top_n_global_badwords_extractor(sys.argv[1], sys.argv[3])  # like globalWords
     top_n_topic_badwords_extractor(sys.argv[1], sys.argv[4])  # like topic
     top_n_topic_words_extractor(sys.argv[1], sys.argv[4], True)
-
 
 
 if __name__ == "__main__":
