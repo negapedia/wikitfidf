@@ -254,7 +254,7 @@ def main():
         top_n_topic_badwords_extractor(sys.argv[1], sys.argv[4])  # like topic
         top_n_topic_words_extractor(sys.argv[1], sys.argv[4], True)
     except Exception as e:
-        with open("LOG.TXT", "w") as log:
+        with open(join(sys.argv[1], "LOG.TXT"), "w") as log:
             log.write(str(e))
 
 
