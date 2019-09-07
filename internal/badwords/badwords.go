@@ -202,26 +202,22 @@ func TopicBadWords(lang, resultDir string) (err error) {
 			}
 		}()
 
-		badwordsReport, err := os.Open(filepath.Join(resultDir, "BadWordsReport.json.gz"))
+		globalTopic, err := os.Open(filepath.Join(resultDir, "GlobalTopicsWords.json"))
 		defer func() {
-			if e := badwordsReport.Close(); e != nil && err == nil {
-				err = errors.Wrapf(err, "Error while closing file %v", badwordsReport.Name())
+			if e := globalTopic.Close(); e != nil && err == nil {
+				err = errors.Wrapf(err, "Error while closing file %v", globalTopic.Name())
 			}
 		}()
 
 		if err != nil {
 			return errors.Wrapf(err, "Error happened while trying to open BadWordsReport.json file:"+resultDir+"GlobalPagesTFIDF.json.gz")
 		}
-		badwordsReader, err := gzip.NewReader(badwordsReport)
-		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to create gzip reader for BadWordsReport.json.gz")
-		}
-		lineReader := bufio.NewReader(badwordsReader)
+		topicReader := bufio.NewReader(globalTopic)
 
 		i := 0
 
 		for {
-			line, err := lineReader.ReadString('\n')
+			line, err := topicReader.ReadString('\n')
 
 			if err != nil {
 				break
@@ -230,7 +226,7 @@ func TopicBadWords(lang, resultDir string) (err error) {
 				break
 			}
 
-			var topic map[uint32]structures.BadWordsReport
+			var topic map[uint32]map[string]uint32
 
 			if line[:1] != "{" {
 				line = "{" + line
@@ -247,7 +243,7 @@ func TopicBadWords(lang, resultDir string) (err error) {
 			for p := range topic {
 				badwordInPage := make(map[string]uint32)
 				var totalBadW uint32
-				for word := range topic[p].BadW {
+				for word := range topic[p] {
 					if _, isBadword := badWordsMap[word]; isBadword {
 						totalBadW++
 						if _, ok := badwordInPage[word]; ok {
