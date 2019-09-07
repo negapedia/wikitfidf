@@ -72,11 +72,11 @@ func BadWords(lang, resultDir string) (err error) {
 
 		outFile, err := os.Create(filepath.Join(resultDir, "BadWordsReport.json.gz"))
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to create :"+resultDir+"BadWordsReport.json")
+			return errors.Wrapf(err, "Failed while trying to create :"+resultDir+"BadWordsReport.json.gz")
 		}
 		encWriter, err := gzip.NewWriterLevel(outFile, gzip.BestCompression)
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to create gzip writer for BadWordsReport.json")
+			return errors.Wrapf(err, "Failed while trying to create gzip writer for BadWordsReport.json.gz")
 		}
 		defer func() {
 			if e := outFile.Close(); e != nil && err == nil {
@@ -156,11 +156,11 @@ func BadWords(lang, resultDir string) (err error) {
 					_, err = encWriter.Write([]byte(pageAsString))
 				}
 				if err != nil {
-					return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"BadWordsReport.json")
+					return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"BadWordsReport.json.gz")
 				}
 				err = encWriter.Flush()
 				if err != nil {
-					return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"BadWordsReport.json")
+					return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"BadWordsReport.json.gz")
 				}
 			}
 			i++
@@ -169,11 +169,15 @@ func BadWords(lang, resultDir string) (err error) {
 
 		_, err = encWriter.Write([]byte("}"))
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"BadWordsReport.json")
+			return errors.Wrapf(err, "Failed while trying to write line in :"+resultDir+"BadWordsReport.json.gz")
 		}
 		err = encWriter.Flush()
 		if err != nil {
-			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"BadWordsReport.json")
+			return errors.Wrapf(err, "Failed while trying to flush:"+resultDir+"BadWordsReport.json.gz")
+		}
+		err = encWriter.Close()
+		if err != nil {
+			return errors.Wrapf(err, "Failed while trying to close writer of:"+resultDir+"BadWordsReport.json.gz")
 		}
 	}
 	return nil
