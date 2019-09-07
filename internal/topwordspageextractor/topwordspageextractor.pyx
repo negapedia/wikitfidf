@@ -235,7 +235,6 @@ def top_n_topic_badwords_extractor(result_dir: str, n):
 
         line = line[:len(line) - 2] + "}"
 
-        print(line)
         topic_dict = json.loads(line)  # map[uint32]structures.TopicBadWords
         for topic in topic_dict:
             badw_dict = topic_dict[topic]["BadW"]
