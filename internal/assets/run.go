@@ -51,14 +51,13 @@ func Run(ctx context.Context, program, workdir string, args map[string]string) (
 
 	var cmdStderr bytes.Buffer
 	cmd.Stderr = &cmdStderr
-	cmd.Stdout = &cmdStderr
 	cmd.Dir, err = filepath.Abs(filepath.Join(tmpDir, program))
 	if err != nil {
 		return errors.Wrapf(err, "Unable to convert to absolute path %s", tmpDir)
 	}
 
 	if err = cmd.Run(); err != nil {
-		return errors.Wrapf(err, "Call to %v command failed, with the following error stream:\n %v", program, cmdStderr.String())
+		return errors.Wrap(err, "Call to external command failed, with the following error stream:\n"+cmdStderr.String())
 	}
 
 	return
