@@ -116,7 +116,7 @@ func (wt builder) Process(ctx context.Context, fail func(error) error) (wtOut bu
 		return wt
 	}
 
-	fmt.Fprintln(wt.Logger, "WikiMarkup and Stopwords cleaning;")
+	fmt.Fprintln(wt.Logger, "WikiMarkup and Stopwords cleaning")
 	start := time.Now()
 	err := assets.Run(ctx, "textnormalizer", ".", map[string]string{"RESULTDIR": wt.ResultDir, "LANG": wt.Lang})
 	if err != nil {

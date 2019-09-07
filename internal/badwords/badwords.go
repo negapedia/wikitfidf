@@ -238,7 +238,6 @@ func TopicBadWords(lang, resultDir string) (err error) {
 
 			var topic map[uint32]map[string]uint32
 
-			println(line[:15])
 			err = json.Unmarshal([]byte(line), &topic)
 			if err != nil {
 				return errors.Wrapf(err, "error while unmarshalling json")
