@@ -22,12 +22,16 @@ The data produced in output can be used to clarify the theme of the contrast ins
 `irish`, `japanese`, `korean`, `latvian`, `lithuanian`, 
 `marathi`, `persian`, `polish`, `slovak`, `thai`, `ukrainian`, 
 `urdu`, `simple-english`
+<br>
+This kind of data come from [Negapedia/nltk](https://github.com/negapedia/nltk)
 
 ##### Badwords handled languages
 `english`, `arabic`, `danish`, `dutch`, `finnish`, `french`, 
 `german`, `hungarian`, `italian`, `norwegian`, `portuguese`, 
 `spanish`, `swedish`, `chinese`, `czech`, `hindi`, `japanese`, 
 `korean`, `persian`, `polish`, `thai`, `simple-english`
+<br>
+This kind of data come from [Negapedia/badwords](https://github.com/negapedia/badwords)
 
 #### Outuput files
 - `GlobalPagesTFIDF.json`: contains for every page the list of words associated with their absolute frequency and tf-idf value;
@@ -53,7 +57,7 @@ from the root of repository directory.
 #### Running docker image
 ``docker run -d -v <path_on_fs_where_to_save_results>:<container_results_path> <image_name>``<br>
 example:<br>
-``docker run -d -v ~/Documents/Results/:/Results/ my_image ``<br>
+``docker run -d -v /path/2/out/dir:/data my_image ``<br>
 
 #### Executions flags
 - `-lang`: wiki language;
@@ -66,11 +70,13 @@ example:<br>
 - `-topWords`: number of top words of global words to consider;
 - `-topTopic`: number of top words per topic to consider;
 - `-delete`: if true, after compressing results directory will be deleted (default: true);
-- `-verbose`: if true, logs are shown (default: true).
-<br>
-example:<br>
-``docker run -v /path/2/out/dir:/data wikitfidf dothething -lang it``<br>
+- `-test`: if true, logs are shown and is processed a single dump.
+
+<br>example:<br>
+``docker run -v /path/2/out/dir:/data wikitfidf dothething -lang it``
 
 #### Installation
 Go packages can be installed by:<br>
 ``go get github.com/negapedia/wikitfidf``
+<br> and docker image can be downloaded by:<br>
+``docker pull negapedia/wikitfidf``
