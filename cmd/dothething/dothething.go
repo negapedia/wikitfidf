@@ -20,7 +20,7 @@ func main() {
 	nTopWordsPages := flag.Int("topPages", 0, "Number of top words per page to process")
 	nTopWordsGlobal := flag.Int("topWords", 0, "Number of top global words to process")
 	nTopWordsTopic := flag.Int("topTopic", 0, "Number of top topic words to process")
-	verboseMode := flag.Bool("verbose", true, "If true verbouse mode on")
+	testMode := flag.Bool("verbose", true, "If true verbouse mode on")
 	flag.Parse()
 
 	if *langFlag == "" {
@@ -28,7 +28,7 @@ func main() {
 	}
 
 	ctx, fail := ctxutils.WithFail(context.Background())
-	pageChannel := wikibrief.New(ctx, fail, *dirFlag, *langFlag, false)
+	pageChannel := wikibrief.New(ctx, fail, *dirFlag, *langFlag, *testMode)
 
 	pageChannel = Filter(ctx, fail, pageChannel, *startDateFlag, *endDateFlag, *specialPageListFlag)
 
@@ -37,7 +37,7 @@ func main() {
 		limits = wikitfidf.ReasonableLimits()
 	}
 
-	wd, err := wikitfidf.New(context.Background(), *langFlag, pageChannel, *dirFlag, limits, *verboseMode)
+	wd, err := wikitfidf.New(context.Background(), *langFlag, pageChannel, *dirFlag, limits, *testMode)
 	if err != nil {
 		fail(err)
 	}

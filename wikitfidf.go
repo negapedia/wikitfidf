@@ -25,10 +25,10 @@ import (
 )
 
 // New ingests, processes and stores the desidered Wikipedia dump from the channel.
-func New(ctx context.Context, lang string, in <-chan wikibrief.EvolvingPage, resultDir string, limits Limits, verboseMode bool) (exporter Exporter, err error) {
+func New(ctx context.Context, lang string, in <-chan wikibrief.EvolvingPage, resultDir string, limits Limits, testMode bool) (exporter Exporter, err error) {
 	ctx, fail := ctxutils.WithFail(ctx)
 
-	wb := newBuilder(fail, lang, resultDir, limits, verboseMode).Preprocess(ctx, fail, in).Process(ctx, fail)
+	wb := newBuilder(fail, lang, resultDir, limits, testMode).Preprocess(ctx, fail, in).Process(ctx, fail)
 
 	if err = fail(nil); err == nil {
 		exporter = Exporter{wb.ResultDir, wb.Lang}
@@ -56,7 +56,7 @@ func ReasonableLimits() Limits {
 	}
 }
 
-func newBuilder(fail func(error) error, lang string, resultDir string, limits Limits, verboseMode bool) (w builder) {
+func newBuilder(fail func(error) error, lang string, resultDir string, limits Limits, testMode bool) (w builder) {
 	err := CheckAvailableLanguage(lang)
 	if err != nil {
 		fail(err)
@@ -79,7 +79,7 @@ func newBuilder(fail func(error) error, lang string, resultDir string, limits Li
 	}
 
 	logger := ioutil.Discard
-	if verboseMode {
+	if testMode {
 		logger = os.Stdout
 	}
 
