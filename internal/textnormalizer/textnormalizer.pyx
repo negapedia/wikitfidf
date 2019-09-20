@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-#cython: language_level=3
+# cython: language_level=3
 # -*- coding: utf-8 -*-
 
-#IF YOU MODIFY THIS FILE, YOU NEED TO RUN "go generate" IN "assets" FOR CHANGES TO TAKE EFFECT.
+# IF YOU MODIFY THIS FILE, YOU NEED TO RUN "go generate" IN "assets" FOR CHANGES TO TAKE EFFECT.
 
 import glob
 import json
@@ -64,8 +64,7 @@ def _lang_mapper(lang):
         "th": "thai",
         "uk": "ukrainian",
         "ur": "urdu",
-        "simple": "english",
-        "vec": "italian"  # only as test
+        "simple": "english"
     }
     return available_lang[lang]
 
@@ -130,8 +129,10 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     topic_id = dump_dict["TopicID"]
 
     os.remove(filename)
-    json.dump(dump_dict, open(join(result_dir, "S" + "0"*(10-len(str(page_id)))+str(page_id) + ".json"), "w"), ensure_ascii=False)
-    json.dump(reverse_stemming_dict, open(join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w"), ensure_ascii=False)
+    json.dump(dump_dict, open(join(result_dir, "S" + "0" * (10 - len(str(page_id))) + str(page_id) + ".json"), "w"),
+              ensure_ascii=False)
+    json.dump(reverse_stemming_dict, open(join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w"),
+              ensure_ascii=False)
 
 
 def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
@@ -150,8 +151,10 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
     executor.close()
     executor.join()
 
+
 def main():
     concurrent_stopwords_cleaner_stemmer(sys.argv[1], sys.argv[2])
+
 
 if __name__ == "__main__":
     main()
