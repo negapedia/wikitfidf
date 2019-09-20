@@ -20,7 +20,7 @@ func main() {
 	nTopWordsPages := flag.Int("topPages", 0, "Number of top words per page to process")
 	nTopWordsGlobal := flag.Int("topWords", 0, "Number of top global words to process")
 	nTopWordsTopic := flag.Int("topTopic", 0, "Number of top topic words to process")
-	testMode := flag.Bool("test", true, "If true verbouse mode on")
+	testMode := flag.Bool("test", true, "If true verbose mode on and will be processed only a single dump")
 	flag.Parse()
 
 	if *langFlag == "" {
