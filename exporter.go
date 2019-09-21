@@ -233,9 +233,7 @@ func (exporter Exporter) Topics(ctx context.Context, fail func(error) error) cha
 				line = "{" + line
 			}
 
-			println(line)
 			line = line[:len(line)-1] + "}"
-			println(line)
 
 			if err = json.Unmarshal([]byte(line), &topic); err != nil {
 				fail(errors.Wrapf(err, "Error while unmarshalling json in %v : %v", globalTopicsWordsName, line))
@@ -319,7 +317,6 @@ func (exporter Exporter) PageBadwords(ctx context.Context, fail func(error) erro
 			}
 
 			line = line[:len(line)-1] + "}"
-			println(line)
 
 			if err = json.Unmarshal([]byte(line), &page); err != nil {
 				fail(errors.Wrapf(err, "Error while unmarshalling json in %v", badWordsReportName))
