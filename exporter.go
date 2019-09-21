@@ -108,17 +108,11 @@ func (exporter Exporter) GlobalWords() (word2Occurencies *WikiWords, err error) 
 	return &WikiWords{TotalWords: totWords, Words2Occur: globalWord}, nil
 }
 
-// Page represents a single page with its data: ID, TotWords, Word2Occur
-type Page struct {
-	ID         uint32
-	TotWords   uint32
-	Word2Occur map[string]uint32
-}
-
 // PageTFIDF represents a single page with its data: ID, TopicID, Total number of words,
 // dictionary with the top N words in the following format: "word": tfidf_value
 type PageTFIDF struct {
-	Page
+	ID         uint32
+	TotWords   uint32
 	Word2TFIDF map[string]float64
 }
 
@@ -173,7 +167,7 @@ func (exporter Exporter) Pages(ctx context.Context, fail func(error) error) chan
 				select {
 				case <-ctx.Done():
 					return
-				case ch <- PageTFIDF{Page: Page{ID: id, TotWords: page[id].TotWords, Word2Occur: page[id].Word2Occur}, Word2TFIDF: page[id].Word2TFIDF}:
+				case ch <- PageTFIDF{ID: id, TotWords: page[id].TotWords, Word2TFIDF: page[id].Words}:
 				}
 			}
 		}
