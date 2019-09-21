@@ -79,27 +79,27 @@ type WikiWords struct {
 
 // GlobalWords returns a dictionary with the top N words of GlobalWord in the following format: "word": occurencies
 func (exporter Exporter) GlobalWords() (word2Occurencies *WikiWords, err error) {
-	file, err := os.Open(filepath.Join(exporter.ResultDir, globalTopicsWordsName))
+	file, err := os.Open(filepath.Join(exporter.ResultDir, globalWordsName))
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to opening %v", globalTopicsWordsName)
+		return nil, errors.Wrapf(err, "Error happened while trying to opening %v", globalWordsName)
 	}
 	defer file.Close()
 	fileReader, err := gzip.NewReader(file)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to create gzip reader for %v", globalTopicsWordsName)
+		return nil, errors.Wrapf(err, "Error happened while trying to create gzip reader for %v", globalWordsName)
 	}
 	defer fileReader.Close()
 
 	byteValue, err := ioutil.ReadAll(fileReader)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to read %v", globalTopicsWordsName)
+		return nil, errors.Wrapf(err, "Error happened while trying to read %v", globalWordsName)
 	}
 
 	var globalWord map[string]uint32
 
 	err = json.Unmarshal(byteValue, &globalWord)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to unmarshal %v", globalTopicsWordsName)
+		return nil, errors.Wrapf(err, "Error happened while trying to unmarshal %v", globalWordsName)
 	}
 
 	totWords := globalWord["@TOTAL Words"]
