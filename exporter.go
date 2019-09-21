@@ -25,6 +25,7 @@ const (
 	globalTopicsWordsName = "GlobalTopicsWords_topN.json.gz"
 	globalWordsName       = "GlobalWords_topN.json.gz"
 	badWordsReportName    = "BadWordsReport.json.gz"
+	globalBadWordsName    = "GlobalBadWords_topN.json.gz"
 )
 
 // From returns an exporter from existing data, it check if files that have to be exported exists.
@@ -67,12 +68,17 @@ func (exporter Exporter) Delete() (err error) {
 			err = currErr
 		}
 	}
-
 	return
 }
 
+// WikiWords represents the top N words in Wikipedia with the total number of words in it
+type WikiWords struct {
+	TotalWords  uint32
+	Words2Occur map[string]uint32
+}
+
 // GlobalWords returns a dictionary with the top N words of GlobalWord in the following format: "word": occurencies
-func (exporter Exporter) GlobalWords() (word2Occurencies map[string]uint32, err error) {
+func (exporter Exporter) GlobalWords() (word2Occurencies *WikiWords, err error) {
 	file, err := os.Open(filepath.Join(exporter.ResultDir, globalTopicsWordsName))
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error happened while trying to opening %v", globalTopicsWordsName)
@@ -96,16 +102,24 @@ func (exporter Exporter) GlobalWords() (word2Occurencies map[string]uint32, err 
 		return nil, errors.Wrapf(err, "Error happened while trying to unmarshal %v", globalTopicsWordsName)
 	}
 
-	return globalWord, nil
+	totWords := globalWord["@TOTAL Words"]
+	delete(globalWord, "@TOTAL Words")
+
+	return &WikiWords{TotalWords: totWords, Words2Occur: globalWord}, nil
+}
+
+// Page represents a single page with its data: ID, TotWords, Word2Occur
+type Page struct {
+	ID         uint32
+	TotWords   uint32
+	Word2Occur map[string]uint32
 }
 
 // PageTFIDF represents a single page with its data: ID, TopicID, Total number of words,
 // dictionary with the top N words in the following format: "word": tfidf_value
 type PageTFIDF struct {
-	ID      uint32
-	TopicID uint32
-	Tot     uint32
-	Words   map[string]float64
+	Page
+	Word2TFIDF map[string]float64
 }
 
 // Pages returns a channel with the data of PageTFIDF (top N words per page), pages sent in channel are ascending order.
@@ -133,7 +147,8 @@ func (exporter Exporter) Pages(ctx context.Context, fail func(error) error) chan
 		defer globalPageReader.Close()
 
 		for {
-			line, err := lineReader.ReadString('\n')
+			lineB, _, err := lineReader.ReadLine()
+			line := string(lineB)
 			if err != nil {
 				fail(errors.Wrapf(err, "Error while reading line in %v", globalPagesTFIDFName))
 				return
@@ -142,13 +157,13 @@ func (exporter Exporter) Pages(ctx context.Context, fail func(error) error) chan
 				break
 			}
 
-			var page map[uint32]structures.TfidfTopNWordPage
+			var page map[uint32]structures.PageTopNWords
 
 			if line[:1] != "{" {
 				line = "{" + line
 			}
 
-			line = line[:len(line)-2] + "}"
+			line = line[:len(line)-1] + "}"
 
 			if err = json.Unmarshal([]byte(line), &page); err != nil {
 				fail(errors.Wrapf(err, "Error while unmarshalling json in %v", globalPagesTFIDFName))
@@ -158,11 +173,10 @@ func (exporter Exporter) Pages(ctx context.Context, fail func(error) error) chan
 				select {
 				case <-ctx.Done():
 					return
-				case ch <- PageTFIDF{ID: id, TopicID: page[id].TopicID, Tot: page[id].Tot, Words: *page[id].Words}:
+				case ch <- PageTFIDF{Page: Page{ID: id, TotWords: page[id].TotWords, Word2Occur: page[id].Word2Occur}, Word2TFIDF: page[id].Word2TFIDF}:
 				}
 			}
 		}
-
 	}()
 	return ch
 }
@@ -170,8 +184,9 @@ func (exporter Exporter) Pages(ctx context.Context, fail func(error) error) chan
 // Topic represents a single topic with TopicID and the list of top N words in it in
 // the following format: "word": number_of_occurrence
 type Topic struct {
-	TopicID uint32
-	Words   map[string]uint32
+	TopicID  uint32
+	TotWords uint32
+	Words    map[string]uint32
 }
 
 // Topics returns a channel with the data of GlobalTopic (top N words per topic)
@@ -198,36 +213,42 @@ func (exporter Exporter) Topics(ctx context.Context, fail func(error) error) cha
 		defer globalPageReader.Close()
 
 		for {
-			line, err := lineReader.ReadString('\n')
+			lineB, _, err := lineReader.ReadLine() // .ReadString('\n')
+			line := string(lineB)
+			if line == "}" {
+				break
+			}
+
 			if err != nil {
-				fail(errors.Wrapf(err, "Error while reading line in %v", globalTopicsWordsName))
+				fail(errors.Wrapf(err, "Error while reading line in %v : %v", globalTopicsWordsName, line))
 				return
 			}
 			if err != nil {
 				break
 			}
-			if line == "}" {
-				break
-			}
 
-			var topic map[uint32]map[string]uint32
+			var topic map[uint32]map[string]uint32 //ID: {words: {w: y, w2: z..., @Tot: k}
 
 			if line[:1] != "{" {
 				line = "{" + line
 			}
 
-			line = line[:len(line)-2] + "}"
+			println(line)
+			line = line[:len(line)-1] + "}"
+			println(line)
 
 			if err = json.Unmarshal([]byte(line), &topic); err != nil {
-				fail(errors.Wrapf(err, "Error while unmarshalling json in %v", globalTopicsWordsName))
+				fail(errors.Wrapf(err, "Error while unmarshalling json in %v : %v", globalTopicsWordsName, line))
 				return
 			}
 
 			for topicID := range topic {
+				totalWords := topic[topicID]["@TOT"]
+				delete(topic[topicID], "@TOT")
 				select {
 				case <-ctx.Done():
 					return
-				case ch <- Topic{TopicID: topicID, Words: topic[topicID]}:
+				case ch <- Topic{TopicID: topicID, TotWords: totalWords, Words: topic[topicID]}:
 				}
 			}
 
@@ -240,16 +261,15 @@ func (exporter Exporter) Topics(ctx context.Context, fail func(error) error) cha
 // BadWordsPage represents a single page with badwords data: PageID, TopicID, Absolute number of badwords in page,
 // Relative number of badwords in page (tot/abs) and the list of the badwords in the following format: "badWord": number_of_occurrence
 type BadWordsPage struct {
-	PageID  uint32
-	TopicID uint32
-	Abs     uint32
-	Rel     float64
-	BadW    map[string]uint32
+	PageID uint32
+	Abs    uint32
+	Rel    float64
+	BadW   map[string]uint32
 }
 
-// BadwordsReport returns a channel with the data of BadWords Report
+// PageBadwords returns a channel with the data of BadWords Report
 // pages sent in channel are descending ordered
-func (exporter Exporter) BadwordsReport(ctx context.Context, fail func(error) error) chan BadWordsPage {
+func (exporter Exporter) PageBadwords(ctx context.Context, fail func(error) error) chan BadWordsPage {
 	ch := make(chan BadWordsPage)
 
 	if _, exists := badwords.AvailableLanguage(exporter.Lang); !exists {
@@ -278,7 +298,9 @@ func (exporter Exporter) BadwordsReport(ctx context.Context, fail func(error) er
 		defer globalPageReader.Close()
 
 		for {
-			line, err := lineReader.ReadString('\n')
+			lineB, _, err := lineReader.ReadLine()
+			line := string(lineB)
+
 			if err != nil {
 				fail(errors.Wrapf(err, "Error while reading line in %v", badWordsReportName))
 				return
@@ -296,7 +318,8 @@ func (exporter Exporter) BadwordsReport(ctx context.Context, fail func(error) er
 				line = "{" + line
 			}
 
-			line = line[:len(line)-2] + "}"
+			line = line[:len(line)-1] + "}"
+			println(line)
 
 			if err = json.Unmarshal([]byte(line), &page); err != nil {
 				fail(errors.Wrapf(err, "Error while unmarshalling json in %v", badWordsReportName))
@@ -307,12 +330,41 @@ func (exporter Exporter) BadwordsReport(ctx context.Context, fail func(error) er
 				select {
 				case <-ctx.Done():
 					return
-				case ch <- BadWordsPage{PageID: id, TopicID: page[id].TopicID,
-					Abs: page[id].Abs, Rel: page[id].Rel, BadW: page[id].BadW}:
+				case ch <- BadWordsPage{PageID: id, Abs: page[id].Abs, Rel: page[id].Rel, BadW: page[id].BadW}:
 				}
 			}
 		}
 
 	}()
 	return ch
+}
+
+func (exporter Exporter) GlobalBadwords(ctx context.Context, fail func(error) error) (*WikiWords, error) {
+	file, err := os.Open(filepath.Join(exporter.ResultDir, globalBadWordsName))
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error happened while trying to opening %v", globalBadWordsName)
+	}
+	defer file.Close()
+	fileReader, err := gzip.NewReader(file)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error happened while trying to create gzip reader for %v", globalBadWordsName)
+	}
+	defer fileReader.Close()
+
+	byteValue, err := ioutil.ReadAll(fileReader)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error happened while trying to read %v", globalBadWordsName)
+	}
+
+	var globalWord map[string]uint32
+
+	err = json.Unmarshal(byteValue, &globalWord)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Error happened while trying to unmarshal %v", globalBadWordsName)
+	}
+
+	totWords := globalWord["@TOTAL Words"]
+	delete(globalWord, "@TOTAL Words")
+
+	return &WikiWords{TotalWords: totWords, Words2Occur: globalWord}, nil
 }
