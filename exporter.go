@@ -25,7 +25,6 @@ const (
 	globalTopicsWordsName = "GlobalTopicsWords_topN.json.gz"
 	globalWordsName       = "GlobalWords_topN.json.gz"
 	badWordsReportName    = "BadWordsReport.json.gz"
-	globalBadWordsName    = "GlobalBadWords_topN.json.gz"
 )
 
 // From returns an exporter from existing data, it check if files that have to be exported exists.
@@ -328,34 +327,4 @@ func (exporter Exporter) PageBadwords(ctx context.Context, fail func(error) erro
 
 	}()
 	return ch
-}
-
-func (exporter Exporter) GlobalBadwords(ctx context.Context, fail func(error) error) (*WikiWords, error) {
-	file, err := os.Open(filepath.Join(exporter.ResultDir, globalBadWordsName))
-	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to opening %v", globalBadWordsName)
-	}
-	defer file.Close()
-	fileReader, err := gzip.NewReader(file)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to create gzip reader for %v", globalBadWordsName)
-	}
-	defer fileReader.Close()
-
-	byteValue, err := ioutil.ReadAll(fileReader)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to read %v", globalBadWordsName)
-	}
-
-	var globalWord map[string]uint32
-
-	err = json.Unmarshal(byteValue, &globalWord)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to unmarshal %v", globalBadWordsName)
-	}
-
-	totWords := globalWord["@TOTAL Words"]
-	delete(globalWord, "@TOTAL Words")
-
-	return &WikiWords{TotalWords: totWords, Words2Occur: globalWord}, nil
 }
