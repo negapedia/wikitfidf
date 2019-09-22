@@ -96,7 +96,8 @@ func BadWords(lang, resultDir string) (err error) {
 		i := 0
 
 		for {
-			line, err := globalPageReader.ReadString('\n')
+			lineB, _, err := globalPageReader.ReadLine()
+			line := string(lineB)
 
 			if err != nil {
 				break

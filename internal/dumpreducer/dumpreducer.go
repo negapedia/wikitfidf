@@ -83,7 +83,7 @@ func writePage(page wikibrief.EvolvingPage, revArray []structures.Revision, resu
 		return
 	}
 
-	filename := filepath.Join(resultDir, strings.Repeat("0", 10-len(fmt.Sprint(page.PageID)))+fmt.Sprint(page.PageID)+".json")
+	filename := filepath.Join(resultDir, strings.Repeat("0", 20-len(fmt.Sprint(page.PageID)))+fmt.Sprint(page.PageID)+".json")
 	data := structures.Page{PageID: page.PageID, TopicID: page.TopicID, Revision: revArray}
 	if err := utils.Write2JSON(filename, data); err != nil {
 		fail(err)
