@@ -137,7 +137,7 @@ func getJSONBytes(topicFile string, words *map[string]uint32) (*[]byte, error) {
 }
 
 func topicWordsMapper(resultDir string) (err error) {
-	topicFiles, err := utils.FilesInDir(resultDir, "T*")
+	topicFiles, err := utils.FilesInDirSorted(resultDir, "T*", "T", ".json")
 	if err != nil {
 		return err
 	}
