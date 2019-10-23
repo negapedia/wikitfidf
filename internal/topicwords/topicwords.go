@@ -28,7 +28,7 @@ type topicWriter struct {
 
 func writeWord(topicWriters map[uint32]*topicWriter, resultDir string, topicID uint32, word string) (err error) {
 	if _, ok := topicWriters[topicID]; !ok {
-		outFile, err := os.Create(filepath.Join(resultDir, "T"+strings.Repeat("0", 20-len(fmt.Sprint(topicID)))+fmt.Sprint(topicID)+".json"))
+		outFile, err := os.Create(filepath.Join(resultDir, "T"+fmt.Sprint(topicID)))
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -137,7 +137,7 @@ func getJSONBytes(topicFile string, words *map[string]uint32) (*[]byte, error) {
 }
 
 func topicWordsMapper(resultDir string) (err error) {
-	topicFiles, err := utils.FilesInDirSorted(resultDir, "T*", "T", ".json")
+	topicFiles, err := utils.FilesInDir(resultDir, "T*")
 	if err != nil {
 		return err
 	}
