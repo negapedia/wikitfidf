@@ -57,7 +57,10 @@ func sortUint32Slice(mySlice []uint32) {
 func buildFullSortedFileSlice(mySlice []uint32, dir, initialLetter, extension string) []string {
 	var pathSlice []string
 	for _, pageID := range mySlice {
-		pathSlice = append(pathSlice, filepath.Join(dir, initialLetter+fmt.Sprint(pageID)+extension))
+
+		pathSlice = append(pathSlice, filepath.Join(dir, initialLetter+
+			strings.Repeat("0", 20-len(fmt.Sprint(pageID)))+fmt.Sprint(pageID)+
+			extension))
 	}
 
 	return pathSlice
