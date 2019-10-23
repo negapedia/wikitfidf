@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -67,7 +68,8 @@ func ByPage(resultDir string) error {
 			continue
 		}
 
-		err = utils.Write2JSON(filepath.Join(resultDir, "M"+fmt.Sprint(page.PageID)+".json"), mappedPage)
+		err = utils.Write2JSON(filepath.Join(resultDir, "M"+
+			strings.Repeat("0", 20-len(fmt.Sprint(page.PageID)))+fmt.Sprint(page.PageID)+".json"), mappedPage)
 		if err != nil {
 			return err
 		}
