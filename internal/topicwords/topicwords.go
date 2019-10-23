@@ -28,7 +28,7 @@ type topicWriter struct {
 
 func writeWord(topicWriters map[uint32]*topicWriter, resultDir string, topicID uint32, word string) (err error) {
 	if _, ok := topicWriters[topicID]; !ok {
-		outFile, err := os.Create(filepath.Join(resultDir, fmt.Sprint("T", topicID)))
+		outFile, err := os.Create(filepath.Join(resultDir, "T"+strings.Repeat("0", 20-len(fmt.Sprint(topicID)))+fmt.Sprint(topicID)+".json"))
 		if err != nil {
 			return errors.WithStack(err)
 		}
