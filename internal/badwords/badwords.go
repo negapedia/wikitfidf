@@ -77,6 +77,12 @@ func BadWords(lang, resultDir string) (err error) {
 			return errors.Wrapf(err, "Failed while trying to create gzip writer for BadWordsReport.json")
 		}
 		defer func() {
+			if e := encWriter.Close(); e != nil && err == nil {
+				err = errors.Wrapf(err, "Error while closing gzip writer of %v", outFile.Name())
+			}
+		}()
+
+		defer func() {
 			if e := outFile.Close(); e != nil && err == nil {
 				err = errors.Wrapf(err, "Error while closing file %v", outFile.Name())
 			}
