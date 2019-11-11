@@ -1,0 +1,28 @@
+dist: trusty
+
+language: go
+
+# You don't need to test on very old versions of the Go compiler. It's the user's
+# responsibility to keep their compiler up to date.
+go:
+  - 1.12.x
+  
+cache:
+ directories:
+  - $HOME/.cache/go-build
+  - $HOME/gopath/pkg/mod
+
+# Don't email me the results of the test runs.
+notifications:
+  email: false
+  
+addons:
+  sonarcloud:
+    organization: "negapedia" # the key of the org you chose at step #3
+    token:
+      secure: "5bc4e215cd8c7f8dd81bfddd858fc41756abb379"
+    
+
+script:
+  - go test ./... -coverprofile=coverage.out # Run all the tests with the race detector enabled
+  - sonar-scanner
