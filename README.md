@@ -15,7 +15,7 @@ The data produced in output can be used to clarify the theme of the contrast ins
 #### Handled languages
 `english`, `arabic`, `danish`, `dutch`, `finnish`, `french`, 
 `german`, `greek`, `hungarian`, `indonesian`, `italian`, 
-`kazakh`, `nepali`, `norwegian`, `portuguese`, `romanian`, 
+`kazakh`, `nepali`, `portuguese`, `romanian`, 
 `russian`, `spanish`, `swedish`, `turkish`, `armenian`, 
 `azerbaijani`, `basque`, `bengali`, `bulgarian`, `catalan`, 
 `chinese`, `croatian`, `czech`, `galician`, `hebrew`, `hindi`, 
@@ -27,7 +27,7 @@ This kind of data come from [Negapedia/nltk](https://github.com/negapedia/nltk)
 
 ##### Badwords handled languages
 `english`, `arabic`, `danish`, `dutch`, `finnish`, `french`, 
-`german`, `hungarian`, `italian`, `norwegian`, `portuguese`, 
+`german`, `hungarian`, `italian`, `portuguese`, 
 `spanish`, `swedish`, `chinese`, `czech`, `hindi`, `japanese`, 
 `korean`, `persian`, `polish`, `thai`, `simple-english`
 <br>
