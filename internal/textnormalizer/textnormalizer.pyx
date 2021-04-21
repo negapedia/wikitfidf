@@ -8,14 +8,13 @@ import glob
 import json
 import os
 import sys
+from multiprocessing import Pool, cpu_count
 from os.path import join
 
-from multiprocessing import Pool, cpu_count
 
 from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
+from nltk.stem import SnowballStemmer, ISRIStemmer
 from nltk.tokenize import RegexpTokenizer
-
 
 def _lang_mapper(lang):
     # available language for stopwords list
@@ -68,7 +67,6 @@ def _lang_mapper(lang):
     }
     return available_lang[lang]
 
-
 def _stopwords_cleaner(revert_text, lang):
     stop_words = stopwords.words(_lang_mapper(lang))
     text = revert_text
@@ -77,20 +75,32 @@ def _stopwords_cleaner(revert_text, lang):
             revert_text = list(filter(word.__ne__, revert_text))
     return revert_text
 
-
 def _increment_word_counter(word_dict, word):
     if word in word_dict.keys():
         word_dict[word] += 1
     else:
         word_dict[word] = 1
 
+def _get_stemmer(lang: str):
+    if lang in ["en", "da", "nl", "fr", "de", "es", "hu", "it", "simple", "no", "pt", "ro", "ru", "sv"]:
+        # N.B. for portuguese (pt) is also available RSLPStemmer
+        return SnowballStemmer(_lang_mapper(lang))
+    elif lang == "ar":
+        return ISRIStemmer()
+    else:
+        # if here, there not exits a satisfiable stemmer for the language, so
+        # it is returned None, which means that the process of stemming must be skipped
+        return None
 
-def _stemming(revert_text, stemmer_reverse_dict):
-    ps = PorterStemmer()
+def _stemming(revert_text, stemmer_reverse_dict, lang) -> (str, dict):
+    stemmer = _get_stemmer(lang)
+    if stemmer is None:
+        return revert_text, {}
     text = []
 
     for word in revert_text:
-        stemmed_word = ps.stem(word)
+        stemmed_word = stemmer.stem(word)
+        print("%s --> %s" % (word, stemmed_word))
         if stemmed_word in stemmer_reverse_dict.keys() and len(word) < len(stemmer_reverse_dict[stemmed_word]):
             stemmer_reverse_dict[stemmed_word] = word
         elif stemmed_word not in stemmer_reverse_dict.keys():
@@ -98,7 +108,6 @@ def _stemming(revert_text, stemmer_reverse_dict):
 
         text.append(stemmed_word)
     return text, stemmer_reverse_dict
-
 
 def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     """
@@ -120,7 +129,7 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
         # length
         reverts["Text"] = _stopwords_cleaner(reverts["Text"], lang)
 
-        reverts["Text"], reverse_stemming_dict = _stemming(reverts["Text"], reverse_stemming_dict)
+        reverts["Text"], reverse_stemming_dict = _stemming(reverts["Text"], reverse_stemming_dict, lang)
         if reverts["Text"] is None:
             os.remove(filename)
             return
@@ -133,7 +142,6 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
               ensure_ascii=False)
     json.dump(reverse_stemming_dict, open(join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w"),
               ensure_ascii=False)
-
 
 def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
     """
@@ -151,10 +159,8 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
     executor.close()
     executor.join()
 
-
 def main():
     concurrent_stopwords_cleaner_stemmer(sys.argv[1], sys.argv[2])
-
 
 if __name__ == "__main__":
     main()
