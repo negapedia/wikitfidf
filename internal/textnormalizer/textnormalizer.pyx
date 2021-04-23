@@ -81,7 +81,7 @@ def _increment_word_counter(word_dict, word):
     else:
         word_dict[word] = 1
 
-def _get_stemmer(lang: str):
+def _get_stemmer(lang):
     if lang in ["en", "da", "nl", "fr", "de", "es", "hu", "it", "simple", "no", "pt", "ro", "ru", "sv"]:
         # N.B. for portuguese (pt) is also available RSLPStemmer
         return SnowballStemmer(_lang_mapper(lang))
@@ -92,7 +92,7 @@ def _get_stemmer(lang: str):
         # it is returned None, which means that the process of stemming must be skipped
         return None
 
-def _stemming(revert_text, stemmer_reverse_dict, lang) -> (str, dict):
+def _stemming(revert_text, stemmer_reverse_dict, lang):
     stemmer = _get_stemmer(lang)
     if stemmer is None:
         return revert_text, {}
