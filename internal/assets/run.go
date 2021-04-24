@@ -46,11 +46,11 @@ func Run(ctx context.Context, program, workdir string, args map[string]string) (
 
 	var call string
 	if program == "textnormalizer"{
-		call = "make -C $GOPATH/src/github.com/negapedia/wikitfidf/internal/textnormalizer" 
+		call = "make -C /data/internal/textnormalizer"
 	} else if program == "destemmer" {
-		call = "make -C $GOPATH/src/github.com/negapedia/wikitfidf/internal/destemmer"
+		call = "make -C /data/internal/destemmer"
 	} else if program == "topwordspageextractor" {
-		call = "make -C $GOPATH/src/github.com/negapedia/wikitfidf/internal/textnormalizer"
+		call = "make -C /data/internal/textnormalizer"
 	}
 
 	cmd := exec.CommandContext(ctx, call, commandArgs...)
