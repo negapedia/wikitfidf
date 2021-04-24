@@ -39,21 +39,23 @@ func Run(ctx context.Context, program, workdir string, args map[string]string) (
 		return errors.Wrapf(err, "Unable to restore asset %s", program)
 	}*/
 
-	commandArgs := []string{"runandselfclean"}
+	commandArgs := []string{"-C", "/go/src/github.com/negapedia/wikitfidf/internal/"+program,"runandselfclean"}
 	for key, value := range args {
 		commandArgs = append(commandArgs, fmt.Sprintf("%v=%v", key, value))
 	}
 
-	var call string
-	if program == "textnormalizer"{
-		call = "make -C /data/internal/textnormalizer"
+	call := "make"
+	/*if program == "textnormalizer"{
+		commandArgs[1] +=program
 	} else if program == "destemmer" {
-		call = "make -C /data/internal/destemmer"
+		call = "make -C /go/src/github.com/negapedia/wikitfidf/internal/destemmer"
 	} else if program == "topwordspageextractor" {
-		call = "make -C /data/internal/textnormalizer"
-	}
+		call = "make -C /go/src/github.com/negapedia/wikitfidf/internal/textnormalizer"
+	}*/
 
 	cmd := exec.CommandContext(ctx, call, commandArgs...)
+	fmt.Print("! ")
+	fmt.Println(cmd.String())
 	//cmd := exec.CommandContext(ctx, "ls > /data/ls.txt & ls / > /data/ls_.txt ")
 
 	var cmdStderr bytes.Buffer

@@ -16,9 +16,4 @@ RUN set -eux; \
 ENV PROJECT github.com/negapedia/wikitfidf
 ADD . $GOPATH/src/$PROJECT
 RUN go get $PROJECT/...;
-RUN mkdir -p /data /data/internal /data/internal/textnormalizer /data/internal/destemmer /data/internal/topwordspageextractor
-RUN ls
-RUN cp $GOPATH/src/$PROJECT/internal/textnormalizer/* /data/internal/textnormalizer
-RUN cp $GOPATH/src/$PROJECT/internal/destemmer/* /data/internal/destemmer
-RUN cp $GOPATH/src/$PROJECT/internal/topwordspageextractor/* /data/internal/topwordspageextractor
 WORKDIR /data
