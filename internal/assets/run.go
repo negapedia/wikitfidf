@@ -29,7 +29,7 @@ import (
 //go:generate go-bindata -pkg $GOPACKAGE -nocompress -prefix \.\./ ../badwords/... ../destemmer/... ../textnormalizer/... ../topwordspageextractor/...
 
 //Delete everything created or downloaded
-//go:generate rm -fr ../badwords/data ../textnormalizer/WikipediaMarkupCleaner.jar
+//#go:generate rm -fr ../badwords/data ../textnormalizer/WikipediaMarkupCleaner.jar
 
 //Run executes the asset program on the given directory with the given context and data
 func Run(ctx context.Context, program, workdir string, args map[string]string) (err error) {
@@ -39,15 +39,25 @@ func Run(ctx context.Context, program, workdir string, args map[string]string) (
 	}
 	defer os.RemoveAll(tmpDir)
 
-	if err = RestoreAssets(tmpDir, program); err != nil {
+	/*if err = RestoreAssets(tmpDir, program); err != nil {
 		return errors.Wrapf(err, "Unable to restore asset %s", program)
-	}
+	}*/
 
 	commandArgs := []string{"runandselfclean"}
 	for key, value := range args {
 		commandArgs = append(commandArgs, fmt.Sprintf("%v=%v", key, value))
 	}
-	cmd := exec.CommandContext(ctx, "make", commandArgs...)
+
+	var call string
+	if program == "textnormalizer"{
+		call = "make -C internal/textnormalizer"
+	} else if program == "destemmer" {
+		call = "make -C internal/destemmer"
+	} else if program == "topwordspageextractor" {
+		call = "make -C internal/textnormalizer"
+	}
+
+	cmd := exec.CommandContext(ctx, call, commandArgs...)
 
 	var cmdStderr bytes.Buffer
 	cmd.Stderr = &cmdStderr

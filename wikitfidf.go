@@ -269,7 +269,9 @@ func CheckAvailableLanguage(lang string) error {
 		"th":     "thai",
 		"uk":     "ukrainian",
 		"ur":     "urdu",
-		"simple": "english"}
+		"simple": "english",
+		"mhr": 	  "MeadowMari", //for tests, 10K pages wiki
+		}
 
 	if lang == "" {
 		return errors.New("Empty langugage")
