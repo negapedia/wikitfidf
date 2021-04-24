@@ -50,11 +50,11 @@ func Run(ctx context.Context, program, workdir string, args map[string]string) (
 
 	var call string
 	if program == "textnormalizer"{
-		call = "make -C internal/textnormalizer"
+		call = "make -C ../internal/textnormalizer" // maybe ../internal/textnormalizer sicne the call starts in /dothething
 	} else if program == "destemmer" {
-		call = "make -C internal/destemmer"
+		call = "make -C ../internal/destemmer"
 	} else if program == "topwordspageextractor" {
-		call = "make -C internal/textnormalizer"
+		call = "make -C ../internal/textnormalizer"
 	}
 
 	cmd := exec.CommandContext(ctx, call, commandArgs...)
