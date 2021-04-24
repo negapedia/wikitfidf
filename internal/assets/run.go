@@ -44,7 +44,6 @@ func Run(ctx context.Context, program, workdir string, args map[string]string) (
 		commandArgs = append(commandArgs, fmt.Sprintf("%v=%v", key, value))
 	}
 
-	call := "make"
 	/*if program == "textnormalizer"{
 		commandArgs[1] +=program
 	} else if program == "destemmer" {
@@ -53,9 +52,9 @@ func Run(ctx context.Context, program, workdir string, args map[string]string) (
 		call = "make -C /go/src/github.com/negapedia/wikitfidf/internal/textnormalizer"
 	}*/
 
-	cmd := exec.CommandContext(ctx, call, commandArgs...)
-	fmt.Print("! ")
-	fmt.Println(cmd.String())
+	cmd := exec.CommandContext(ctx, "make", commandArgs...)
+	//fmt.Print("! ")
+	//fmt.Println(cmd.String())
 	//cmd := exec.CommandContext(ctx, "ls > /data/ls.txt & ls / > /data/ls_.txt ")
 
 	var cmdStderr bytes.Buffer
