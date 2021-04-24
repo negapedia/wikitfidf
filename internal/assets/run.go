@@ -4,12 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"os/exec"
-	"path/filepath"
-
 	"github.com/pkg/errors"
+	"os/exec"
 )
 
 //Download and compile WikipediaMarkupCleaner into a jar
@@ -33,11 +29,11 @@ import (
 
 //Run executes the asset program on the given directory with the given context and data
 func Run(ctx context.Context, program, workdir string, args map[string]string) (err error) {
-	var tmpDir string
+	/*var tmpDir string
 	if tmpDir, err = ioutil.TempDir(workdir, "."+program); err != nil {
 		return errors.Wrapf(err, "Unable to create a temporary directory in %v", workdir)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer os.RemoveAll(tmpDir)*/
 
 	/*if err = RestoreAssets(tmpDir, program); err != nil {
 		return errors.Wrapf(err, "Unable to restore asset %s", program)
@@ -61,10 +57,10 @@ func Run(ctx context.Context, program, workdir string, args map[string]string) (
 
 	var cmdStderr bytes.Buffer
 	cmd.Stderr = &cmdStderr
-	cmd.Dir, err = filepath.Abs(filepath.Join(tmpDir, program))
+	/*cmd.Dir, err = filepath.Abs(filepath.Join(tmpDir, program))
 	if err != nil {
 		return errors.Wrapf(err, "Unable to convert to absolute path %s", tmpDir)
-	}
+	}*/
 
 	if err = cmd.Run(); err != nil {
 		return errors.Wrap(err, "Call to external command failed, with the following error stream:\n"+cmdStderr.String())
