@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -45,14 +46,16 @@ func AvailableLanguage(lang string) (string, bool) {
 }
 
 func badWordsListGetter(lang string) (badwordsList map[string]bool, err error) {
-	fpath := filepath.Join("badwords", "data", lang)
-	assetData, err := assets.Asset(fpath)
+	fpath := filepath.Join("/go/src/github.com/negapedia/wikitfidf/internal/data", lang)
+
+	file, err := os.Open(fpath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Error happened while trying to open badwords asset file:%v", fpath)
+		log.Fatal(err)
 	}
+	defer file.Close()
 
 	badwordsList = make(map[string]bool)
-	scanner := bufio.NewScanner(bytes.NewBuffer(assetData))
+	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		badwordsList[scanner.Text()] = true
 	}
