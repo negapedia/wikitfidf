@@ -2,14 +2,14 @@ package badwords
 
 import (
 	"bufio"
-	"bytes"
+	//"bytes"
 	"compress/gzip"
 	"encoding/json"
 	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/negapedia/wikitfidf/internal/assets"
+	//"github.com/negapedia/wikitfidf/internal/assets"
 
 	"github.com/pkg/errors"
 
