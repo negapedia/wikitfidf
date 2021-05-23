@@ -63,7 +63,9 @@ def _lang_mapper(lang):
         "th": "thai",
         "uk": "ukrainian",
         "ur": "urdu",
-        "simple": "english"
+        "simple": "english",
+        "cr": "english" # !!! just for test !!!
+
     }
     return available_lang[lang]
 

@@ -270,7 +270,7 @@ func CheckAvailableLanguage(lang string) error {
 		"uk":     "ukrainian",
 		"ur":     "urdu",
 		"simple": "english",
-		"mhr": 	  "MeadowMari", //for tests, 10K pages wiki
+		"cr": 	  "english", //for tests, 10K pages wiki
 		}
 
 	if lang == "" {
