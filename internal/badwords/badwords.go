@@ -40,13 +40,15 @@ func AvailableLanguage(lang string) (string, bool) {
 		"fa":     "persian",
 		"pl":     "polish",
 		"th":     "thai",
-		"simple": "english"}
+		"simple": "english",
+		"cr": "english", // ONLY for test purpose  
+	}
 	language, isIn := languages[lang]
 	return language, isIn
 }
 
 func badWordsListGetter(lang string) (badwordsList map[string]bool, err error) {
-	fpath := filepath.Join("/go/src/github.com/negapedia/wikitfidf/internal/data", lang)
+	fpath := filepath.Join("/go/src/github.com/negapedia/wikitfidf/internal/badwords/data", lang)
 
 	file, err := os.Open(fpath)
 	if err != nil {
