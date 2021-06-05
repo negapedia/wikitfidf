@@ -11,10 +11,13 @@ import sys
 from multiprocessing import Pool, cpu_count
 from os.path import join
 
+import nltk
 
+nltk.download('punkt')
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer, ISRIStemmer
-from nltk.tokenize import RegexpTokenizer
+from nltk.tokenize import word_tokenize
+
 
 def _lang_mapper(lang):
     # available language for stopwords list
@@ -64,10 +67,11 @@ def _lang_mapper(lang):
         "uk": "ukrainian",
         "ur": "urdu",
         "simple": "english",
-        "cr": "english" # !!! just for test !!!
+        "cr": "english"  # !!! just for test !!!
 
     }
     return available_lang[lang]
+
 
 def _stopwords_cleaner(revert_text, lang):
     stop_words = stopwords.words(_lang_mapper(lang))
@@ -77,11 +81,13 @@ def _stopwords_cleaner(revert_text, lang):
             revert_text = list(filter(word.__ne__, revert_text))
     return revert_text
 
+
 def _increment_word_counter(word_dict, word):
     if word in word_dict.keys():
         word_dict[word] += 1
     else:
         word_dict[word] = 1
+
 
 def _get_stemmer(lang):
     if lang in ["en", "da", "nl", "fr", "de", "es", "hu", "it", "simple", "no", "pt", "ro", "ru", "sv"]:
@@ -93,6 +99,7 @@ def _get_stemmer(lang):
         # if here, there not exits a satisfiable stemmer for the language, so
         # it is returned None, which means that the process of stemming must be skipped
         return None
+
 
 def _stemming(revert_text, stemmer_reverse_dict, lang):
     stemmer = _get_stemmer(lang)
@@ -111,6 +118,18 @@ def _stemming(revert_text, stemmer_reverse_dict, lang):
         text.append(stemmed_word)
     return text, stemmer_reverse_dict
 
+
+def _get_tokenizer_lang(lang):
+    if _lang_mapper(lang) not in ['czech', 'danish', 'dutch', 'english', 'estonian',
+                                  'finnish', 'french', 'german', 'greek', 'italian',
+                                  'norwegian', 'polish', 'portuguese', 'slovene',
+                                  'spanish', 'swedish']:
+        # language not supported by nltk.tokenizers, so use by default english
+        return "english"
+    else:
+        return _lang_mapper(lang)
+
+
 def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     """
     _stopwords_cleaner_stemming perform tokenization, stopwords cleaning and stemming on a single file "filname"
@@ -121,13 +140,18 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     dump_dict = json.load(open(filename, "r"))
 
     reverse_stemming_dict = {}
-    tokenizer = RegexpTokenizer(r'\w+')
+
+    # tokenizer = RegexpTokenizer(r'\w+')
+
     for reverts in dump_dict["Revision"]:
         if reverts["Text"] is None:
             continue
-        reverts["Text"] = tokenizer.tokenize(reverts["Text"])
+        reverts["Text"] = word_tokenize(reverts["Text"], language=_get_tokenizer_lang(lang))
+        '''reverts["Text"] = [word for word in reverts["Text"] if
+                           not (len(word) > 20 or len(word) <= 3 or word == "https" or word == "http")]  # fixing words '''
         reverts["Text"] = [word for word in reverts["Text"] if
-                           not (len(word) > 20 or len(word) <= 3 or word == "https" or word == "http")]  # fixing words
+                           not (len(word) <= 3 or word in ["https", "http"])]
+
         # length
         reverts["Text"] = _stopwords_cleaner(reverts["Text"], lang)
 
@@ -145,6 +169,7 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     json.dump(reverse_stemming_dict, open(join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w"),
               ensure_ascii=False)
 
+
 def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
     """
     The method given the result dir, perform in parallel tokenization, stopwords cleaning, stemming
@@ -161,8 +186,10 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
     executor.close()
     executor.join()
 
+
 def main():
     concurrent_stopwords_cleaner_stemmer(sys.argv[1], sys.argv[2])
+
 
 if __name__ == "__main__":
     main()
