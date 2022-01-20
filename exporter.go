@@ -159,7 +159,7 @@ func (exporter Exporter) Pages(ctx context.Context, fail func(error) error) chan
 			line = line[:len(line)-1] + "}"
 
 			if err = json.Unmarshal([]byte(line), &page); err != nil {
-				fail(errors.Wrapf(err, "Error while unmarshalling json in %v \n\t at line: %v", globalPagesTFIDFName), line)
+				fail(errors.Wrapf(err, "Error while unmarshalling json in %v \n\t at line: %v", globalPagesTFIDFName, line))
 				return
 			}
 			for id := range page {
