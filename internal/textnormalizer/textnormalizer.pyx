@@ -150,7 +150,7 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
         '''reverts["Text"] = [word for word in reverts["Text"] if
                            not (len(word) > 20 or len(word) <= 3 or word == "https" or word == "http")]  # fixing words '''
         reverts["Text"] = [word for word in reverts["Text"] if
-                           not (len(word) <= 3 or word in ["https", "http"])]
+                           not ((len(word) <= 3) or (word in ["https", "http"]) or (len(word) > 100))]
 
         # length
         reverts["Text"] = _stopwords_cleaner(reverts["Text"], lang)
