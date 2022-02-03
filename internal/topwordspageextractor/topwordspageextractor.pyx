@@ -58,7 +58,7 @@ def top_n_words_page_extractor(result_dir: str, n, delete: bool):
     global_top_ntfidf = gzip.GzipFile(filename=join(result_dir, "GlobalPagesTFIDF_topN.json.gz"), mode="w",
                                       compresslevel=9)
 
-    gloabal_tfidf = open(join(result_dir, "GlobalPagesTFIDF.json"), "r")
+    gloabal_tfidf = open(join(result_dir, "GlobalPagesTFIDF.json"), "r", encoding='utf-8')
     global_tfidf_it = iter(gloabal_tfidf.readline, "")
 
     n = int(n)
@@ -88,7 +88,6 @@ def top_n_words_page_extractor(result_dir: str, n, delete: bool):
         counter += 1
 
     global_top_ntfidf.write("}".encode())
-    global_top_ntfidf.flush()
     global_top_ntfidf.close()
     gloabal_tfidf.close()
 
@@ -108,12 +107,12 @@ def top_n_global_words_extractor(result_dir: str, n, delete: bool):
     global_word_top_n = gzip.GzipFile(filename=join(result_dir, "GlobalWords_topN.json.gz"), mode="w",
                                       compresslevel=9)
 
-    global_words_dict = json.load(open(join(result_dir, "GlobalWords.json"), "r"))
-
-    global_words_dict = _get_global_words(global_words_dict)
-    global_word_top_n.write(json.dumps(_top_n_getter(global_words_dict, int(n))).encode())
-    global_word_top_n.flush()
-    global_word_top_n.close()
+    with open(join(result_dir, "GlobalWords.json"), "r", encoding='utf-8') as file:
+        global_words_dict = json.load(file)
+        global_words_dict = _get_global_words(global_words_dict)
+        global_word_top_n.write(json.dumps(_top_n_getter(global_words_dict, int(n))).encode())
+        global_word_top_n.close()
+        file.close() #overzealous
 
     if delete:
         os.remove(join(result_dir, "GlobalWords.json"))
@@ -130,7 +129,7 @@ def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
     global_word_top_n = gzip.GzipFile(filename=join(result_dir, "GlobalTopicsWords_topN.json.gz"), mode="w",
                                       compresslevel=9)
 
-    global_topic = open(join(result_dir, "GlobalTopicsWords.json"), "r")
+    global_topic = open(join(result_dir, "GlobalTopicsWords.json"), "r", encoding='utf-8')
 
     global_topic_iter = iter(global_topic.readline, "")
 
@@ -163,7 +162,6 @@ def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
         counter += 1
 
     global_word_top_n.write("}".encode())
-    global_word_top_n.flush()
     global_word_top_n.close()
     global_topic.close()
 

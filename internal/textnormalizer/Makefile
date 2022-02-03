@@ -35,7 +35,7 @@ clean:
 	@rm -f textnormalizer.o textnormalizer.c
 
 run: clean all 
-	java -jar WikipediaMarkupCleaner.jar $(RESULTDIR)
+	java -Dfile.encoding=utf-8 -jar WikipediaMarkupCleaner.jar $(RESULTDIR)
 	NLTK_DATA="nltk-master" PYTHONHOME=$(PYPREFIX) LD_LIBRARY_PATH=$(LIBDIR1):$$LD_LIBRARY_PATH ./textnormalizer $(RESULTDIR) $(LANG)
 
 runandselfclean: run clean

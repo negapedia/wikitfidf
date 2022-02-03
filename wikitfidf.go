@@ -224,6 +224,7 @@ func (wt builder) Process(ctx context.Context, fail func(error) error) (wtOut bu
 
 // CheckAvailableLanguage check if a language is handled
 func CheckAvailableLanguage(lang string) error {
+	/*
 	languages := map[string]string{
 		"en":     "english",
 		"ar":     "arabic",
@@ -272,13 +273,16 @@ func CheckAvailableLanguage(lang string) error {
 		"simple": "english",
 		"cr": 	  "english", //for tests, 10K pages wiki
 		}
+		*/
 
 	if lang == "" {
-		return errors.New("Empty langugage")
+		return errors.New("Empty language")
 	}
-
+	/*
+	// @@ Commented out so to allow any language (test)
 	if _, isIn := languages[lang]; !isIn {
 		return errors.New(lang + " is not an available language")
 	}
+	*/
 	return nil
 }

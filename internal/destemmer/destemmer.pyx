@@ -4,7 +4,6 @@
 
 #IF YOU MODIFY THIS FILE, YOU NEED TO RUN "go generate" IN "assets" FOR CHANGES TO TAKE EFFECT.
 
-import codecs
 import copy
 import json
 import os
@@ -38,8 +37,9 @@ def _dict_writer(dict_to_write, file_name, output_dir):
 
     _create_result_dir_if_not_exist(output_dir)
 
-    _output_file_path = join(output_dir, _check_file_name(file_name) + ".json")
-    json.dump(dict_to_write, codecs.open(_output_file_path, "w", encoding='utf-8'), ensure_ascii=False)
+    with open(join(output_dir, _check_file_name(file_name) + ".json"), "w", encoding='utf-8') as _output_file_path:
+        json.dump(dict_to_write, _output_file_path, ensure_ascii=False)
+        _output_file_path.flush() #overzealous
 
 
 def global_page_destem(result_dir):
@@ -47,14 +47,14 @@ def global_page_destem(result_dir):
     GlobalPageDeStem given the result dir perform the de-stemming process on GlobalPageTFIDF
     :param result_dir: path of result folder
     """
-    reverse_stemming_dict = json.load(open(join(result_dir, "GlobalStem.json"), "r"))
+    reverse_stemming_dict = json.load(open(join(result_dir, "GlobalStem.json"), "r", encoding='utf-8'))
 
     if len(reverse_stemming_dict) > 0:
 
-        global_dict_file = open(join(result_dir, "GlobalPagesTFIDF.json"), "r")
+        global_dict_file = open(join(result_dir, "GlobalPagesTFIDF.json"), "r", encoding='utf-8')
         global_dict_file_iter = iter(global_dict_file.readline, "")
 
-        destemmed_global_dict_file = open(join(result_dir, "DESTEM_GlobalPagesTFIDF.json"), "w")
+        destemmed_global_dict_file = open(join(result_dir, "DESTEM_GlobalPagesTFIDF.json"), "w", encoding='utf-8')
         destemmed_global_dict_file.write("{")
 
         for line in global_dict_file_iter:
@@ -87,8 +87,8 @@ def global_word_destem(result_dir):
     global_word_destem given the result dir perform the de-stemming process on GlobalWord
     :param result_dir: path of result folder
     """
-    reverse_stemming_dict = json.load(open(join(result_dir, "GlobalStem.json"), "r"))
-    global_dict = json.load(open(join(result_dir, "GlobalWords.json"), "r"))
+    reverse_stemming_dict = json.load(open(join(result_dir, "GlobalStem.json"), "r", encoding='utf-8'))
+    global_dict = json.load(open(join(result_dir, "GlobalWords.json"), "r", encoding='utf-8'))
 
     global_dict_new = copy.deepcopy(global_dict)
     for word in global_dict:
