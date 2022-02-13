@@ -79,15 +79,15 @@ def top_n_words_page_extractor(result_dir: str, n, delete: bool):
         if counter == 0:
             page_json = json.dumps(page_dict)
             page_json = page_json[:len(page_json) - 1] + ",\n"
-            global_top_ntfidf.write(page_json.encode())
+            global_top_ntfidf.write(page_json.encode('utf-8'))
         elif counter >= 0:
             page_json = json.dumps(page_dict)
             page_json = page_json[1:len(page_json) - 1] + ",\n"
-            global_top_ntfidf.write(page_json.encode())
+            global_top_ntfidf.write(page_json.encode('utf-8'))
         global_top_ntfidf.flush()
         counter += 1
 
-    global_top_ntfidf.write("}".encode())
+    global_top_ntfidf.write("}".encode('utf-8'))
     global_top_ntfidf.close()
     gloabal_tfidf.close()
 
@@ -110,7 +110,7 @@ def top_n_global_words_extractor(result_dir: str, n, delete: bool):
     with open(join(result_dir, "GlobalWords.json"), "r", encoding='utf-8') as file:
         global_words_dict = json.load(file)
         global_words_dict = _get_global_words(global_words_dict)
-        global_word_top_n.write(json.dumps(_top_n_getter(global_words_dict, int(n))).encode())
+        global_word_top_n.write(json.dumps(_top_n_getter(global_words_dict, int(n))).encode('utf-8'))
         global_word_top_n.close()
         file.close() #overzealous
 
@@ -153,15 +153,15 @@ def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
         if counter == 0:
             page_json = json.dumps(top_words)
             page_json = page_json[:len(page_json) - 1] + ",\n"
-            global_word_top_n.write(page_json.encode())
+            global_word_top_n.write(page_json.encode('utf-8'))
         elif counter >= 0:
             page_json = json.dumps(top_words)
             page_json = page_json[1:len(page_json) - 1] + ",\n"
-            global_word_top_n.write(page_json.encode())
+            global_word_top_n.write(page_json.encode('utf-8'))
         global_word_top_n.flush()
         counter += 1
 
-    global_word_top_n.write("}".encode())
+    global_word_top_n.write("}".encode('utf-8'))
     global_word_top_n.close()
     global_topic.close()
 
