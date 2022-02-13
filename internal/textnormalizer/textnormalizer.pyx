@@ -194,9 +194,9 @@ def _words_extractor(result_dir: str, filename: str, lang: str, nlp, lemmatable:
         if reverts["Text"] is None:
             continue
         if lemmatable:
-            reverts["Text"] = [(w.lemma_ if w.pos_ == "PROPN" else w.norm_) for w in doc if w.pos_ in ALLOWED_POS]
+            reverts["Text"] = [(w.lemma_ if w.pos_ == "PROPN" else w.norm_) for w in doc if (w.pos_ in ALLOWED_POS and w.is_alpha)]
         else:
-            reverts["Text"] = [w.lower_ for w in doc if (not w.is_punct and not w.is_digit and not w.is_space)]
+            reverts["Text"] = [w.lower_ for w in doc if w.is_alpha]
 
         reverts["Text"] = _words_cleaner(reverts["Text"], lang)
 
