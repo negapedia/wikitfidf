@@ -256,6 +256,22 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
         file.flush() #overzealous for debug
 
 
+def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
+    """
+    The method given the result dir, perform in parallel tokenization, stopwords cleaning, lemmatization
+    :param result_dir: path of result folder
+    :param lang: wiki language
+    """
+
+    (nlp, lemmatable) = _get_nlp_processor(lang)
+
+    executor = Pool(cpu_count())
+    for filename in glob.iglob(join(result_dir, "W*")):
+        executor.apply_async(_words_extractor, args=(result_dir, filename, lang, nlp, lemmatable))
+    executor.close()
+    executor.join()
+
+
 def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
     """
     The method given the result dir, perform in parallel tokenization, stopwords cleaning, stemming
@@ -270,13 +286,13 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
 
     executor = Pool(cpu_count())
     for filename in file_to_clean:
-        executor.apply_async(_words_extractor, args=(result_dir, filename, lang, nlp, lemmatable))
+        executor.apply_async(_stopwords_cleaner_stemming, args=(result_dir, filename, lang, nlp, lemmatable))
     executor.close()
     executor.join()
 
 
 def main():
-    concurrent_stopwords_cleaner_stemmer(sys.argv[1], sys.argv[2])
+    concurrent_stopwords_cleaner_lemmatizer(sys.argv[1], sys.argv[2])
 
 
 if __name__ == "__main__":

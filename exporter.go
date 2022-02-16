@@ -132,20 +132,16 @@ func (exporter Exporter) Pages(ctx context.Context, fail func(error) error) chan
 		close(ch)
 		return ch
 	}
-	lineReader := bufio.NewReader(globalPageReader)
+	lineReader := bufio.NewScanner(globalPageReader)
 
 	go func() {
 		defer close(ch)
 		defer globalPage.Close()
 		defer globalPageReader.Close()
 
-		for {
-			lineB, _, err := lineReader.ReadLine()
-			line := string(lineB)
-			if err != nil {
-				fail(errors.Wrapf(err, "Error while reading line in %v", globalPagesTFIDFName))
-				return
-			}
+		for lineReader.Scan() {
+			line := lineReader.Text()
+
 			if line == "}" {
 				break
 			}
@@ -198,25 +194,17 @@ func (exporter Exporter) Topics(ctx context.Context, fail func(error) error) cha
 		close(ch)
 		return ch
 	}
-	lineReader := bufio.NewReader(globalPageReader)
+	lineReader := bufio.NewScanner(globalPageReader)
 
 	go func() {
 		defer close(ch)
 		defer globalTopic.Close()
 		defer globalPageReader.Close()
 
-		for {
-			lineB, _, err := lineReader.ReadLine() // .ReadString('\n')
-			line := string(lineB)
-			if line == "}" {
-				break
-			}
+		for lineReader.Scan() {
+			line := lineReader.Text()
 
-			if err != nil {
-				fail(errors.Wrapf(err, "Error while reading line in %v : %v", globalTopicsWordsName, line))
-				return
-			}
-			if err != nil {
+			if line == "}" {
 				break
 			}
 
@@ -281,24 +269,16 @@ func (exporter Exporter) PageBadwords(ctx context.Context, fail func(error) erro
 		close(ch)
 		return ch
 	}
-	lineReader := bufio.NewReader(globalPageReader)
+	lineReader := bufio.NewScanner(globalPageReader)
 
 	go func() {
 		defer close(ch)
 		defer badWords.Close()
 		defer globalPageReader.Close()
 
-		for {
-			lineB, _, err := lineReader.ReadLine()
-			line := string(lineB)
+		for lineReader.Scan() {
+			line := lineReader.Text()
 
-			if err != nil {
-				fail(errors.Wrapf(err, "Error while reading line in %v", badWordsReportName))
-				return
-			}
-			if err != nil {
-				break
-			}
 			if line == "}" {
 				break
 			}
