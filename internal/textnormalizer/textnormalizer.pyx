@@ -10,6 +10,7 @@ import os
 import sys
 from multiprocessing import Pool, cpu_count
 from os.path import join
+from tracemalloc import stop
 import nltk
 import spacy
 """ @@debug
@@ -23,10 +24,12 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer, ISRIStemmer
 from nltk.tokenize import word_tokenize
 
-ALLOWED_POS = ["ADJ", "ADV", "NOUN", "PROPN", "VERB"]
+MIN_WORD_LENGTH = 1  # Min lenght for words (might be changed in-program wrt language)
+MAX_WORD_LENGTH = 40  # Max lenght for words
+ALLOWED_POS = ["ADJ", "ADV", "NOUN", "PROPN", "VERB"]  # Allowed Part Of Speech tags
 
 # FORBIDDEN_HTML_WORDS = ["colspan", "colspan=", "style", "style=", "https", "http"]
-FORBIDDEN_HTML_WORDS = [] # @@@ blank for testing
+FORBIDDEN_HTML_WORDS = []  # @@@ blank for testing
 
 
 def _nltk_lang_to_name(lang):
@@ -84,11 +87,16 @@ def _nltk_lang_to_name(lang):
 
 
 def _lang_stopwords(lang):
+    if lang in ["eml", "fur", "lij", "lmo", "nap", "pms", "sc", "scn", "roa-tara", "vec"]:
+        return stopwords.words(_nltk_lang_to_name("it"))
+    elif lang in ["gd", "sco"]:
+        return stopwords.words(_nltk_lang_to_name("en"))
+    
     stoplang = _nltk_lang_to_name(lang)
     if stoplang:
         return stopwords.words(stoplang)
     else:
-        return []
+        return stopwords.words(_nltk_lang_to_name("en"))
 
 
 def _stopwords_cleaner(revert_text, lang):
@@ -104,7 +112,7 @@ def _words_cleaner(revert_text, lang):
     stop_words = _lang_stopwords(lang) + FORBIDDEN_HTML_WORDS
     text = revert_text
     for word in text:
-        if (word.lower() in stop_words) or (len(word) > 44):
+        if (word.lower() in stop_words) or not (MAX_WORD_LENGTH >= len(word) >= MIN_WORD_LENGTH):
             revert_text = list(filter(word.__ne__, revert_text))
     return revert_text
 
@@ -157,7 +165,7 @@ def _get_tokenizer_lang(lang):
         return _nltk_lang_to_name(lang)
 
 
-def _get_nlp_processor(lang): # Return nlp processor and lemmatization capability (True/False)
+def _get_nlp_processor(lang):  # Returns nlp processor and lemmatization capability (True/False)
     if lang == "en" or lang == "simple":
         return (spacy.load("en_core_web_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
     elif lang in ["ca", "da", "de", "el", "es", "fr", "it", "ja", "lt", "nl", "pl", "pt", "ro", "ru", "zh"]:
@@ -166,8 +174,17 @@ def _get_nlp_processor(lang): # Return nlp processor and lemmatization capabilit
         return (spacy.load("nb_core_news_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
     elif lang in ["eml", "fur", "lij", "la", "lmo", "nap", "pms", "sc", "scn", "roa-tara", "vec"]:
         return (spacy.blank("it"), False)
-    else: # fallback case (multilingual)
+    else:  # fallback case (multilingual)
         return (spacy.blank("xx"), False)
+
+
+def _get_min_word_length(lang):  # Returns min admitted word length for the language
+    if lang in ["gan", "ja", "ko", "vi",  "wuu", "zh", "zh-classical", "zh-yue"]:
+        return 1  # Hang, Hans, Hant scripts
+    elif lang == "vi":
+        return 2  # Hybrid case of Chu Nom in Latn
+    else:
+        return 3
 
 
 def _words_extractor(result_dir: str, filename: str, lang: str, nlp, lemmatable: bool):
@@ -181,7 +198,7 @@ def _words_extractor(result_dir: str, filename: str, lang: str, nlp, lemmatable:
     """
     with open(filename, "r", encoding='utf-8') as the_file:
         dump_dict = json.load(the_file)
-        the_file.flush() #overzealous
+        the_file.flush()  # overzealous
 
     reverse_stemming_dict = {}
 
@@ -206,13 +223,13 @@ def _words_extractor(result_dir: str, filename: str, lang: str, nlp, lemmatable:
     page_id = dump_dict["PageID"]
     #topic_id = dump_dict["TopicID"]
 
-    os.remove(filename) #@@@ debug
+    os.remove(filename)  # @@@ debug
     with open(join(result_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
         json.dump(dump_dict, file, ensure_ascii=False)
-        file.flush() #overzealous for debug
+        file.flush()  # overzealous for debug
     with open(join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
         json.dump(reverse_stemming_dict, file, ensure_ascii=False)
-        file.flush() #overzealous for debug
+        file.flush()  # overzealous for debug
 
 
 def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
@@ -224,7 +241,7 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     """
     with open(filename, "r", encoding='utf-8') as the_file:
         dump_dict = json.load(the_file)
-        the_file.flush() #overzealous
+        the_file.flush()  # overzealous
 
     reverse_stemming_dict = {}
 
@@ -250,10 +267,10 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     os.remove(filename)
     with open(join(result_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
         json.dump(dump_dict, file, ensure_ascii=False)
-        file.flush() #overzealous for debug
+        file.flush()  # overzealous for debug
     with open(join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
         json.dump(reverse_stemming_dict, file, ensure_ascii=False)
-        file.flush() #overzealous for debug
+        file.flush()  # overzealous for debug
 
 
 def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
@@ -263,6 +280,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     :param lang: wiki language
     """
 
+    MIN_WORD_LENGTH = _get_min_word_length(lang)
     (nlp, lemmatable) = _get_nlp_processor(lang)
 
     executor = Pool(cpu_count())
