@@ -7,6 +7,7 @@
 import glob
 import json
 import os
+from pickle import STOP
 import sys
 from multiprocessing import Pool, cpu_count
 from os.path import join
@@ -27,9 +28,9 @@ from nltk.tokenize import word_tokenize
 MIN_WORD_LENGTH = 1  # Min lenght for words (might be changed in-program wrt language)
 MAX_WORD_LENGTH = 40  # Max lenght for words
 ALLOWED_POS = ["ADJ", "ADV", "NOUN", "PROPN", "VERB"]  # Allowed Part Of Speech tags
+STOPWORDS = []
 
 # FORBIDDEN_HTML_WORDS = ["colspan", "colspan=", "style", "style=", "https", "http"]
-FORBIDDEN_HTML_WORDS = []  # @@@ blank for testing
 
 
 def _nltk_lang_to_name(lang):
@@ -87,34 +88,32 @@ def _nltk_lang_to_name(lang):
 
 
 def _lang_stopwords(lang):
-    if lang in ["eml", "fur", "lij", "lmo", "nap", "pms", "sc", "scn", "roa-tara", "vec"]:
-        return stopwords.words(_nltk_lang_to_name("it"))
+    if lang in ["co", "eml", "fur", "lij", "lmo", "nap", "pms", "sc", "scn", "roa-tara", "vec"]:
+        return set(stopwords.words(_nltk_lang_to_name("it")))
     elif lang in ["gd", "sco"]:
-        return stopwords.words(_nltk_lang_to_name("en"))
+        return set(stopwords.words(_nltk_lang_to_name("en")))
     
     stoplang = _nltk_lang_to_name(lang)
     if stoplang:
-        return stopwords.words(stoplang)
+        return set(stopwords.words(stoplang))
     else:
-        return stopwords.words(_nltk_lang_to_name("en"))
+        return set(stopwords.words(_nltk_lang_to_name("en")))
 
 
-def _stopwords_cleaner(revert_text, lang):
-    stop_words = _lang_stopwords(lang)
-    text = revert_text
-    for word in text:
-        if word.lower() in stop_words:
-            revert_text = list(filter(word.__ne__, revert_text))
-    return revert_text
+def _stopwords_cleaner(revert_text):
+    text = []
+    for word in revert_text:
+        if not (word.lower() in STOPWORDS):
+            text.append(word)
+    return text
 
 
-def _words_cleaner(revert_text, lang):
-    stop_words = _lang_stopwords(lang) + FORBIDDEN_HTML_WORDS
-    text = revert_text
-    for word in text:
-        if (word.lower() in stop_words) or not (MAX_WORD_LENGTH >= len(word) >= MIN_WORD_LENGTH):
-            revert_text = list(filter(word.__ne__, revert_text))
-    return revert_text
+def _words_cleaner(revert_text):
+    text = []
+    for word in revert_text:
+        if not (word.lower() in STOPWORDS) and (MAX_WORD_LENGTH >= len(word) >= MIN_WORD_LENGTH):
+            text.append(word)
+    return text
 
 
 def _increment_word_counter(word_dict, word):
@@ -215,7 +214,7 @@ def _words_extractor(result_dir: str, filename: str, lang: str, nlp, lemmatable:
         else:
             reverts["Text"] = [w.lower_ for w in doc if w.is_alpha]
 
-        reverts["Text"] = _words_cleaner(reverts["Text"], lang)
+        reverts["Text"] = _words_cleaner(reverts["Text"])
 
         if not lemmatable:
             reverts["Text"], reverse_stemming_dict = _stemming(reverts["Text"], reverse_stemming_dict, lang)
@@ -257,7 +256,7 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
                            not ((len(word) <= 3) or (word in FORBIDDEN_HTML_WORDS) or (len(word) > 50))]
 
         # length
-        reverts["Text"] = _stopwords_cleaner(reverts["Text"], lang)
+        reverts["Text"] = _stopwords_cleaner(reverts["Text"])
 
         reverts["Text"], reverse_stemming_dict = _stemming(reverts["Text"], reverse_stemming_dict, lang)
 
@@ -281,6 +280,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     """
 
     MIN_WORD_LENGTH = _get_min_word_length(lang)
+    STOPWORDS = _lang_stopwords(lang)
     (nlp, lemmatable) = _get_nlp_processor(lang)
 
     executor = Pool(cpu_count())
