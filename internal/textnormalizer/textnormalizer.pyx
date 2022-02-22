@@ -30,7 +30,7 @@ MAX_WORD_LENGTH = 40  # Max lenght for words
 ALLOWED_POS = ["ADJ", "ADV", "NOUN", "PROPN", "VERB"]  # Allowed Part Of Speech tags
 STOPWORDS = []
 
-# FORBIDDEN_HTML_WORDS = ["colspan", "colspan=", "style", "style=", "https", "http"]
+FORBIDDEN_HTML_WORDS = ["colspan", "colspan=", "style", "style=", "https", "http"]  # not needed in new spacy flow
 
 
 def _nltk_lang_to_name(lang):
@@ -101,19 +101,12 @@ def _lang_stopwords(lang):
 
 
 def _stopwords_cleaner(revert_text):
-    text = []
-    for word in revert_text:
-        if not (word.lower() in STOPWORDS):
-            text.append(word)
-    return text
+    return [word for word in revert_text if not (word.lower() in STOPWORDS)]
 
 
 def _words_cleaner(revert_text):
-    text = []
-    for word in revert_text:
-        if not (word.lower() in STOPWORDS) and (MAX_WORD_LENGTH >= len(word) >= MIN_WORD_LENGTH):
-            text.append(word)
-    return text
+    return [word for word in revert_text \
+        if not (word.lower() in STOPWORDS) and (MAX_WORD_LENGTH >= len(word) >= MIN_WORD_LENGTH)]
 
 
 def _increment_word_counter(word_dict, word):
