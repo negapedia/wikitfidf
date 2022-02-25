@@ -90,13 +90,13 @@ def _nltk_lang_to_name(lang):
 
 def _lang_stopwords(lang):
     if lang in ["co", "eml", "fur", "lij", "lmo", "nap", "pms", "sc", "scn", "roa-tara", "vec"]:
-        return set(stopwords.words(_nltk_lang_to_name("it") + FORBIDDEN_WORDS))
+        return set(stopwords.words(_nltk_lang_to_name("it")) + FORBIDDEN_WORDS)
     
     stoplang = _nltk_lang_to_name(lang)
     if stoplang:
         return set(stopwords.words(stoplang) + FORBIDDEN_WORDS)
     else:
-        return set(stopwords.words(_nltk_lang_to_name("en") + FORBIDDEN_WORDS))
+        return set(stopwords.words(_nltk_lang_to_name("en")) + FORBIDDEN_WORDS)
 
 
 def _stopwords_cleaner(revert_text):
@@ -270,6 +270,8 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     :param result_dir: path of result folder
     :param lang: wiki language
     """
+    global MIN_WORD_LENGTH
+    global STOPWORDS
 
     MIN_WORD_LENGTH = _get_min_word_length(lang)
     STOPWORDS = _lang_stopwords(lang)
