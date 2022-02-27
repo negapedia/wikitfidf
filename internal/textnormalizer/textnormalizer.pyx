@@ -8,11 +8,11 @@ import chunk
 import glob
 import json
 import os
-from pickle import STOP
+# from pickle import STOP
 import sys
 from multiprocessing import Pool, cpu_count
 from os.path import join
-from tracemalloc import stop
+# from tracemalloc import stop
 import nltk
 import spacy
 """ @@debug
@@ -289,12 +289,12 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     buckets = []
     for i in range(10):
         buckets.append(glob.iglob(join(result_dir, "W*" + str(i) + ".*")))
-    parallelism = max(1, cpu_count - 1)
-    bsize = buckets // parallelism
+    parallelism = max(1, cpu_count() - 1)
+    bsize = 10 // parallelism
     executor = Pool(parallelism)
     for i in range(parallelism):
         executor.apply_async(_words_extractor, args=(result_dir, \
-            buckets[i * bsize, len(buckets) if (i == parallelism -1) else i * (bsize + 1)], \
+            buckets[i * bsize : len(buckets) + 1 if (i == parallelism -1) else (i+1) * bsize], \
             lang, nlp, lemmatable))
     executor.close()
     executor.join()
