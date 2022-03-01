@@ -179,17 +179,24 @@ def _get_min_word_length(lang):  # Returns min admitted word length for the lang
         return 3
 
 
-def _words_extractor(result_dir: str, buckets: list, lang: str, nlp, lemmatable: bool):
+def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: str, nlp, lemmatable: bool):
     """
     _words_extractor perform tokenization, stopwords cleaning and lemmatization on a single file "filename"
     :param result_dir: path of result folder
+    :param o_process: process ordinal (in range(parallelism))
+    :param parallelism: degree of parallelism
     :param buckets: list of iterators of files to preocess
     :param lang: wikipedia language
     :param nlp: the NLP processor to be used
     :lemmatable: flag indicating whether the nlp processor supports lemmatization for lang
     """
 
-    for bucket in buckets:
+    bsize = 100 // parallelism
+    n_first_bucket = o_process * bsize
+    n_last_bucket = 100 if (o_process == parallelism -1) else (o_process + 1) * bsize
+
+    for n_bucket in range(n_first_bucket, n_last_bucket):
+        bucket = glob.iglob(join(result_dir, "W*" + f"{n_bucket:02d}" + ".*"))
         for filename in bucket:
             with open(filename, "r", encoding='utf-8') as the_file:
                 dump_dict = json.load(the_file)
@@ -282,20 +289,10 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     STOPWORDS = _lang_stopwords(lang)
     (nlp, lemmatable) = _get_nlp_processor(lang)
 
-    """
-    for filename in glob.iglob(join(result_dir, "W*")):
-        executor.apply_async(_words_extractor, args=(result_dir, filename, lang, nlp, lemmatable))
-    """
-    buckets = []
-    for i in range(10):
-        buckets.append(glob.iglob(join(result_dir, "W*" + str(i) + ".*")))
     parallelism = max(1, cpu_count() - 1)
-    bsize = 10 // parallelism
     executor = Pool(parallelism)
     for i in range(parallelism):
-        executor.apply_async(_words_extractor, args=(result_dir, \
-            buckets[i * bsize : len(buckets) + 1 if (i == parallelism -1) else (i+1) * bsize], \
-            lang, nlp, lemmatable))
+        executor.apply_async(_words_extractor, args=(result_dir, i, parallelism, lang, nlp, lemmatable))
     executor.close()
     executor.join()
 
