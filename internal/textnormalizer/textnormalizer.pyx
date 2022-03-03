@@ -19,6 +19,7 @@ import spacy
 import time
 import os.path
 """
+import logging
 
 
 nltk.download('punkt')
@@ -27,12 +28,12 @@ from nltk.stem import SnowballStemmer, ISRIStemmer
 from nltk.tokenize import word_tokenize
 
 MIN_WORD_LENGTH = 1  # Min lenght for words (might be changed in-program wrt language)
-MAX_WORD_LENGTH = 40  # Max lenght for words
+MAX_WORD_LENGTH = 33  # Max lenght for words
 ALLOWED_POS = ["ADJ", "ADV", "NOUN", "PROPN", "VERB"]  # Allowed Part Of Speech tags
 STOPWORDS = []
 
 FORBIDDEN_HTML_WORDS = ["colspan", "colspan=", "style", "style=", "https", "http"]  # not needed in new spacy flow
-FORBIDDEN_WORDS = ["file", "isbn", "noeditsection", "br", "en"]  # words leaked by wiki markup
+FORBIDDEN_WORDS = ["file", "isbn", "noeditsection", "rowspan", "colspan", "br", "en"]  # words leaked by wiki markup
 
 
 def _nltk_lang_to_name(lang):
@@ -91,11 +92,13 @@ def _nltk_lang_to_name(lang):
 
 def _lang_stopwords(lang):
     if lang in ["co", "eml", "fur", "lij", "lmo", "nap", "pms", "sc", "scn", "roa-tara", "vec"]:
-        return set(stopwords.words(_nltk_lang_to_name("it")) + FORBIDDEN_WORDS)
+        return set(stopwords.words(_nltk_lang_to_name("it")) + \
+            stopwords.words(_nltk_lang_to_name("en")) + FORBIDDEN_WORDS)
     
     stoplang = _nltk_lang_to_name(lang)
     if stoplang:
-        return set(stopwords.words(stoplang) + FORBIDDEN_WORDS)
+        return set(stopwords.words(stoplang) + \
+            stopwords.words(_nltk_lang_to_name("en")) + FORBIDDEN_WORDS)
     else:
         return set(stopwords.words(_nltk_lang_to_name("en")) + FORBIDDEN_WORDS)
 
@@ -170,7 +173,7 @@ def _get_nlp_processor(lang):  # Returns nlp processor and lemmatization capabil
         return (spacy.blank("xx"), False)
 
 
-def _get_min_word_length(lang):  # Returns min admitted word length for the language
+def _get_min_word_length(lang):  # Returns min admitted word length for the language (sync in topwordspageextractor)
     if lang in ["gan", "ja", "ko", "vi",  "wuu", "zh", "zh-classical", "zh-yue"]:
         return 1  # Hang, Hans, Hant scripts
     elif lang == "vi":
@@ -276,6 +279,10 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
         file.flush()  # overzealous for debug
 
 
+def async_error_logger(e):
+    logging.debug(e)
+
+
 def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     """
     The method given the result dir, perform in parallel tokenization, stopwords cleaning, lemmatization
@@ -289,10 +296,14 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     STOPWORDS = _lang_stopwords(lang)
     (nlp, lemmatable) = _get_nlp_processor(lang)
 
+    logging.basicConfig(filename="/data/error.log", level=logging.DEBUG)
+
     parallelism = max(1, cpu_count() - 1)
     executor = Pool(parallelism)
     for i in range(parallelism):
-        executor.apply_async(_words_extractor, args=(result_dir, i, parallelism, lang, nlp, lemmatable))
+        executor.apply_async(_words_extractor, \
+            args=(result_dir, i, parallelism, lang, nlp, lemmatable), \
+                error_callback = async_error_logger)
     executor.close()
     executor.join()
 

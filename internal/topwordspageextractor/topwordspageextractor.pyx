@@ -11,12 +11,16 @@ import sys
 from collections import Counter
 from os.path import join
 
+MIN_WORD_LENGTH = 1  # Min lenght for words (might be changed in-program wrt language)
+MAX_WORD_LENGTH = 33  # Max lenght for words
+
 
 def _top_n_getter(words_dict: dict, n: int):
     top_n = Counter(words_dict).most_common(n)
     words_dict = {}
     for key, value in top_n:
-        words_dict[key] = value
+        if MAX_WORD_LENGTH >= len(key) >= MIN_WORD_LENGTH:
+            words_dict[key] = value
     return words_dict
 
 
@@ -40,7 +44,7 @@ def _get_top_n_words_pages_dict(page_dict: dict, n: int):
 def _get_global_words(global_dict: dict):
     new_global_dict = {}
     for word in global_dict:
-        if word == "@Total Word" or word == "@Total Page":
+        if word == "@Total Word" or word == "@Total Page" or not (MAX_WORD_LENGTH >= len(word) >= MIN_WORD_LENGTH) :
             continue
         new_global_dict[word] = global_dict[word]["a"]
 
@@ -168,7 +172,19 @@ def top_n_topic_words_extractor(result_dir: str, n, delete: bool):
     if delete:
         os.remove(join(result_dir, "GlobalTopicsWords.json"))
 
+
+def _get_min_word_length(lang):  # Returns min admitted word length for the language (sync in textnormalizer)
+    if lang in ["gan", "ja", "ko", "vi",  "wuu", "zh", "zh-classical", "zh-yue"]:
+        return 1  # Hang, Hans, Hant scripts
+    elif lang == "vi":
+        return 2  # Hybrid case of Chu Nom in Latn
+    else:
+        return 3
+
+
 def main():
+    global MIN_WORD_LENGTH
+    MIN_WORD_LENGTH = _get_min_word_length(sys.argv[5])
     top_n_words_page_extractor(sys.argv[1], sys.argv[2], True)
     top_n_global_words_extractor(sys.argv[1], sys.argv[3], True)
     top_n_topic_words_extractor(sys.argv[1], sys.argv[4], True)

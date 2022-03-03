@@ -212,6 +212,7 @@ func (wt builder) Process(ctx context.Context, fail func(error) error) (wtOut bu
 		"WORDSPAGELIMIT":   strconv.Itoa(wt.Limits.WordsPages),
 		"GLOBALWORDSLIMIT": strconv.Itoa(wt.Limits.GlobalWords),
 		"TOPICWORDSLIMIT":  strconv.Itoa(wt.Limits.TopicWords),
+		"LANG": 			wt.Lang,
 	})
 	if err != nil {
 		fail(errors.WithStack(err))
