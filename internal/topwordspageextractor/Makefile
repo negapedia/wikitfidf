@@ -32,7 +32,7 @@ clean:
 	@rm -f topwordspageextractor.o topwordspageextractor.c
 
 run: clean all
-	PYTHONHOME=$(PYPREFIX) LD_LIBRARY_PATH=$(LIBDIR1):$$LD_LIBRARY_PATH ./topwordspageextractor $(RESULTDIR) $(WORDSPAGELIMIT) $(GLOBALWORDSLIMIT) $(TOPICWORDSLIMIT)
+	PYTHONHOME=$(PYPREFIX) LD_LIBRARY_PATH=$(LIBDIR1):$$LD_LIBRARY_PATH ./topwordspageextractor $(RESULTDIR) $(WORDSPAGELIMIT) $(GLOBALWORDSLIMIT) $(TOPICWORDSLIMIT) $(LANG)
 
 runandselfclean: run clean
 	rm -f topwordspageextractor.pyx topwordspageextractor.o topwordspageextractor.c topwordspageextractor Makefile
