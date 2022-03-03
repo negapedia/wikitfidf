@@ -208,8 +208,14 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
             reverse_stemming_dict = {}
 
             reverts_texts = []
+            reverts_length = 0
             for reverts in dump_dict["Revision"]:
-                reverts_texts.append(reverts["Text"])
+                single_revert = reverts["Text"]
+                reverts_length += len(single_revert)
+                if reverts_length > 1000000: # spacy limit (cf. max_length)
+                    logging.warning(f"Revert too big ({single_revert}) at file: {filename}")
+                    break
+                reverts_texts.append(single_revert)
             
             multidoc = nlp.pipe(reverts_texts)
             for reverts, doc in zip(dump_dict["Revision"], multidoc):
@@ -280,7 +286,7 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
 
 
 def async_error_logger(e):
-    logging.debug(e)
+    logging.error(e)  # The show must go on.
 
 
 def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
@@ -294,9 +300,11 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
 
     MIN_WORD_LENGTH = _get_min_word_length(lang)
     STOPWORDS = _lang_stopwords(lang)
-    (nlp, lemmatable) = _get_nlp_processor(lang)
 
-    logging.basicConfig(filename="/data/error.log", level=logging.DEBUG)
+    (nlp, lemmatable) = _get_nlp_processor(lang)
+    normalization_log = "/data/normalization.log"
+
+    logging.basicConfig(filename=normalization_log, level=logging.DEBUG)
 
     parallelism = max(1, cpu_count() - 1)
     executor = Pool(parallelism)
@@ -306,6 +314,9 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
                 error_callback = async_error_logger)
     executor.close()
     executor.join()
+
+    if os.path.exists(normalization_log) and os.path.getsize(normalization_log) == 0:
+        os.remove(normalization_log)
 
 
 def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
