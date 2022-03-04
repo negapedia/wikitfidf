@@ -4,22 +4,15 @@
 
 # IF YOU MODIFY THIS FILE, YOU NEED TO RUN "go generate" IN "assets" FOR CHANGES TO TAKE EFFECT.
 
-import chunk
 import glob
 import json
 import os
-# from pickle import STOP
 import sys
 from multiprocessing import Pool, cpu_count
-from os.path import join
-# from tracemalloc import stop
 import nltk
 import spacy
-""" @@debug
-import time
-import os.path
-"""
 import logging
+from itertools import zip_longest
 
 
 nltk.download('punkt')
@@ -199,7 +192,7 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
     n_last_bucket = 100 if (o_process == parallelism -1) else (o_process + 1) * bsize
 
     for n_bucket in range(n_first_bucket, n_last_bucket):
-        bucket = glob.iglob(join(result_dir, "W*" + f"{n_bucket:02d}" + ".*"))
+        bucket = glob.iglob(os.path.join(result_dir, "W*" + f"{n_bucket:02d}" + ".*"))
         for filename in bucket:
             with open(filename, "r", encoding='utf-8') as the_file:
                 dump_dict = json.load(the_file)
@@ -212,13 +205,13 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
             for reverts in dump_dict["Revision"]:
                 single_revert = reverts["Text"]
                 reverts_length += len(single_revert)
-                if reverts_length > 1000000: # spacy limit (cf. max_length)
-                    logging.warning(f"Revert too big ({single_revert}) at file: {filename}")
+                if reverts_length > 1000000:  # spacy limit (cf. max_length)
+                    logging.warning(f"Revert overflow (reaching {reverts_length} chars) at file: {filename}")
                     break
                 reverts_texts.append(single_revert)
             
             multidoc = nlp.pipe(reverts_texts)
-            for reverts, doc in zip(dump_dict["Revision"], multidoc):
+            for reverts, doc in zip_longest(dump_dict["Revision"], multidoc, fillvalue=[]):
                 if reverts["Text"] is None:
                     continue
                 if lemmatable:
@@ -233,15 +226,14 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
                     reverts["Text"], reverse_stemming_dict = _stemming(reverts["Text"], reverse_stemming_dict, lang)
 
             page_id = dump_dict["PageID"]
-            #topic_id = dump_dict["TopicID"]
 
-            os.remove(filename)  # @@@ debug
-            with open(join(result_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
+            os.remove(filename)
+            with open(os.path.join(result_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
                 json.dump(dump_dict, file, ensure_ascii=False)
-                file.flush()  # overzealous for debug
-            with open(join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
+                file.flush()  # overzealous
+            with open(os.path.join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
                 json.dump(reverse_stemming_dict, file, ensure_ascii=False)
-                file.flush()  # overzealous for debug
+                file.flush()  # overzealous
 
 
 def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
@@ -274,15 +266,14 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
         reverts["Text"], reverse_stemming_dict = _stemming(reverts["Text"], reverse_stemming_dict, lang)
 
     page_id = dump_dict["PageID"]
-    topic_id = dump_dict["TopicID"]
 
     os.remove(filename)
-    with open(join(result_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
+    with open(os.path.join(result_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
         json.dump(dump_dict, file, ensure_ascii=False)
-        file.flush()  # overzealous for debug
-    with open(join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
+        file.flush()  # overzealous
+    with open(os.path.join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
         json.dump(reverse_stemming_dict, file, ensure_ascii=False)
-        file.flush()  # overzealous for debug
+        file.flush()  # overzealous
 
 
 def async_error_logger(e):
@@ -328,7 +319,7 @@ def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
 
     (nlp, lemmatable) = _get_nlp_processor(lang)
 
-    file_to_clean = sorted(glob.glob(join(result_dir, "W[0-9]*.json")),
+    file_to_clean = sorted(glob.glob(os.path.join(result_dir, "W[0-9]*.json")),
                            key=os.path.getsize)  # from the smallest to the biggest
 
     executor = Pool(cpu_count())
@@ -343,8 +334,4 @@ def main():
 
 
 if __name__ == "__main__":
-    """ @@@ debug
-    while not os.path.exists("/data/resume"):
-        time.sleep(10)
-    """
     main()
