@@ -8,10 +8,10 @@ import glob
 import json
 import os
 import sys
+import datetime
 from multiprocessing import Pool, cpu_count
 import nltk
 import spacy
-import logging
 from itertools import zip_longest
 
 
@@ -175,7 +175,7 @@ def _get_min_word_length(lang):  # Returns min admitted word length for the lang
         return 3
 
 
-def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: str, nlp, lemmatable: bool):
+def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: str, nlp, lemmatable: bool, log_file: str):
     """
     _words_extractor perform tokenization, stopwords cleaning and lemmatization on a single file "filename"
     :param result_dir: path of result folder
@@ -185,55 +185,58 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
     :param lang: wikipedia language
     :param nlp: the NLP processor to be used
     :lemmatable: flag indicating whether the nlp processor supports lemmatization for lang
+    :log_file: file for async non-blocking logging
     """
 
-    bsize = 100 // parallelism
-    n_first_bucket = o_process * bsize
-    n_last_bucket = 100 if (o_process == parallelism -1) else (o_process + 1) * bsize
+    with open(log_file, "w", encoding='utf-8') as logger:  # Non-blocking async logger
+        bsize = 100 // parallelism
+        n_first_bucket = o_process * bsize
+        n_last_bucket = 100 if (o_process == parallelism -1) else (o_process + 1) * bsize
 
-    for n_bucket in range(n_first_bucket, n_last_bucket):
-        bucket = glob.iglob(os.path.join(result_dir, "W*" + f"{n_bucket:02d}" + ".*"))
-        for filename in bucket:
-            with open(filename, "r", encoding='utf-8') as the_file:
-                dump_dict = json.load(the_file)
-                the_file.flush()  # overzealous
+        for n_bucket in range(n_first_bucket, n_last_bucket):
+            bucket = glob.iglob(os.path.join(result_dir, "W*" + f"{n_bucket:02d}" + ".*"))
+            for filename in bucket:
+                with open(filename, "r", encoding='utf-8') as the_file:
+                    dump_dict = json.load(the_file)
+                    the_file.flush()  # overzealous
 
-            reverse_stemming_dict = {}
+                reverse_stemming_dict = {}
 
-            reverts_texts = []
-            reverts_length = 0
-            for reverts in dump_dict["Revision"]:
-                single_revert = reverts["Text"]
-                reverts_length += len(single_revert)
-                if reverts_length > 1000000:  # spacy limit (cf. max_length)
-                    logging.warning(f"Revert overflow (reaching {reverts_length} chars) at file: {filename}")
-                    break
-                reverts_texts.append(single_revert)
-            
-            multidoc = nlp.pipe(reverts_texts)
-            for reverts, doc in zip_longest(dump_dict["Revision"], multidoc, fillvalue=[]):
-                if reverts["Text"] is None:
-                    continue
-                if lemmatable:
-                    reverts["Text"] = [(w.lemma_ if w.pos_ == "PROPN" else w.norm_) \
-                                        for w in doc if (w.pos_ in ALLOWED_POS and w.is_alpha)]
-                else:
-                    reverts["Text"] = [w.lower_ for w in doc if w.is_alpha]
+                reverts_texts = []
+                reverts_length = 0
+                for reverts in dump_dict["Revision"]:
+                    single_revert = reverts["Text"]
+                    reverts_length += len(single_revert)
+                    if reverts_length > 1000000:  # spacy limit (cf. max_length)
+                        logger.write(f"{datetime.datetime.now().strftime('%I:%M:%S %p')} Reverts overflow (reaching {reverts_length} chars) with {len(single_revert)} chars of file: {filename}\n")
+                        break
+                    reverts_texts.append(single_revert)
+                
+                multidoc = nlp.pipe(reverts_texts)
+                for reverts, doc in zip_longest(dump_dict["Revision"], multidoc, fillvalue=[]):
+                    if reverts["Text"] is None:
+                        continue
+                    if lemmatable:
+                        reverts["Text"] = [(w.lemma_ if w.pos_ == "PROPN" else w.norm_) \
+                                            for w in doc if (w.pos_ in ALLOWED_POS and w.is_alpha)]
+                    else:
+                        reverts["Text"] = [w.lower_ for w in doc if w.is_alpha]
 
-                reverts["Text"] = _words_cleaner(reverts["Text"])
+                    reverts["Text"] = _words_cleaner(reverts["Text"])
 
-                if not lemmatable:
-                    reverts["Text"], reverse_stemming_dict = _stemming(reverts["Text"], reverse_stemming_dict, lang)
+                    if not lemmatable:
+                        reverts["Text"], reverse_stemming_dict = _stemming(reverts["Text"], reverse_stemming_dict, lang)
 
-            page_id = dump_dict["PageID"]
+                page_id = dump_dict["PageID"]
 
-            os.remove(filename)
-            with open(os.path.join(result_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
-                json.dump(dump_dict, file, ensure_ascii=False)
-                file.flush()  # overzealous
-            with open(os.path.join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
-                json.dump(reverse_stemming_dict, file, ensure_ascii=False)
-                file.flush()  # overzealous
+                os.remove(filename)
+                with open(os.path.join(result_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
+                    json.dump(dump_dict, file, ensure_ascii=False)
+                    file.flush()  # overzealous
+                with open(os.path.join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
+                    json.dump(reverse_stemming_dict, file, ensure_ascii=False)
+                    file.flush()  # overzealous
+        logger.flush()  # overzealous
 
 
 def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
@@ -277,7 +280,8 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
 
 
 def async_error_logger(e):
-    logging.error(e)  # The show must go on.
+    print(f"ERROR at time {datetime.datetime.now().strftime('%I:%M:%S %p')}:")
+    print("[[[{}]]]".format(e.__cause__)) # The show must go on. 
 
 
 def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
@@ -293,21 +297,21 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     STOPWORDS = _lang_stopwords(lang)
 
     (nlp, lemmatable) = _get_nlp_processor(lang)
-    normalization_log = "/data/normalization.log"
-
-    logging.basicConfig(filename=normalization_log, level=logging.DEBUG)
+    log_prefix = "/data/normalization_"
 
     parallelism = max(1, cpu_count() - 1)
     executor = Pool(parallelism)
     for i in range(parallelism):
+        log_file = log_prefix + str(i) + ".log"
         executor.apply_async(_words_extractor, \
-            args=(result_dir, i, parallelism, lang, nlp, lemmatable), \
+            args=(result_dir, i, parallelism, lang, nlp, lemmatable, log_file), \
                 error_callback = async_error_logger)
     executor.close()
     executor.join()
-
-    if os.path.exists(normalization_log) and os.path.getsize(normalization_log) == 0:
-        os.remove(normalization_log)
+    for i in range(parallelism):
+        log_file = log_prefix + str(i) + ".log"
+        if os.path.exists(log_file) and os.path.getsize(log_file) == 0:
+            os.remove(log_file)
 
 
 def concurrent_stopwords_cleaner_stemmer(result_dir: str, lang: str):
