@@ -6,10 +6,12 @@
 
 import glob
 import json
+import multiprocessing
 import os
+from statistics import multimode
 import sys
 import datetime
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool, cpu_count, set_start_method
 import nltk
 import spacy
 from itertools import zip_longest
@@ -175,20 +177,19 @@ def _get_min_word_length(lang):  # Returns min admitted word length for the lang
         return 3
 
 
-def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: str, nlp, lemmatable: bool, log_file: str):
+def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: str, log_file: str):
     """
     _words_extractor perform tokenization, stopwords cleaning and lemmatization on a single file "filename"
     :param result_dir: path of result folder
     :param o_process: process ordinal (in range(parallelism))
     :param parallelism: degree of parallelism
-    :param buckets: list of iterators of files to preocess
     :param lang: wikipedia language
-    :param nlp: the NLP processor to be used
-    :lemmatable: flag indicating whether the nlp processor supports lemmatization for lang
     :log_file: file for async non-blocking logging
     """
 
     with open(log_file, "w", encoding='utf-8') as logger:  # Non-blocking async logger
+        (nlp, lemmatable) = _get_nlp_processor(lang)
+
         bsize = 100 // parallelism
         n_first_bucket = o_process * bsize
         n_last_bucket = 100 if (o_process == parallelism -1) else (o_process + 1) * bsize
@@ -208,7 +209,7 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
                     single_revert = reverts["Text"]
                     reverts_length += len(single_revert)
                     if reverts_length > 1000000:  # spacy limit (cf. max_length)
-                        logger.write(f"{datetime.datetime.now().strftime('%I:%M:%S %p')} Reverts overflow (reaching {reverts_length} chars) with {len(single_revert)} chars of file: {filename}\n")
+                        logger.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Reverts overflow (reaching {reverts_length} chars) with {len(single_revert)} chars of file: {filename}\n")
                         break
                     reverts_texts.append(single_revert)
                 
@@ -280,7 +281,7 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
 
 
 def async_error_logger(e):
-    print(f"ERROR at time {datetime.datetime.now().strftime('%I:%M:%S %p')}:")
+    print(f"ERROR at time {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} :")
     print("[[[{}]]]".format(e.__cause__)) # The show must go on. 
 
 
@@ -296,15 +297,15 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     MIN_WORD_LENGTH = _get_min_word_length(lang)
     STOPWORDS = _lang_stopwords(lang)
 
-    (nlp, lemmatable) = _get_nlp_processor(lang)
     log_prefix = "/data/normalization_"
+    set_start_method("spawn")
 
     parallelism = max(1, cpu_count() - 1)
     executor = Pool(parallelism)
     for i in range(parallelism):
         log_file = log_prefix + str(i) + ".log"
         executor.apply_async(_words_extractor, \
-            args=(result_dir, i, parallelism, lang, nlp, lemmatable, log_file), \
+            args=(result_dir, i, parallelism, lang, log_file), \
                 error_callback = async_error_logger)
     executor.close()
     executor.join()
