@@ -190,12 +190,12 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
     with open(log_file, "w", encoding='utf-8') as logger:  # Non-blocking async logger
         (nlp, lemmatable) = _get_nlp_processor(lang)
 
-        bsize = 100 // parallelism
+        bsize = 1000 // parallelism
         n_first_bucket = o_process * bsize
-        n_last_bucket = 100 if (o_process == parallelism -1) else (o_process + 1) * bsize
+        n_last_bucket = 1000 if (o_process == parallelism -1) else (o_process + 1) * bsize
 
         for n_bucket in range(n_first_bucket, n_last_bucket):
-            bucket = glob.iglob(os.path.join(result_dir, "W*" + f"{n_bucket:02d}" + ".*"))
+            bucket = glob.iglob(os.path.join(result_dir, "W*" + f"{n_bucket:03d}" + ".*"))
             for filename in bucket:
                 with open(filename, "r", encoding='utf-8') as the_file:
                     dump_dict = json.load(the_file)
@@ -281,8 +281,8 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
 
 
 def async_error_logger(e):
-    print(f"ERROR at time {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} :")
-    print("[[[{}]]]".format(e.__cause__)) # The show must go on. 
+    sys.stderr.write(f"ERROR at time {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} :")
+    sys.stderr.write("[[[{}]]]".format(e.__cause__)) # The show must go on. 
 
 
 def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
