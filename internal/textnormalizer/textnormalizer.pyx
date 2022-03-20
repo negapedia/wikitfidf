@@ -6,12 +6,10 @@
 
 import glob
 import json
-import multiprocessing
 import os
-from statistics import multimode
 import sys
 import datetime
-from multiprocessing import Pool, cpu_count, set_start_method
+from multiprocessing import Pool, cpu_count
 import nltk
 import spacy
 from itertools import zip_longest
@@ -210,6 +208,7 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
                     reverts_length += len(single_revert)
                     if reverts_length > 1000000:  # spacy limit (cf. max_length)
                         logger.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Reverts overflow (reaching {reverts_length} chars) with {len(single_revert)} chars of file: {filename}\n")
+                        logger.flush()
                         break
                     reverts_texts.append(single_revert)
                 
@@ -280,9 +279,11 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
         file.flush()  # overzealous
 
 
-def async_error_logger(e):
-    sys.stderr.write(f"ERROR at time {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} :")
-    sys.stderr.write("[[[{}]]]".format(e.__cause__)) # The show must go on. 
+def async_error_logger(e):  # The show must go on.
+    with open(str(os.getpid()) + "-error.log", "w", encoding='utf-8') as error_log:
+        error_log.write(f"ERROR at time {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} :")
+        error_log.write("[[[{}]]]".format(e.__cause__))
+        error_log.flush()  # overzealous
 
 
 def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
@@ -298,7 +299,6 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     STOPWORDS = _lang_stopwords(lang)
 
     log_prefix = "/data/normalization_"
-    set_start_method("spawn")
 
     parallelism = max(1, cpu_count() - 1)
     executor = Pool(parallelism)
