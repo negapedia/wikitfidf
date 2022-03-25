@@ -7,6 +7,7 @@
 import glob
 import json
 import os
+import shutil
 import sys
 import datetime
 from multiprocessing import Pool, cpu_count
@@ -175,10 +176,11 @@ def _get_min_word_length(lang):  # Returns min admitted word length for the lang
         return 3
 
 
-def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: str, log_file: str):
+def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelism: int, lang: str, log_file: str):
     """
     _words_extractor perform tokenization, stopwords cleaning and lemmatization on a single file "filename"
-    :param result_dir: path of result folder
+    :param result_dir: path of input folder
+    :param output_dir: path of output folder
     :param o_process: process ordinal (in range(parallelism))
     :param parallelism: degree of parallelism
     :param lang: wikipedia language
@@ -192,10 +194,9 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
         n_first_bucket = o_process * bsize
         n_last_bucket = 1000 if (o_process == parallelism -1) else (o_process + 1) * bsize
 
-        for n_bucket in range(n_first_bucket, n_last_bucket):
-            bucket = glob.iglob(os.path.join(result_dir, "W*" + f"{n_bucket:03d}" + ".*"))
-            for filename in bucket:
-                with open(filename, "r", encoding='utf-8') as the_file:
+        for file in os.scandir(input_dir):
+            if n_first_bucket <= int(file.name[-8:-5]) < n_last_bucket:
+                with open(file.path, "r", encoding='utf-8') as the_file:
                     dump_dict = json.load(the_file)
                     the_file.flush()  # overzealous
 
@@ -207,7 +208,7 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
                     single_revert = reverts["Text"]
                     reverts_length += len(single_revert)
                     if reverts_length > 1000000:  # spacy limit (cf. max_length)
-                        logger.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Reverts overflow (reaching {reverts_length} chars) with {len(single_revert)} chars of file: {filename}\n")
+                        logger.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Reverts overflow (reaching {reverts_length} chars) with {len(single_revert)} chars of file: {file.name}\n")
                         logger.flush()
                         break
                     reverts_texts.append(single_revert)
@@ -229,11 +230,11 @@ def _words_extractor(result_dir: str, o_process: int, parallelism: int, lang: st
 
                 page_id = dump_dict["PageID"]
 
-                os.remove(filename)
-                with open(os.path.join(result_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
+                os.remove(file.path)
+                with open(os.path.join(output_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
                     json.dump(dump_dict, file, ensure_ascii=False)
                     file.flush()  # overzealous
-                with open(os.path.join(result_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
+                with open(os.path.join(output_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
                     json.dump(reverse_stemming_dict, file, ensure_ascii=False)
                     file.flush()  # overzealous
         logger.flush()  # overzealous
@@ -299,16 +300,20 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     STOPWORDS = _lang_stopwords(lang)
 
     log_prefix = "/data/normalization_"
+    input_dir = result_dir + "2"
+    shutil.move(result_dir, input_dir)
+    os.mkdir(result_dir)
 
     parallelism = max(1, cpu_count() - 1)
     executor = Pool(parallelism)
     for i in range(parallelism):
         log_file = log_prefix + str(i) + ".log"
         executor.apply_async(_words_extractor, \
-            args=(result_dir, i, parallelism, lang, log_file), \
+            args=(input_dir, result_dir, i, parallelism, lang, log_file), \
                 error_callback = async_error_logger)
     executor.close()
     executor.join()
+    os.rmdir(input_dir)
     for i in range(parallelism):
         log_file = log_prefix + str(i) + ".log"
         if os.path.exists(log_file) and os.path.getsize(log_file) == 0:
