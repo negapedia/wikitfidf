@@ -300,10 +300,10 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     STOPWORDS = _lang_stopwords(lang)
 
     log_prefix = "/data/normalization_"
-    input_dir = result_dir + "2"
+    input_dir = result_dir + "_input"
     shutil.move(result_dir, input_dir)
     os.mkdir(result_dir)
-    shutil.move(os.join(input_dir, "Stem"), result_dir)
+    shutil.move(os.path.join(input_dir, "Stem"), result_dir)
 
     parallelism = max(1, cpu_count() - 1)
     executor = Pool(parallelism)
