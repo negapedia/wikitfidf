@@ -230,7 +230,6 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
 
                 page_id = dump_dict["PageID"]
 
-                os.remove(file.path)
                 with open(os.path.join(output_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
                     json.dump(dump_dict, file, ensure_ascii=False)
                     file.flush()  # overzealous
@@ -314,7 +313,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
                 error_callback = async_error_logger)
     executor.close()
     executor.join()
-    os.rmdir(input_dir)
+    shutil.rmtree(input_dir, ignore_errors=True)
     for i in range(parallelism):
         log_file = log_prefix + str(i) + ".log"
         if os.path.exists(log_file) and os.path.getsize(log_file) == 0:
