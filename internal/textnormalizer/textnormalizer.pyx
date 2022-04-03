@@ -11,6 +11,7 @@ import shutil
 import sys
 import datetime
 from multiprocessing import Pool, cpu_count
+import subprocess
 import nltk
 import spacy
 from itertools import zip_longest
@@ -106,13 +107,6 @@ def _words_cleaner(revert_text):
         if not (word.lower() in STOPWORDS) and (MAX_WORD_LENGTH >= len(word) >= MIN_WORD_LENGTH)]
 
 
-def _increment_word_counter(word_dict, word):
-    if word in word_dict.keys():
-        word_dict[word] += 1
-    else:
-        word_dict[word] = 1
-
-
 def _get_stemmer(lang):
     if lang in ["en", "da", "nl", "fr", "de", "es", "hu", "it", "simple", "no", "pt", "ro", "ru", "sv"]:
         # N.B. for portuguese (pt) is also available RSLPStemmer
@@ -174,6 +168,21 @@ def _get_min_word_length(lang):  # Returns min admitted word length for the lang
         return 2  # Hybrid case of Chu Nom in Latn
     else:
         return 3
+
+
+def _async_delete_dir_content(the_dir: str):
+    """
+    Fast-delete in parallel a directory
+    (NOTE: by design choice, no guarantee this ends before the calling program, might stay orphaned until completion)
+    :param the_dir: directory to delete
+    """
+    empty_dir = os.path.join(os.path.dirname(the_dir), "empty_dir")
+    os.makedirs(empty_dir, exist_ok=True)
+    empty_dir = os.path.join(empty_dir, "")  # add a trailing slash if not present
+    the_dir = os.path.join(the_dir, "")  # ditto
+    subprocess.Popen("rsync -a --delete " + empty_dir + " " + the_dir + \
+        " ; rmdir " + empty_dir + " " + the_dir, \
+        shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelism: int, lang: str, log_file: str):
@@ -280,7 +289,7 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
 
 
 def async_error_logger(e):  # The show must go on.
-    with open(str(os.getpid()) + "-error.log", "w", encoding='utf-8') as error_log:
+    with open(str(os.getpid()) + "-error.log", "a", encoding='utf-8') as error_log:
         error_log.write(f"ERROR at time {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} :")
         error_log.write("[[[{}]]]".format(e.__cause__))
         error_log.flush()  # overzealous
@@ -300,6 +309,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
 
     log_prefix = "/data/normalization_"
     input_dir = result_dir + "_input"
+    shutil.rmtree(result_dir, ignore_errors=True)
     shutil.move(result_dir, input_dir)
     os.mkdir(result_dir)
     shutil.move(os.path.join(input_dir, "Stem"), result_dir)
@@ -313,7 +323,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
                 error_callback = async_error_logger)
     executor.close()
     executor.join()
-    shutil.rmtree(input_dir, ignore_errors=True)
+    _async_delete_dir_content(input_dir)
     for i in range(parallelism):
         log_file = log_prefix + str(i) + ".log"
         if os.path.exists(log_file) and os.path.getsize(log_file) == 0:
