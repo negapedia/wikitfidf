@@ -182,8 +182,8 @@ def _async_delete_dir_content(the_dir: str):
     the_dir = os.path.join(the_dir, "")  # ditto
     subprocess.Popen("rsync -a --delete " + empty_dir + " " + the_dir + \
         " ; rmdir " + empty_dir + " " + the_dir, \
-        creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP, \
-        shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, \
+        start_new_session=True)
 
 
 def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelism: int, lang: str, log_file: str):
