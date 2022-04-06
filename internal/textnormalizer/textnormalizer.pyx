@@ -309,7 +309,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
 
     log_prefix = "/data/normalization_"
     input_dir = result_dir + "_input"
-    shutil.rmtree(result_dir, ignore_errors=True)
+    shutil.rmtree(input_dir, ignore_errors=True)
     shutil.move(result_dir, input_dir)
     os.mkdir(result_dir)
     shutil.move(os.path.join(input_dir, "Stem"), result_dir)
