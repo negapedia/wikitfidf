@@ -170,20 +170,18 @@ def _get_min_word_length(lang):  # Returns min admitted word length for the lang
         return 3
 
 
-def _async_delete_dir_content(the_dir: str):
+def _delete_dir_content(the_dir: str):
     """
-    Fast-delete in parallel a directory
-    (NOTE: by design choice, no guarantee this ends before the calling program, might stay orphaned until completion)
+    Fast-delete a directory (no error check: the show must go on)
     :param the_dir: directory to delete
     """
     empty_dir = os.path.join(os.path.dirname(the_dir), "empty_dir")
     os.makedirs(empty_dir, exist_ok=True)
     empty_dir = os.path.join(empty_dir, "")  # add a trailing slash if not present
     the_dir = os.path.join(the_dir, "")  # ditto
-    subprocess.Popen("rsync -a --delete " + empty_dir + " " + the_dir + \
+    subprocess.run("rsync -a --delete " + empty_dir + " " + the_dir + \
         " ; rmdir " + empty_dir + " " + the_dir, \
-        shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, \
-        start_new_session=True)
+        shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelism: int, lang: str, log_file: str):
@@ -324,7 +322,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
                 error_callback = async_error_logger)
     executor.close()
     executor.join()
-    _async_delete_dir_content(input_dir)
+    _delete_dir_content(input_dir)
     for i in range(parallelism):
         log_file = log_prefix + str(i) + ".log"
         if os.path.exists(log_file) and os.path.getsize(log_file) == 0:
