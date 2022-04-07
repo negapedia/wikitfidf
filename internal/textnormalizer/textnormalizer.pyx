@@ -151,8 +151,10 @@ def _get_tokenizer_lang(lang):
 def _get_nlp_processor(lang):  # Returns nlp processor and lemmatization capability (True/False)
     if lang == "en" or lang == "simple":
         return (spacy.load("en_core_web_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
-    elif lang in ["ca", "da", "de", "el", "es", "fr", "it", "ja", "lt", "nl", "pl", "pt", "ro", "ru", "zh"]:
+    elif lang in ["ca", "da", "de", "el", "es", "fr", "it", "ja", "lt", "nl", "pl", "pt", "ro", "ru"]:
         return (spacy.load(lang + "_core_news_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
+    elif lang == "zh":
+        return (spacy.load("zh_core_web_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
     elif lang == "no":
         return (spacy.load("nb_core_news_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
     elif lang in ["eml", "fur", "lij", "la", "lmo", "nap", "pms", "sc", "scn", "roa-tara", "vec"]:
@@ -182,6 +184,22 @@ def _delete_dir_content(the_dir: str):
     subprocess.run("rsync -a --delete " + empty_dir + " " + the_dir + \
         " ; rmdir " + empty_dir + " " + the_dir, \
         shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def _async_delete_dir_content(the_dir: str):
+    """
+    Fast-delete in parallel a directory
+    (NOTE: by design choice, no guarantee this ends before the calling program, might stay orphaned until completion)
+    :param the_dir: directory to delete
+    """
+    empty_dir = os.path.join(os.path.dirname(the_dir), "empty_dir")
+    os.makedirs(empty_dir, exist_ok=True)
+    empty_dir = os.path.join(empty_dir, "")  # add a trailing slash if not present
+    the_dir = os.path.join(the_dir, "")  # ditto
+    subprocess.Popen("rsync -a --delete " + empty_dir + " " + the_dir + \
+        " ; rmdir " + empty_dir + " " + the_dir, \
+        shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, \
+        start_new_session=True)
 
 
 def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelism: int, lang: str, log_file: str):
@@ -307,6 +325,8 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     STOPWORDS = _lang_stopwords(lang)
 
     log_prefix = "/data/normalization_"
+    for logfile in glob.glob(log_prefix + "*"):
+        os.remove(logfile)
     input_dir = result_dir + "_input"
     shutil.rmtree(input_dir, ignore_errors=True)
     shutil.move(result_dir, input_dir)
@@ -322,7 +342,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
                 error_callback = async_error_logger)
     executor.close()
     executor.join()
-    _delete_dir_content(input_dir)
+    _async_delete_dir_content(input_dir)
     for i in range(parallelism):
         log_file = log_prefix + str(i) + ".log"
         if os.path.exists(log_file) and os.path.getsize(log_file) == 0:
