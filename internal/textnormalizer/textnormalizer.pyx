@@ -15,7 +15,8 @@ import subprocess
 import nltk
 import spacy
 from itertools import zip_longest
-
+import torch
+torch.set_num_threads(1)
 
 nltk.download('punkt')
 from nltk.corpus import stopwords
