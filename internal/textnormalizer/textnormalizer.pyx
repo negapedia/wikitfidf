@@ -152,8 +152,10 @@ def _get_tokenizer_lang(lang):
 def _get_nlp_processor(lang):  # Returns nlp processor and lemmatization capability (True/False)
     if lang == "en" or lang == "simple":
         return (spacy.load("en_core_web_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
-    elif lang in ["ca", "da", "de", "el", "es", "fr", "it", "ja", "lt", "nl", "pl", "pt", "ro", "ru"]:
+    elif lang in ["ca", "da", "de", "el", "es", "fr", "it", "lt", "mk", "nl", "pl", "pt", "ro", "ru"]:
         return (spacy.load(lang + "_core_news_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
+    elif lang == "ja":
+        return (spacy.load("ja_core_news_sm", exclude=["parser", "ner", "textcat", "custom"]), False)
     elif lang == "zh":
         return (spacy.load("zh_core_web_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
     elif lang == "no":
