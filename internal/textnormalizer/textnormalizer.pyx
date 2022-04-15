@@ -245,8 +245,7 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
                     if reverts["Text"] is None:
                         continue
                     if lemmatable:
-                        reverts["Text"] = [(w.lemma_ if w.pos_ == "PROPN" else w.norm_) \
-                                            for w in doc if (w.pos_ in ALLOWED_POS and w.is_alpha)]
+                        reverts["Text"] = [w.lemma_ for w in doc if (w.pos_ in ALLOWED_POS and w.is_alpha)]
                     else:
                         reverts["Text"] = [w.lower_ for w in doc if w.is_alpha]
 
