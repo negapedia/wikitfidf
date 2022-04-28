@@ -216,7 +216,7 @@ def memory_check():
 def emergency_trigger(emergency:str, mem_available: float, logger):
     if logger != None:
         logger.write(
-            f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
+            f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - "
             f"{os.path.basename(emergency)} started ({mem_available:.2f}% of available RAM)\n"
         )
         logger.flush()
@@ -228,8 +228,8 @@ def check_emergency(emergency_list:list, logger):
         if os.path.exists(emergency):
             if logger != None:
                 logger.write(
-                    f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
-                    f"Emergency found: killing the process\n"
+                    f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - "
+                    f"Emergency {os.path.basename(emergency)} found: killing the process\n"
                 )
             return True
     return False
@@ -249,7 +249,7 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
     :param apocalypse: filename for apocalypse emergency level
     """
 
-    with open(log_file, "w", encoding='utf-8') as logger:  # Non-blocking async logger
+    with open(log_file, "a", encoding='utf-8') as logger:  # Non-blocking async logger
         (nlp, lemmatable) = _get_nlp_processor(lang)
 
         bsize = 1000 // parallelism
@@ -285,7 +285,11 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
                     single_revert = reverts["Text"]
                     reverts_length += len(single_revert)
                     if reverts_length > 1000000:  # spacy limit (cf. max_length)
-                        logger.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} Reverts overflow (reaching {reverts_length} chars) with {len(single_revert)} chars of file: {file.name}\n")
+                        logger.write(
+                            f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - "
+                            f"Reverts overflow (reaching {reverts_length} chars) "
+                            f"with {len(single_revert)} chars of file: {file.name}\n"
+                        )
                         logger.flush()
                         break
                     reverts_texts.append(single_revert)
@@ -357,7 +361,7 @@ def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
 
 def async_error_logger(e):  # The show must go on.
     with open(str(os.getpid()) + "-error.log", "a", encoding='utf-8') as error_log:
-        error_log.write(f"ERROR at time {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} :")
+        error_log.write(f"ERROR at time {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - ")
         error_log.write("[[[{}]]]".format(e.__cause__))
         error_log.flush()  # overzealous
 
