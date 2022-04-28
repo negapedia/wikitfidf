@@ -10,6 +10,7 @@ import os
 import shutil
 import sys
 import datetime
+from time import sleep
 from multiprocessing import Pool, cpu_count
 import subprocess
 import nltk
@@ -205,7 +206,39 @@ def _async_delete_dir_content(the_dir: str):
         start_new_session=True)
 
 
-def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelism: int, lang: str, log_file: str):
+def memory_check():
+    mem_status = os.popen('free -m').readlines()[1].split()[1:]
+    mem_available = int(mem_status[-1]) / int(mem_status[0])
+    if mem_available < 0.1:  # if available RAM is less than 10%
+        return (True, mem_available)
+    else:
+        return (False, mem_available)
+
+
+def emergency_trigger(emergency:str, mem_available: float, logger):
+    if logger != None:
+        logger.write(
+            f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
+            f"{os.path.basename(emergency)} started ({mem_available:.2f}% of available RAM)\n"
+        )
+        logger.flush()
+    open(emergency, "a+").close()  # Trigger emergency
+
+
+def check_emergency(emergency_list:list, logger):
+    for emergency in emergency_list:
+        if os.path.exists(emergency):
+            if logger != None:
+                logger.write(
+                    f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} "
+                    f"Emergency found: killing the process\n"
+                )
+            return True
+    return False
+
+
+def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelism: int, lang: str, \
+    log_file: str, armageddon: str, apocalypse: str):
     """
     _words_extractor perform tokenization, stopwords cleaning and lemmatization on a single file "filename"
     :param result_dir: path of input folder
@@ -213,7 +246,9 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
     :param o_process: process ordinal (in range(parallelism))
     :param parallelism: degree of parallelism
     :param lang: wikipedia language
-    :log_file: file for async non-blocking logging
+    :param log_file: file for async non-blocking logging
+    :param armageddon: filename for armageddon emergency level
+    :param apocalypse: filename for apocalypse emergency level
     """
 
     with open(log_file, "w", encoding='utf-8') as logger:  # Non-blocking async logger
@@ -222,8 +257,23 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
         bsize = 1000 // parallelism
         n_first_bucket = o_process * bsize
         n_last_bucket = 1000 if (o_process == parallelism -1) else (o_process + 1) * bsize
+        mem_clock = 0
+        first_iteration = True
 
         for file in os.scandir(input_dir):
+            if (mem_clock == 0):
+                mem_clock = 30  # NLP processing cycle (number of files)
+                if (o_process == 0):  # If I am the master process
+                    low_memory, mem_available = memory_check()
+                    if low_memory:
+                        if first_iteration:
+                            emergency_trigger(apocalypse, mem_available, logger)  # not just armageddon, apocalypse emergency level
+                            break
+                        else:
+                            emergency_trigger(armageddon, mem_available, logger)  # initiate armaggedon to delete all instances
+                if check_emergency([armageddon, apocalypse], logger):
+                    break
+            first_iteration = False
             if n_first_bucket <= int(file.name[-8:-5]) < n_last_bucket:
                 with open(file.path, "r", encoding='utf-8') as the_file:
                     dump_dict = json.load(the_file)
@@ -326,9 +376,15 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     MIN_WORD_LENGTH = _get_min_word_length(lang)
     STOPWORDS = _lang_stopwords(lang)
 
+    armageddon = "/data/Armageddon"
+    if os.path.exists(armageddon):
+        os.remove(armageddon)
+    apocalypse = "/data/APOCALYPSE"
+    if os.path.exists(apocalypse):
+        os.remove(apocalypse)
     log_prefix = "/data/normalization_"
-    for logfile in glob.glob(log_prefix + "*"):
-        os.remove(logfile)
+    for log_file in glob.glob(log_prefix + "*"):
+        os.remove(log_file)
     input_dir = result_dir + "_input"
     shutil.rmtree(input_dir, ignore_errors=True)
     shutil.move(result_dir, input_dir)
@@ -336,18 +392,35 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     shutil.move(os.path.join(input_dir, "Stem"), result_dir)
 
     parallelism = max(1, cpu_count() - 1)
-    executor = Pool(parallelism)
-    for i in range(parallelism):
-        log_file = log_prefix + str(i) + ".log"
-        executor.apply_async(_words_extractor, \
-            args=(input_dir, result_dir, i, parallelism, lang, log_file), \
-                error_callback = async_error_logger)
-    executor.close()
-    executor.join()
+    sleep_time = 8
+    while True:
+        executor = Pool(parallelism)
+        for i in range(parallelism):
+            log_file = log_prefix + str(i) + ".log"
+            executor.apply_async(_words_extractor, \
+                args=(input_dir, result_dir, i, parallelism, lang, \
+                    log_file, armageddon, apocalypse), \
+                    error_callback = async_error_logger)
+        executor.close()
+        executor.join()
+        del executor
+        if check_emergency([armageddon], None):
+            os.remove(armageddon)
+            sleep(8)
+        elif check_emergency([apocalypse], None):
+            if sleep_time > 4096:
+                break  # End of the world (and apocalypse file not deleted)
+            else:
+                sleep_time *= 2
+                sleep(sleep_time)
+                parallelism = max(1, parallelism // 2)
+                os.remove(apocalypse)
+        else:
+            break
+    
     _async_delete_dir_content(input_dir)
-    for i in range(parallelism):
-        log_file = log_prefix + str(i) + ".log"
-        if os.path.exists(log_file) and os.path.getsize(log_file) == 0:
+    for log_file in glob.glob(log_prefix + "*"):
+        if os.path.getsize(log_file) == 0:
             os.remove(log_file)
 
 
