@@ -390,8 +390,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     STOPWORDS = _lang_stopwords(lang)
 
     divine = "/data/divine"  # Divine intervention makes the master program gently kill children and respawn
-    if os.path.exists(divine):
-        os.remove(divine)
+    rocket = "/data/rocket"  # Rocket mode skips all remaining data extraction and proceeds
     log_prefix = "/data/normalization"
     for log_file in glob.glob(log_prefix + "*"):
         os.remove(log_file)
@@ -420,9 +419,14 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
                 children = multiprocessing.active_children()
                 if children == []:
                     break
+                elif os.path.exists(rocket):
+                    os.remove(rocket)
+                    log_message(logger, "Rocket mode: skipping remaining clouds generation")
+                    break
                 elif os.path.exists(divine):
                     os.remove(divine)
                     log_message(logger, "Divine intervention requested: performing respawn")
+                    emergency_level = "armageddon"
                     for process in children:
                         process.terminate()
                         executor.join()
