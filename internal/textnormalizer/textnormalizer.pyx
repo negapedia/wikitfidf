@@ -190,7 +190,7 @@ def _delete_dir_content(the_dir: str):
         shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-def log_message(logger, args: list):
+def log_message(logger, *args):
     if logger != None:
         logger.write(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - ")
         for arg in args:
@@ -236,11 +236,12 @@ def memory_status(logger):
     return status
 
 
-def emergency_trigger(emergency):
+def emergency_trigger(emergency, executor):
     if emergency != None:
         children = multiprocessing.active_children()
         for process in children:
             process.terminate()
+        executor.join()
     return emergency
 
 
@@ -299,8 +300,8 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
                     single_revert = reverts["Text"]
                     reverts_length += len(single_revert)
                     if reverts_length > 1000000:  # spacy limit (cf. max_length)
-                        log_message(logger, [f"Reverts overflow (reaching {reverts_length} chars) ", \
-                                             f"with {len(single_revert)} chars of file: {file.name}"])
+                        log_message(logger, f"Reverts overflow (reaching {reverts_length} chars) ", \
+                                            f"with {len(single_revert)} chars of file: {file.name}")
                         break
                     reverts_texts.append(single_revert)
                 
@@ -424,9 +425,10 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
                     log_message(logger, "Divine intervention requested: performing respawn")
                     for process in children:
                         process.terminate()
+                        executor.join()
                     break
                 else:
-                    emergency_level = emergency_trigger(memory_status(logger))
+                    emergency_level = emergency_trigger(memory_status(logger), executor)
             del executor
             gc.collect()
             if emergency_level == "armageddon":
@@ -442,7 +444,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
                     sleep(sleep_time)
                     monitor_time = max(8, monitor_time // 2)
                     parallelism = max(1, parallelism // 2)
-                    log_message(logger, f"New settings: Sleep={sleep_time}, Parallelism={parallelism}")
+                    log_message(logger, f"New settings: Sleep={sleep_time}s, Parallelism={parallelism}")
                     emergency_level = None
             else:
                 break
