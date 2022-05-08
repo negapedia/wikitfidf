@@ -223,22 +223,25 @@ def memory_check():
     return (ram_available, vm_available, int(mem_status_vm[1]))
 
 
-def memory_status(logger, armageddon, apocalypse):
+def memory_status(logger):
     status = None
     (ram_available, vm_available, vm_used) = memory_check()
     if (vm_used > 1000) or (ram_available < 0.2) or (vm_available < 0.7):
         log_message(logger, f"Memory emergency: {ram_available:.2f}% RAM, {vm_available:.2f}% VM, {vm_used}Mb VM")
-        status= armageddon
+        status= "armageddon"
         log_message(logger, "Armageddon status reached")
         if (ram_available < 0.1) or (vm_available < 0.5):
             log_message(logger, "Upgraded to APOCALYPSE status!")
-            status = apocalypse
+            status = "apocalypse"
     return status
 
 
 def emergency_trigger(emergency):
     if emergency != None:
-        open(emergency, "a+").close()  # Trigger emergency
+        children = multiprocessing.active_children()
+        for process in children:
+            process.terminate()
+    return emergency
 
 
 def check_emergency(logger, emergency_list:list):
@@ -260,7 +263,7 @@ class GracefulKiller:
 
 
 def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelism: int, lang: str, \
-    log_file: str, armageddon: str, apocalypse: str):
+    log_file: str):
     """
     _words_extractor perform tokenization, stopwords cleaning and lemmatization on a single file "filename"
     :param result_dir: path of input folder
@@ -269,8 +272,6 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
     :param parallelism: degree of parallelism
     :param lang: wikipedia language
     :param log_file: file for async non-blocking logging
-    :param armageddon: filename for armageddon emergency level
-    :param apocalypse: filename for apocalypse emergency level
     """
 
     killer = GracefulKiller()
@@ -280,18 +281,11 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
         bsize = 1000 // parallelism
         n_first_bucket = o_process * bsize
         n_last_bucket = 1000 if (o_process == parallelism -1) else (o_process + 1) * bsize
-        mem_clock = 30  # NLP processing cycle (number of files)
 
         for file in os.scandir(input_dir):
             if killer.kill_now:
                 log_message(logger, f"External KILL request, killing process")
                 break
-            mem_clock -= 1
-            if (mem_clock == 0):
-                mem_clock = 30
-                if check_emergency(logger, [armageddon, apocalypse]):
-                    break
-            first_iteration = False
             if n_first_bucket <= int(file.name[-8:-5]) < n_last_bucket:
                 with open(file.path, "r", encoding='utf-8') as the_file:
                     dump_dict = json.load(the_file)
@@ -394,13 +388,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     MIN_WORD_LENGTH = _get_min_word_length(lang)
     STOPWORDS = _lang_stopwords(lang)
 
-    armageddon = "/data/Armageddon"  # Armageddon causes respawn
-    if os.path.exists(armageddon):
-        os.remove(armageddon)
-    apocalypse = "/data/APOCALYPSE"  # Apocalypse causes respawn, - parallelism and + wait time
-    if os.path.exists(apocalypse):
-        os.remove(apocalypse)
-    divine = "/data/Divine"  # Divine intervention makes the master program gently kill children and respawn
+    divine = "/data/divine"  # Divine intervention makes the master program gently kill children and respawn
     if os.path.exists(divine):
         os.remove(divine)
     log_prefix = "/data/normalization"
@@ -411,47 +399,51 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     shutil.move(result_dir, input_dir)
     os.mkdir(result_dir)
     shutil.move(os.path.join(input_dir, "Stem"), result_dir)
+    emergency_level = None
 
     parallelism = max(1, multiprocessing.cpu_count() - 1)
     sleep_time = 8
+    monitor_time = 8
     with open(log_prefix + ".log", "a", encoding='utf-8') as logger:
         while True:
             executor = multiprocessing.Pool(parallelism)
             for i in range(parallelism):
                 log_file = log_prefix + "_" + str(i) + ".log"
                 executor.apply_async(_words_extractor, \
-                    args=(input_dir, result_dir, i, parallelism, lang, \
-                        log_file, armageddon, apocalypse), \
+                    args=(input_dir, result_dir, i, parallelism, lang, log_file), \
                         error_callback = async_error_logger)
             executor.close()
-            executor.join()
             while True:
-                sleep(600)
+                monitor_time = min(monitor_time + 2, 600)
+                sleep(monitor_time)
                 children = multiprocessing.active_children()
                 if children == []:
                     break
-                elif check_emergency(logger, [divine]):
+                elif os.path.exists(divine):
                     os.remove(divine)
+                    log_message(logger, "Divine intervention requested: performing respawn")
                     for process in children:
                         process.terminate()
                     break
                 else:
-                    emergency_trigger(memory_status(logger, armageddon, apocalypse))
+                    emergency_level = emergency_trigger(memory_status(logger))
             del executor
             gc.collect()
-            if check_emergency(logger, [armageddon]):
-                os.remove(armageddon)
+            if emergency_level == "armageddon":
                 sleep(8)
-            elif check_emergency(logger, [apocalypse]):
-                if sleep_time > 4096:
+                monitor_time = max(8, monitor_time // 2)
+                emergency_level = None
+            elif emergency_level == "apocalypse":
+                if sleep_time > 1024:
                     log_message(logger, "End of the World: incomplete processing")
                     break  # End of the world (and apocalypse file not deleted)
                 else:
                     sleep_time *= 2
                     sleep(sleep_time)
+                    monitor_time = max(8, monitor_time // 2)
                     parallelism = max(1, parallelism // 2)
-                    os.remove(apocalypse)
                     log_message(logger, f"New settings: Sleep={sleep_time}, Parallelism={parallelism}")
+                    emergency_level = None
             else:
                 break
     
