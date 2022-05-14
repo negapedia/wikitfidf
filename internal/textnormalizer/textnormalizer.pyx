@@ -10,7 +10,7 @@ import os
 import shutil
 import sys
 import datetime
-from time import sleep
+import time
 import multiprocessing
 import subprocess
 import signal
@@ -24,7 +24,7 @@ from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer, ISRIStemmer
 from nltk.tokenize import word_tokenize
 
-MIN_WORD_LENGTH = 1  # Min lenght for words (might be changed in-program wrt language)
+MIN_WORD_LENGTH = 1  # Min lenght for words (default: might be changed in-program wrt language)
 MAX_WORD_LENGTH = 33  # Max lenght for words
 ALLOWED_POS = ["ADJ", "ADV", "NOUN", "PROPN", "VERB"]  # Allowed Part Of Speech tags
 STOPWORDS = []
@@ -33,7 +33,7 @@ FORBIDDEN_HTML_WORDS = ["colspan", "colspan=", "style", "style=", "https", "http
 FORBIDDEN_WORDS = ["file", "isbn", "noeditsection", "rowspan", "colspan", "br", "en"]  # words leaked by wiki markup
 
 
-def _nltk_lang_to_name(lang):
+def _nltk_lang_to_name(lang: str):
     lang_names = {
         "en": "english",
         "ar": "arabic",
@@ -87,7 +87,7 @@ def _nltk_lang_to_name(lang):
         return False
 
 
-def _lang_stopwords(lang):
+def _lang_stopwords(lang: str):
     if lang in ["co", "eml", "fur", "lij", "lmo", "nap", "pms", "sc", "scn", "roa-tara", "vec"]:
         return set(stopwords.words(_nltk_lang_to_name("it")) + \
             stopwords.words(_nltk_lang_to_name("en")) + FORBIDDEN_WORDS)
@@ -109,7 +109,7 @@ def _words_cleaner(revert_text):
         if not (word.lower() in STOPWORDS) and (MAX_WORD_LENGTH >= len(word) >= MIN_WORD_LENGTH)]
 
 
-def _get_stemmer(lang):
+def _get_stemmer(lang: str):
     if lang in ["en", "da", "nl", "fr", "de", "es", "hu", "it", "simple", "no", "pt", "ro", "ru", "sv"]:
         # N.B. for portuguese (pt) is also available RSLPStemmer
         return SnowballStemmer(_nltk_lang_to_name(lang))
@@ -121,7 +121,7 @@ def _get_stemmer(lang):
         return None
 
 
-def _stemming(revert_text, stemmer_reverse_dict, lang):
+def _stemming(revert_text, stemmer_reverse_dict, lang: str):
     stemmer = _get_stemmer(lang)
     if stemmer is None:
         return revert_text, {}
@@ -139,7 +139,7 @@ def _stemming(revert_text, stemmer_reverse_dict, lang):
     return text, stemmer_reverse_dict
 
 
-def _get_tokenizer_lang(lang):
+def _get_tokenizer_lang(lang: str):
     if _nltk_lang_to_name(lang) not in ['czech', 'danish', 'dutch', 'english', 'estonian',
                                   'finnish', 'french', 'german', 'greek', 'italian',
                                   'norwegian', 'polish', 'portuguese', 'slovene',
@@ -150,7 +150,7 @@ def _get_tokenizer_lang(lang):
         return _nltk_lang_to_name(lang)
 
 
-def _get_nlp_processor(lang):  # Returns nlp processor and lemmatization capability (True/False)
+def _get_nlp_processor(lang: str):  # Returns nlp processor and lemmatization capability (True/False)
     if lang == "en" or lang == "simple":
         return (spacy.load("en_core_web_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
     elif lang in ["ca", "da", "de", "el", "es", "fr", "it", "lt", "mk", "nl", "pl", "pt", "ro", "ru"]:
@@ -167,7 +167,7 @@ def _get_nlp_processor(lang):  # Returns nlp processor and lemmatization capabil
         return (spacy.blank("xx"), False)
 
 
-def _get_min_word_length(lang):  # Returns min admitted word length for the language (sync in topwordspageextractor)
+def _get_min_word_length(lang: str):  # Returns min admitted word length for the language (sync in topwordspageextractor)
     if lang in ["gan", "ja", "ko", "vi",  "wuu", "zh", "zh-classical", "zh-yue"]:
         return 1  # Hang, Hans, Hant scripts
     elif lang == "vi":
@@ -216,36 +216,45 @@ def _async_delete_dir_content(the_dir: str):
 
 
 def memory_check():
-    mem_status_ram = os.popen('free -m').readlines()[1].split()[1:]
-    mem_status_vm = os.popen('free -m').readlines()[2].split()[1:]
+    mem_status = os.popen('free -m')
+    mem_status.readline()
+    mem_status_ram = mem_status.readline().split()[1:]
+    mem_status_vm = mem_status.readline().split()[1:]
+    mem_status.close()
     ram_available = int(mem_status_ram[-1]) / int(mem_status_ram[0])
-    vm_available = int(mem_status_vm[-1]) / int(mem_status_vm[0])
+    if mem_status_vm[0] == "0":  # No VM
+        vm_available = 1
+    else:
+        vm_available = int(mem_status_vm[-1]) / int(mem_status_vm[0])
     return (ram_available, vm_available, int(mem_status_vm[1]))
 
 
-def memory_status(logger):
+def memory_status(armageddon: str, apocalypse: str, logger):
     status = None
     (ram_available, vm_available, vm_used) = memory_check()
     if (vm_used > 1000) or (ram_available < 0.2) or (vm_available < 0.7):
-        log_message(logger, f"Memory emergency: {ram_available:.2f}% RAM, {vm_available:.2f}% VM, {vm_used}Mb VM")
-        status= "armageddon"
-        log_message(logger, "Armageddon status reached")
-        if (ram_available < 0.1) or (vm_available < 0.5):
+        log_message(logger, f"Memory warning: {((1 - ram_available) * 100):.1f}% RAM used, "
+                            f"{((1 - vm_available) * 100):.1f}% ({vm_used} Mb) VM used.")
+        status= armageddon
+        log_message(logger, "Armageddon status activated")
+        if (ram_available < 0.1) or (vm_available < 0.2):
             log_message(logger, "Upgraded to APOCALYPSE status!")
-            status = "apocalypse"
+            status = apocalypse
     return status
 
 
-def emergency_trigger(emergency, executor):
+def emergency_trigger(emergency: str, executor):
     if emergency != None:
+        open(emergency, "a").close()
         children = multiprocessing.active_children()
         for process in children:
             process.terminate()
         executor.join()
+        os.remove(emergency)
     return emergency
 
 
-def check_emergency(logger, emergency_list:list):
+def check_emergency(logger, emergency_list: list):
     for emergency in emergency_list:
         if os.path.exists(emergency):
             log_message(logger, f"Emergency {os.path.basename(emergency)} found: performing respawn")
@@ -253,18 +262,18 @@ def check_emergency(logger, emergency_list:list):
     return False
 
 
-class GracefulKiller:
-  kill_now = False
+class KillMeSoftly:
+  kill_requested = False
   def __init__(self):
-    signal.signal(signal.SIGINT, self.exit_gracefully)
-    signal.signal(signal.SIGTERM, self.exit_gracefully)
+    signal.signal(signal.SIGINT, self.exit_softly)
+    signal.signal(signal.SIGTERM, self.exit_softly)
 
-  def exit_gracefully(self, *args):
-    self.kill_now = True
+  def exit_softly(self, *args):
+    self.kill_requested = True
 
 
 def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelism: int, lang: str, \
-    log_file: str):
+    armageddon:str, apocalypse:str, log_file: str):
     """
     _words_extractor perform tokenization, stopwords cleaning and lemmatization on a single file "filename"
     :param result_dir: path of input folder
@@ -272,10 +281,12 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
     :param o_process: process ordinal (in range(parallelism))
     :param parallelism: degree of parallelism
     :param lang: wikipedia language
+    :param armageddon: file for armageddon intervention
+    :param apocalypse: file for apocalypse intervention
     :param log_file: file for async non-blocking logging
     """
 
-    killer = GracefulKiller()
+    killer = KillMeSoftly()
     with open(log_file, "a", encoding='utf-8') as logger:  # Non-blocking async logger
         (nlp, lemmatable) = _get_nlp_processor(lang)
 
@@ -284,9 +295,14 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
         n_last_bucket = 1000 if (o_process == parallelism -1) else (o_process + 1) * bsize
 
         for file in os.scandir(input_dir):
-            if killer.kill_now:
-                log_message(logger, f"External KILL request, killing process")
-                break
+            if killer.kill_requested:
+                if os.path.exists(armageddon) or os.path.exists(apocalypse):
+                    log_message(logger, "KILL request: self-killing")
+                    break
+                else:
+                    open(apocalypse, "a").close()
+                    log_message(logger, "EXTERNAL KILL (OOM Killer?): self-killing and apocalypse signal")
+                    break
             if n_first_bucket <= int(file.name[-8:-5]) < n_last_bucket:
                 with open(file.path, "r", encoding='utf-8') as the_file:
                     dump_dict = json.load(the_file)
@@ -300,8 +316,8 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
                     single_revert = reverts["Text"]
                     reverts_length += len(single_revert)
                     if reverts_length > 1000000:  # spacy limit (cf. max_length)
-                        log_message(logger, f"Reverts overflow (reaching {reverts_length} chars) ", \
-                                            f"with {len(single_revert)} chars of file: {file.name}")
+                        log_message(logger, f"Reverts overflow: {reverts_length} chars ", \
+                                            f"(with +{len(single_revert)} chars) from file {file.name}")
                         break
                     reverts_texts.append(single_revert)
                 
@@ -321,20 +337,23 @@ def _words_extractor(input_dir: str, output_dir: str, o_process: int, parallelis
 
                 page_id = dump_dict["PageID"]
 
-                with open(os.path.join(output_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as file:
-                    json.dump(dump_dict, file, ensure_ascii=False)
-                    file.flush()  # overzealous
-                with open(os.path.join(output_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as file:
-                    json.dump(reverse_stemming_dict, file, ensure_ascii=False)
-                    file.flush()  # overzealous
+                with open(os.path.join(output_dir, "S" + "0" * (20 - len(str(page_id))) + str(page_id) + ".json"), "w", encoding='utf-8') as new_file:
+                    json.dump(dump_dict, new_file, ensure_ascii=False)
+                    new_file.flush()  # overzealous
+                with open(os.path.join(output_dir, "Stem/StemRev_" + str(page_id) + ".json"), "w", encoding='utf-8') as new_file:
+                    json.dump(reverse_stemming_dict, new_file, ensure_ascii=False)
+                    new_file.flush()  # overzealous
+                
+                os.remove(file)
+        
         logger.flush()  # overzealous
 
 
 def _stopwords_cleaner_stemming(result_dir: str, filename: str, lang: str):
     """
-    _stopwords_cleaner_stemming perform tokenization, stopwords cleaning and stemming on a single file "filname"
+    _stopwords_cleaner_stemming perform tokenization, stopwords cleaning and stemming on a single file "filename"
     :param result_dir: path of result folder
-    :param filename: file to preocess
+    :param filename: file to process
     :param lang: wikipedia language
     """
     with open(filename, "r", encoding='utf-8') as the_file:
@@ -389,7 +408,8 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     MIN_WORD_LENGTH = _get_min_word_length(lang)
     STOPWORDS = _lang_stopwords(lang)
 
-    divine = "/data/divine"  # Divine intervention makes the master program gently kill children and respawn
+    armageddon = "/data/armageddon"  # Armageddon makes the master program gently kill children and respawn
+    apocalypse = "/data/apocalypse"  # Apocalypse mode (when external OOM Kill or inadequately low resources)
     rocket = "/data/rocket"  # Rocket mode skips all remaining data extraction and proceeds
     log_prefix = "/data/normalization"
     for log_file in glob.glob(log_prefix + "*"):
@@ -399,57 +419,60 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
     shutil.move(result_dir, input_dir)
     os.mkdir(result_dir)
     shutil.move(os.path.join(input_dir, "Stem"), result_dir)
-    emergency_level = None
 
     parallelism = max(1, multiprocessing.cpu_count() - 1)
     sleep_time = 8
-    monitor_time = 8
+    monitor_time = 600
     with open(log_prefix + ".log", "a", encoding='utf-8') as logger:
         while True:
             executor = multiprocessing.Pool(parallelism)
             for i in range(parallelism):
                 log_file = log_prefix + "_" + str(i) + ".log"
                 executor.apply_async(_words_extractor, \
-                    args=(input_dir, result_dir, i, parallelism, lang, log_file), \
+                    args=(input_dir, result_dir, i, parallelism, lang, \
+                        armageddon, apocalypse, log_file), \
                         error_callback = async_error_logger)
+                start_time = time.monotonic()
             executor.close()
-            while True:
+            emergency_level = emergency_trigger(memory_status(armageddon, apocalypse, logger), executor)
+            while emergency_level == None:
                 monitor_time = min(monitor_time + 2, 600)
-                sleep(monitor_time)
+                time.sleep(monitor_time)
                 children = multiprocessing.active_children()
-                if children == []:
+                if os.path.exists(apocalypse):
+                    log_message(logger, "External kill (OOM Killer?) detected: activating apocalypse")
+                    emergency_level = emergency_trigger(apocalypse, executor)
+                elif children == []:
                     break
                 elif os.path.exists(rocket):
                     os.remove(rocket)
                     log_message(logger, "Rocket mode: skipping remaining clouds generation")
                     break
-                elif os.path.exists(divine):
-                    os.remove(divine)
-                    log_message(logger, "Divine intervention requested: performing respawn")
-                    emergency_level = "armageddon"
-                    for process in children:
-                        process.terminate()
-                        executor.join()
-                    break
+                elif os.path.exists(armageddon):
+                    log_message(logger, "Armageddon requested: performing respawn")
+                    emergency_level = emergency_trigger(armageddon, executor)
                 else:
-                    emergency_level = emergency_trigger(memory_status(logger), executor)
+                    emergency_level = emergency_trigger(memory_status(armageddon, apocalypse, logger), executor)
+            delta_time = time.monotonic() - start_time
             del executor
             gc.collect()
-            if emergency_level == "armageddon":
-                sleep(8)
+            if delta_time < 3600 and emergency_level == armageddon:
+                emergency_level = apocalypse
+            if emergency_level == armageddon:
+                time.sleep(8)
                 monitor_time = max(8, monitor_time // 2)
-                emergency_level = None
-            elif emergency_level == "apocalypse":
+                log_message(logger, f"New settings: Monitor={monitor_time}s")
+            elif emergency_level == apocalypse:
                 if sleep_time > 1024:
-                    log_message(logger, "End of the World: incomplete processing")
+                    log_message(logger, "END OF THE WORLD: inadequate resources, skipping processing")
                     break  # End of the world (and apocalypse file not deleted)
                 else:
-                    sleep_time *= 2
-                    sleep(sleep_time)
+                    if parallelism == 1:
+                        sleep_time *= 2
                     monitor_time = max(8, monitor_time // 2)
-                    parallelism = max(1, parallelism // 2)
-                    log_message(logger, f"New settings: Sleep={sleep_time}s, Parallelism={parallelism}")
-                    emergency_level = None
+                    parallelism = max(1, parallelism - 1)
+                    log_message(logger, f"New settings: Monitor={monitor_time}s, Sleep={sleep_time}s, Parallelism={parallelism}")
+                    time.sleep(sleep_time)
             else:
                 break
     
