@@ -422,7 +422,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
 
     parallelism = max(1, multiprocessing.cpu_count() - 1)
     sleep_time = 8
-    monitor_time = 600
+    monitor_time = 0.5
     with open(log_prefix + ".log", "a", encoding='utf-8') as logger:
         while True:
             executor = multiprocessing.Pool(parallelism)
@@ -436,7 +436,7 @@ def concurrent_stopwords_cleaner_lemmatizer(result_dir: str, lang: str):
             executor.close()
             emergency_level = emergency_trigger(memory_status(armageddon, apocalypse, logger), executor)
             while emergency_level == None:
-                monitor_time = min(monitor_time + 2, 600)
+                monitor_time = min(monitor_time * 2, 512)
                 time.sleep(monitor_time)
                 children = multiprocessing.active_children()
                 if os.path.exists(apocalypse):
