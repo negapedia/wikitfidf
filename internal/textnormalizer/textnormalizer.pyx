@@ -158,7 +158,7 @@ def _get_nlp_processor(lang: str):  # Returns nlp processor and lemmatization ca
     elif lang == "ja":
         return (spacy.load("ja_core_news_sm", exclude=["parser", "ner", "textcat", "custom"]), False)
     elif lang == "zh":
-        return (spacy.load("zh_core_web_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
+        return (spacy.load("zh_core_web_sm", exclude=["parser", "ner", "textcat", "custom"]), False)
     elif lang == "no":
         return (spacy.load("nb_core_news_sm", exclude=["parser", "ner", "textcat", "custom"]), True)
     elif lang in ["eml", "fur", "lij", "la", "lmo", "nap", "pms", "sc", "scn", "roa-tara", "vec"]:
